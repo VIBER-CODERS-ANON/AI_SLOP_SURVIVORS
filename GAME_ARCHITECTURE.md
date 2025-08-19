@@ -1,23 +1,48 @@
 # A.S.S (AI SLOP SURVIVORS) - Game Architecture
 
 ## Overview
+
 This is a modular Vampire Survivors-style game with Twitch chat integration built in Godot 4.x. The architecture is designed to be extensible and maintainable.
+
+### Enemy/Boss Architecture (Hybrid)
+
+- Node-based actors (existing): Player, Bosses, special effects, and any scene-driven enemies. These use scenes, scripts, movement controllers, and per-node abilities. Bosses remain on this path for full custom logic and visuals.
+- Data-oriented enemies (V2, new): High-volume minions (e.g., rats) are managed by `EnemyManagerV2` with arrays (positions, velocities, types) and rendered by MultiMeshInstance2D. Only a small “live” subset has physics bodies for collisions.
+
+Key V2 systems:
+
+- `EnemyManagerV2`: arrays, flow-field, avoidance, top‑K proximity selection, per-type MultiMeshes
+- `EnemyV2Bridge`: abilities/effects/lighting per V2 enemy type
+- Nameplates: nearest‑N with pooling and top‑K
+- Flocking (boids‑lite): throttled separation/alignment (optional) blended with flow‑field
+
+Evolutions:
+
+- Evolution requests translate to V2 type changes in place (e.g., rat → succubus) and reapply stats/abilities via the bridge. If no V2 entities are found for a user, the system falls back to spawning the legacy node scene.
+
+Visuals for V2 minions:
+
+- Per‑type MultiMeshes for distinct visuals (e.g., Rat, Succubus, Woodland Joe). Bosses keep their own node-based visuals/animations.
 
 ## Core Systems
 
 ### 1. Tag System (`systems/tag_system/`)
+
 The universal tagging system allows dynamic interactions between all game elements.
 
 **Key Components:**
+
 - `TagSystem`: Static utility class for tag operations
 - `Taggable`: Component that can be added to any node to make it taggable
 
 **Example Tags:**
+
 - Entity Types: `Player`, `Enemy`, `Boss`, `Minion`
 - Damage Types: `Physical`, `Magical`, `Fire`, `Ice`
 - Ability Types: `Melee`, `Ranged`, `Projectile`, `AoE`
 
 **Usage Example:**
+
 ```gdscript
 # Check if entity is a boss
 if TagSystem.has_tag(enemy, "Boss"):
@@ -28,9 +53,11 @@ var flying_enemies = TagSystem.get_tagged_in_group("enemies", "Flying")
 ```
 
 ### 2. Entity System (`systems/entity_system/`)
+
 Base class for all game entities with health, movement, and damage handling.
 
 **BaseEntity Features:**
+
 - Health management
 - Movement velocity system
 - Status effects
@@ -38,16 +65,25 @@ Base class for all game entities with health, movement, and damage handling.
 - Damage calculations with tag modifiers
 
 ### 3. Movement System (`systems/movement_system/`)
+
 Modular movement controllers that can be attached to entities.
 
 **Controllers:**
+
 - `MovementController`: Base class for all movement
 - `PlayerMovementController`: WASD input handling
+
+Usage guidance:
+
+- Node-based actors (player, bosses, scene-driven enemies) use these controllers.
+- V2 minions do NOT use these controllers; their movement is computed centrally in `EnemyManagerV2`.
 
 ## Adding New Features
 
 ### Creating a New Enemy
+
 1. Create a new script extending `BaseEntity`:
+
 ```gdscript
 extends BaseEntity
 class_name Zombie
@@ -55,18 +91,20 @@ class_name Zombie
 func _entity_ready():
     # Set enemy-specific tags
     taggable.permanent_tags = ["Enemy", "Undead", "Ground"]
-    
+
     # Set stats
     max_health = 50
     move_speed = 150
-    
+
     # Add AI movement controller
     var ai_controller = AIMovementController.new()
     add_child(ai_controller)
 ```
 
 ### Creating a New Ability
+
 1. Create ability script in `abilities/` folder:
+
 ```gdscript
 extends Node
 class_name FireballAbility
@@ -82,7 +120,9 @@ func activate():
 ```
 
 ### Creating a New Buff
+
 1. Create buff script in `buffs/` folder:
+
 ```gdscript
 extends Node
 class_name DamageVsBossesBuff
@@ -96,6 +136,7 @@ func apply_to_entity(entity: BaseEntity):
 ## Twitch Chat Integration
 
 ### Current Features
+
 - Anonymous connection to quin69's channel
 - Chat display in top-right corner
 - Basic chat commands affect gameplay:
@@ -104,7 +145,9 @@ func apply_to_entity(entity: BaseEntity):
   - quin69 messages - Heal player for 10 HP
 
 ### Adding Chat Interactions
+
 In `game_controller.gd`, modify `_handle_chat_message()`:
+
 ```gdscript
 # Example: Spawn enemy when someone says "spawn"
 if "spawn" in msg_lower:
@@ -113,6 +156,7 @@ if "spawn" in msg_lower:
 ```
 
 ## Project Structure
+
 ```
 AI SLOP SURVIVORS/
 ├── systems/              # Core game systems
@@ -149,6 +193,3 @@ AI SLOP SURVIVORS/
 4. **Add Buff System**: Temporary and permanent upgrades
 5. **Add Wave System**: Progressive difficulty
 6. **Add More Chat Integration**: Let chat vote on upgrades, spawn bosses, etc.
-
-
-
