@@ -133,13 +133,20 @@ func _force_apply_display_settings():
 	var res_width = settings_config.get_value("display", "resolution_width", DEFAULT_SETTINGS.display.resolution_width)
 	var res_height = settings_config.get_value("display", "resolution_height", DEFAULT_SETTINGS.display.resolution_height)
 	
-	print("⚙️ Forcing display settings override...")
+	var current_mode = DisplayServer.window_get_mode()
+	print("⚙️ Current window mode: %d, forcing display settings override..." % current_mode)
 	
 	# Force vsync setting
 	if vsync:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
 	else:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	
+	# IMPORTANT: Handle maximized window state
+	if current_mode == DisplayServer.WINDOW_MODE_MAXIMIZED:
+		# Must exit maximized before we can change size
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		await get_tree().process_frame
 	
 	# Force window mode - always start from windowed to ensure proper sizing
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
@@ -160,6 +167,8 @@ func _force_apply_display_settings():
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 		print("⚙️ Forced to borderless fullscreen mode")
 	else:
+		# Ensure we stay in windowed mode (not maximized)
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		print("⚙️ Forced to windowed mode: %dx%d" % [res_width, res_height])
 
 ## Apply loaded settings to the game (audio only, display handled separately)
@@ -216,6 +225,13 @@ func set_fullscreen(enabled: bool):
 	settings_config.set_value("display", "fullscreen", enabled)
 	save_settings()
 	
+	var current_mode = DisplayServer.window_get_mode()
+	
+	# Exit maximized if needed
+	if current_mode == DisplayServer.WINDOW_MODE_MAXIMIZED:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		await get_tree().process_frame
+	
 	if enabled:
 		# Use exclusive fullscreen (borderless window)
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
@@ -244,12 +260,13 @@ func set_resolution(width: int, height: int):
 	# Check current window mode
 	var current_mode = DisplayServer.window_get_mode()
 	
-	if current_mode == DisplayServer.WINDOW_MODE_WINDOWED or current_mode == DisplayServer.WINDOW_MODE_MAXIMIZED:
-		# If maximized, switch to windowed first
-		if current_mode == DisplayServer.WINDOW_MODE_MAXIMIZED:
-			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-			await get_tree().process_frame
-		
+	# Always handle maximized state first
+	if current_mode == DisplayServer.WINDOW_MODE_MAXIMIZED:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		await get_tree().process_frame
+		current_mode = DisplayServer.WINDOW_MODE_WINDOWED
+	
+	if current_mode == DisplayServer.WINDOW_MODE_WINDOWED:
 		# Apply resolution in windowed mode
 		DisplayServer.window_set_size(Vector2i(width, height))
 		# Center the window
@@ -262,6 +279,11 @@ func set_resolution(width: int, height: int):
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		await get_tree().process_frame
 		DisplayServer.window_set_size(Vector2i(width, height))
+		# Center before going back to fullscreen
+		var screen_size = DisplayServer.screen_get_size()
+		var window_pos = (screen_size - Vector2i(width, height)) / 2
+		DisplayServer.window_set_position(window_pos)
+		await get_tree().process_frame
 		# Switch back to borderless
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 		print("⚙️ Resolution changed to: %dx%d (borderless)" % [width, height])

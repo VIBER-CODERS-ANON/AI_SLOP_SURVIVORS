@@ -43,7 +43,7 @@ var damage_numbers_enabled: bool = true
 
 # Physics
 var physics_interpolation_enabled: bool = true
-var vsync_enabled: bool = true
+# vsync_enabled removed - handled by SettingsManager
 
 # Rendering
 var post_processing_enabled: bool = true
@@ -75,11 +75,12 @@ func apply_settings():
 	else:
 		AudioServer.set_bus_mute(AudioServer.get_bus_index("Music"), false)
 	
-	# Apply vsync
-	if vsync_enabled:
-		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
-	else:
-		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	# DON'T apply vsync here - let SettingsManager handle display settings
+	# This was overriding the menu settings!
+	# if vsync_enabled:
+	#	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
+	# else:
+	#	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	
 	# Save settings after applying
 	save_settings()
@@ -176,7 +177,7 @@ func reset_to_defaults():
 	xp_drops_enabled = true
 	damage_numbers_enabled = true
 	physics_interpolation_enabled = true
-	vsync_enabled = true
+	# vsync handled by SettingsManager
 	post_processing_enabled = true
 	screen_effects_enabled = true
 	# Apply and save after reset
@@ -220,7 +221,7 @@ func save_settings():
 	
 	# Physics/Rendering
 	config.set_value("rendering", "physics_interpolation_enabled", physics_interpolation_enabled)
-	config.set_value("rendering", "vsync_enabled", vsync_enabled)
+	# vsync removed - handled by SettingsManager
 	config.set_value("rendering", "post_processing_enabled", post_processing_enabled)
 	config.set_value("rendering", "screen_effects_enabled", screen_effects_enabled)
 	
@@ -266,7 +267,7 @@ func load_settings():
 	
 	# Physics/Rendering
 	physics_interpolation_enabled = config.get_value("rendering", "physics_interpolation_enabled", true)
-	vsync_enabled = config.get_value("rendering", "vsync_enabled", true)
+	# vsync removed - handled by SettingsManager
 	post_processing_enabled = config.get_value("rendering", "post_processing_enabled", true)
 	screen_effects_enabled = config.get_value("rendering", "screen_effects_enabled", true)
 	

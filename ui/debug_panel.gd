@@ -125,7 +125,7 @@ func _setup_ui():
 	
 	# Rendering
 	_add_category(vbox, "🖥️ RENDERING", Color(1, 0.5, 1))
-	_add_toggle(vbox, "VSync", "vsync_enabled", "Toggle vertical sync")
+	# VSync removed - handled by SettingsManager in pause menu
 	_add_toggle(vbox, "Physics Interpolation", "physics_interpolation_enabled", "Toggle physics smoothing")
 	
 	vbox.add_child(HSeparator.new())

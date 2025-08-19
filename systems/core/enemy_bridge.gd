@@ -140,7 +140,7 @@ func _setup_enemy_lighting(enemy_id: int, enemy_type_str: String):
 		var enemy_pos = enemy_manager.positions[enemy_id]
 		_create_enemy_light(enemy_id, enemy_pos, enemy_type_str)
 
-func _update_enemy_abilities(delta: float):
+func _update_enemy_abilities(_delta: float):
 	var current_time = Time.get_ticks_msec() / 1000.0
 	
 	for enemy_id in enemy_abilities.keys():
@@ -214,7 +214,7 @@ func _execute_ability(enemy_id: int, ability: Dictionary):
 		return
 	
 	var enemy_pos = enemy_manager.positions[enemy_id]
-	var enemy_type_id = enemy_manager.entity_types[enemy_id]
+	var _enemy_type_id = enemy_manager.entity_types[enemy_id]
 	
 	match ability.id:
 		"explosion":
@@ -281,8 +281,8 @@ func _end_boost_effect(enemy_id: int):
 		return
 	
 	# Reset speed to base value
-	var enemy_type_id = enemy_manager.entity_types[enemy_id]
-	var config = config_manager.get_enemy_config(_get_type_string(enemy_type_id))
+	var _enemy_type_id = enemy_manager.entity_types[enemy_id]
+	var config = config_manager.get_enemy_config(_get_type_string(_enemy_type_id))
 	var base_speed = config.get("base_stats", {}).get("move_speed", 120.0)
 	
 	enemy_manager.move_speeds[enemy_id] = base_speed
@@ -328,10 +328,10 @@ func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
 	
 	print("💖 Enemy %d fired heart projectile" % enemy_id)
 
-func _start_suction_ability(enemy_id: int, pos: Vector2, config: Dictionary):
+func _start_suction_ability(enemy_id: int, _pos: Vector2, config: Dictionary):
 	# Succubus channeled drain ability
 	var channel_time = config.get("channel_time", 2.0)
-	var drain_rate = config.get("drain_rate", 5.0)
+	var _drain_rate = config.get("drain_rate", 5.0)
 	
 	# Stop enemy movement during channeling
 	if enemy_manager and enemy_id < enemy_manager.move_speeds.size():
@@ -495,7 +495,7 @@ func _add_effect(enemy_id: int, effect_id: String, duration: float):
 	}
 	active_effects[enemy_id].append(effect)
 
-func _end_effect(enemy_id: int, effect: Dictionary):
+func _end_effect(_enemy_id: int, effect: Dictionary):
 	match effect.id:
 		"boost_visual":
 			# Remove visual boost effect
