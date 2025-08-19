@@ -233,17 +233,31 @@ func _execute_ability(enemy_id: int, ability: Dictionary):
 			_trigger_telegraph_charge(enemy_id, enemy_pos, ability.config)
 
 func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
+	# Get base values
+	var damage = config.get("damage", 20.0)
+	var radius = config.get("radius", 80.0)
+	var aoe_scale = 1.0
+	
+	# Apply chatter's AOE bonus if available
+	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
+		var username = enemy_manager.chatter_usernames[enemy_id]
+		if username != "" and ChatterEntityManager.instance:
+			var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+			if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
+				var bonus_aoe = chatter_data.upgrades.bonus_aoe
+				var rarity_mult = chatter_data.upgrades.get("rarity_multiplier", 1.0)
+				aoe_scale = (1.0 + bonus_aoe) * rarity_mult
+	
 	# Create explosion effect
 	var explosion_scene_path = config.get("visuals", {}).get("effect_scene", "res://entities/effects/explosion_effect.tscn")
 	if ResourceLoader.exists(explosion_scene_path):
 		var explosion = load(explosion_scene_path).instantiate()
 		explosion.global_position = pos
+		explosion.applied_aoe_scale = aoe_scale
 		GameController.instance.add_child(explosion)
 	
-	# Apply damage to player if in range
-	var damage = config.get("damage", 20.0)
-	var radius = config.get("radius", 80.0)
-	_apply_area_damage(pos, damage, radius)
+	# Apply damage to player if in range (with scaled radius)
+	_apply_area_damage(pos, damage, radius * aoe_scale)
 	
 	print("💥 Enemy %d exploded at %s" % [enemy_id, pos])
 

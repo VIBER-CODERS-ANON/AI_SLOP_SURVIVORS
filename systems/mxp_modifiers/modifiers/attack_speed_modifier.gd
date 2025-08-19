@@ -1,35 +1,29 @@
 extends BaseMXPModifier
 class_name AttackSpeedModifier
 
-## !attackspeed command - Increases attack speed by 2.5% per MXP (increased/additive)
+## !attackspeed command - Flat attack speed increase
+## Simple: +0.1 attacks per second per MXP spent
 
-const ATTACK_SPEED_INCREASE_PERCENT: float = 0.025  # 2.5% per use
+const FLAT_ATTACK_SPEED_BONUS: float = 0.1  # +0.1 attacks/sec per MXP
 
 func _init():
 	command_name = "attackspeed"
-	display_name = "Attack Speed"
-	description = "Increases attack speed by 2.5% per MXP"
+	display_name = "Attack Speed Boost"
+	description = "+0.1 attacks per second per MXP (!attackspeed, !attackspeed5, !attackspeedmax)"
 	cost_per_use = 1
 	emoji = "⚔️"
 
 func get_effect_description(stacks: int) -> String:
-	var total_increase = stacks * ATTACK_SPEED_INCREASE_PERCENT * 100
-	return "+%.0f%% attack speed" % total_increase
+	return "Now at +%.1f total attacks/sec!" % [stacks * FLAT_ATTACK_SPEED_BONUS]
 
 func apply_effect(chatter_data: Dictionary, amount: int) -> Dictionary:
-	# Initialize attack speed increased if not present
-	if not chatter_data.upgrades.has("attack_speed_increased_percent"):
-		chatter_data.upgrades["attack_speed_increased_percent"] = 0.0
+	# Initialize if not present
+	if not chatter_data.upgrades.has("bonus_attack_speed"):
+		chatter_data.upgrades["bonus_attack_speed"] = 0.0
 	
-	# Apply increased attack speed % (additive)
-	chatter_data.upgrades["attack_speed_increased_percent"] += amount * ATTACK_SPEED_INCREASE_PERCENT
-	
-	# Also create attack_speed_multiplier for easy use
-	if not chatter_data.upgrades.has("attack_speed_multiplier"):
-		chatter_data.upgrades["attack_speed_multiplier"] = 1.0
-	chatter_data.upgrades["attack_speed_multiplier"] = 1.0 + chatter_data.upgrades["attack_speed_increased_percent"]
+	# Apply flat attack speed bonus
+	chatter_data.upgrades["bonus_attack_speed"] += amount * FLAT_ATTACK_SPEED_BONUS
 	
 	return {
-		"attack_speed_increase_percent": chatter_data.upgrades["attack_speed_increased_percent"] * 100,
-		"total_attack_speed_percent": chatter_data.upgrades["attack_speed_multiplier"] * 100
+		"bonus_attack_speed": chatter_data.upgrades["bonus_attack_speed"]
 	}

@@ -677,10 +677,10 @@ func _handle_chat_message(username: String, message: String, color: Color = Colo
 		# Don't process any game-affecting commands while paused
 		return
 	
-	# MXP Commands - DISABLED FOR BIG PATCH
-	# if MXPModifierManager.instance and msg_lower.begins_with("!"):
-	# 	if MXPModifierManager.instance.process_command(username, message):
-	# 		return
+	# MXP Commands
+	if MXPModifierManager.instance and msg_lower.begins_with("!"):
+		if MXPModifierManager.instance.process_command(username, message):
+			return
 	
 	# !join command - Join the monster spawning pool
 	if msg_lower == "!join":
@@ -1293,7 +1293,7 @@ func _handle_evolve_command(username: String, message: String):
 	if evolution_name.is_empty():
 		# Show available evolutions
 		var feed = get_action_feed()
-		feed.add_message("Available evolutions: !evolvesuccubus (10 MXP)", Color(0.8, 0.8, 0))
+		feed.add_message("Available evolutions: !evolvewoodlandjoe (5 MXP), !evolvesuccubus (10 MXP)", Color(0.8, 0.8, 0))
 		return
 	
 	# print("ðŸ§¬ Attempting evolution to: ", evolution_name)

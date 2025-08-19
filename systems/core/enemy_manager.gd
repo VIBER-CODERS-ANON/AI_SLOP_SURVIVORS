@@ -243,7 +243,7 @@ func _setup_multimesh_rendering():
 	wjoe_mesh.size = Vector2(32, 32)
 	mm_wood.mesh = wjoe_mesh
 	multi_mesh_minion_woodland.multimesh = mm_wood
-	var wjoe_tex_path = "res://entities/enemies/woodland_joe.png"
+	var wjoe_tex_path = "res://BespokeAssetSources/woodenJoe.png"
 	if ResourceLoader.exists(wjoe_tex_path):
 		multi_mesh_minion_woodland.texture = load(wjoe_tex_path)
 	else:
@@ -865,8 +865,9 @@ func _update_multimesh_transforms():
 			continue
 		
 		var transform = Transform2D()
-		transform = transform.rotated(rotations[enemy_id])
-		transform = transform.scaled(Vector2.ONE * scales[enemy_id])
+		# Flip X for direction, NEGATIVE Y to flip sprites right-side up
+		var flip_x = -1.0 if rotations[enemy_id] > PI/2 and rotations[enemy_id] < 3*PI/2 else 1.0
+		transform = transform.scaled(Vector2(flip_x * scales[enemy_id], -scales[enemy_id]))
 		transform.origin = positions[enemy_id]
 		
 		# Apply white flash color if enemy is flashing
@@ -1045,7 +1046,7 @@ func get_enemy_type_from_string(type_str: String) -> int:
 	match type_str.to_lower():
 		"twitch_rat": return 0
 		"succubus": return 1
-		"woodland_joe": return 2
+		"woodland_joe", "woodlandjoe": return 2
 		"thor_enemy": return 3
 		"mika_boss": return 4
 		"forsen_boss": return 5

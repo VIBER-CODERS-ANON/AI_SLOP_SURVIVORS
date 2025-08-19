@@ -131,7 +131,9 @@ func apply_upgrades_to_entity(entity: Node, username: String):
 	
 	# Apply AoE with rarity multiplier
 	if entity.has_method("set_aoe_multiplier"):
-		var final_aoe = 1.0 + ((upgrades.aoe_multiplier - 1.0) * rarity_multiplier)
+		# Use bonus_aoe from new flat MXP system
+		var bonus_aoe = upgrades.get("bonus_aoe", 0.0)
+		var final_aoe = (1.0 + bonus_aoe) * rarity_multiplier
 		entity.set_aoe_multiplier(final_aoe)
 	
 	# Apply other stats if it's a BaseCreature/BaseEnemy

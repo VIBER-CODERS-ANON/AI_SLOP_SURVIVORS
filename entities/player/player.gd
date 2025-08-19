@@ -71,6 +71,8 @@ func _entity_ready():
 	
 	# Initialize stats
 	_update_derived_stats()
+	# Set initial health to match our actual max (not the base_entity default)
+	current_health = max_health
 	
 	# DEV TOOL - Set up modular audio tester (can be removed)
 	if use_dev_audio_tester:
@@ -212,9 +214,9 @@ func _update_derived_stats():
 	var old_max_health = max_health
 	max_health = base_health + bonus_health
 	
-	# If max health increased, heal the difference
+	# If max health increased, heal the difference but cap at max
 	if max_health > old_max_health:
-		current_health += (max_health - old_max_health)
+		current_health = min(current_health + (max_health - old_max_health), max_health)
 	
 	# Pickup
 	pickup_range = base_pickup_range + bonus_pickup_range
