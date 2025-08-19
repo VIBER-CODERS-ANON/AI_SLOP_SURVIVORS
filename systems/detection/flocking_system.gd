@@ -9,12 +9,12 @@ static var instance: FlockingSystem
 
 # Flocking parameters - TUNED FOR MAXIMUM HORDE AGGRESSION
 @export_group("Flocking Forces")
-@export var separation_radius: float = 40.0  # Personal space bubble
-@export var separation_force: float = 150.0  # How hard to push apart
+@export var separation_radius: float = 65.0  # Personal space bubble
+@export var separation_force: float = 280.0  # How hard to push apart
 @export var alignment_radius: float = 80.0   # Look at neighbors within this range
-@export var alignment_force: float = 30.0    # How much to match neighbor direction
+@export var alignment_force: float = 15.0    # How much to match neighbor direction
 @export var cohesion_radius: float = 120.0   # Stay with the pack range
-@export var cohesion_force: float = 20.0     # How much to stay together
+@export var cohesion_force: float = 10.0     # How much to stay together
 
 @export_group("Performance")
 @export var neighbor_radius: float = 96.0  # how far to consider neighbors
@@ -26,13 +26,13 @@ static var instance: FlockingSystem
 # Data-oriented flocking (uses EnemyManager arrays)
 @export_group("V2 Flocking")
 @export var v2_enabled: bool = true
-@export var v2_neighbor_radius: float = 80.0
-@export var v2_max_neighbors: int = 6
+@export var v2_neighbor_radius: float = 95.0
+@export var v2_max_neighbors: int = 8
 @export var v2_update_interval: float = 0.15
 @export var v2_force_slices: int = 4
-@export var v2_separation_weight: float = 0.35
-@export var v2_alignment_weight: float = 0.15
-@export var v2_cohesion_weight: float = 0.05
+@export var v2_separation_weight: float = 0.75
+@export var v2_alignment_weight: float = 0.08
+@export var v2_cohesion_weight: float = 0.02
 
 # Spatial optimization
 var spatial_grid: Dictionary = {}  # Grid position -> Array of entities
