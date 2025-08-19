@@ -45,19 +45,23 @@ func _ready():
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	
-	# Create main container
+	# Create main container with scroll
+	var scroll_container = ScrollContainer.new()
+	scroll_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	scroll_container.position = Vector2(-180, -280)  # Center the container
+	scroll_container.custom_minimum_size = Vector2(360, 560)
+	scroll_container.follow_focus = true
+	add_child(scroll_container)
+	
 	var main_container = VBoxContainer.new()
-	main_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	main_container.position = Vector2(-200, -350)  # Center the container
-	main_container.custom_minimum_size = Vector2(400, 700)
 	main_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	main_container.add_theme_constant_override("separation", 30)
-	add_child(main_container)
+	main_container.add_theme_constant_override("separation", 20)
+	scroll_container.add_child(main_container)
 	
 	# Title
 	var title = Label.new()
 	title.text = "GAME PAUSED"
-	title.add_theme_font_size_override("font_size", 48)
+	title.add_theme_font_size_override("font_size", 36)
 	title.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	main_container.add_child(title)
@@ -68,7 +72,7 @@ func _ready():
 	# Button container
 	var button_container = VBoxContainer.new()
 	button_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	button_container.add_theme_constant_override("separation", 15)
+	button_container.add_theme_constant_override("separation", 10)
 	main_container.add_child(button_container)
 	
 	# Resume button
@@ -97,14 +101,14 @@ func _ready():
 	# Display settings section title
 	var display_title = Label.new()
 	display_title.text = "DISPLAY SETTINGS"
-	display_title.add_theme_font_size_override("font_size", 24)
+	display_title.add_theme_font_size_override("font_size", 20)
 	display_title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	display_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	main_container.add_child(display_title)
 	
 	# Display settings container
 	var display_container = VBoxContainer.new()
-	display_container.add_theme_constant_override("separation", 15)
+	display_container.add_theme_constant_override("separation", 10)
 	main_container.add_child(display_container)
 	
 	# Resolution dropdown
@@ -114,13 +118,13 @@ func _ready():
 	
 	var resolution_label = Label.new()
 	resolution_label.text = "Resolution"
-	resolution_label.custom_minimum_size = Vector2(120, 30)
-	resolution_label.add_theme_font_size_override("font_size", 18)
+	resolution_label.custom_minimum_size = Vector2(100, 25)
+	resolution_label.add_theme_font_size_override("font_size", 14)
 	resolution_container.add_child(resolution_label)
 	
 	var resolution_dropdown = OptionButton.new()
-	resolution_dropdown.custom_minimum_size = Vector2(200, 30)
-	resolution_dropdown.add_theme_font_size_override("font_size", 16)
+	resolution_dropdown.custom_minimum_size = Vector2(160, 25)
+	resolution_dropdown.add_theme_font_size_override("font_size", 12)
 	# Add common resolutions
 	resolution_dropdown.add_item("3840x2160 (4K)")
 	resolution_dropdown.add_item("2560x1440 (1440p)")
@@ -129,19 +133,25 @@ func _ready():
 	resolution_dropdown.add_item("1366x768")
 	resolution_dropdown.add_item("1280x720 (720p)")
 	
-	# Set current resolution
-	var current_size = DisplayServer.window_get_size()
-	if current_size == Vector2i(3840, 2160):
+	# Set current resolution based on saved settings or current window size
+	var saved_width = 1920
+	var saved_height = 1080
+	if SettingsManager.instance:
+		saved_width = SettingsManager.instance.get_setting("display", "resolution_width", 1920)
+		saved_height = SettingsManager.instance.get_setting("display", "resolution_height", 1080)
+	
+	var target_size = Vector2i(saved_width, saved_height)
+	if target_size == Vector2i(3840, 2160):
 		resolution_dropdown.selected = 0
-	elif current_size == Vector2i(2560, 1440):
+	elif target_size == Vector2i(2560, 1440):
 		resolution_dropdown.selected = 1
-	elif current_size == Vector2i(1920, 1080):
+	elif target_size == Vector2i(1920, 1080):
 		resolution_dropdown.selected = 2
-	elif current_size == Vector2i(1600, 900):
+	elif target_size == Vector2i(1600, 900):
 		resolution_dropdown.selected = 3
-	elif current_size == Vector2i(1366, 768):
+	elif target_size == Vector2i(1366, 768):
 		resolution_dropdown.selected = 4
-	elif current_size == Vector2i(1280, 720):
+	elif target_size == Vector2i(1280, 720):
 		resolution_dropdown.selected = 5
 	else:
 		resolution_dropdown.selected = 2  # Default to 1080p
@@ -155,13 +165,14 @@ func _ready():
 	display_container.add_child(fullscreen_container)
 	
 	var fullscreen_label = Label.new()
-	fullscreen_label.text = "Fullscreen"
-	fullscreen_label.custom_minimum_size = Vector2(120, 30)
-	fullscreen_label.add_theme_font_size_override("font_size", 18)
+	fullscreen_label.text = "Borderless"
+	fullscreen_label.custom_minimum_size = Vector2(100, 25)
+	fullscreen_label.add_theme_font_size_override("font_size", 14)
 	fullscreen_container.add_child(fullscreen_label)
 	
 	var fullscreen_check = CheckBox.new()
-	fullscreen_check.button_pressed = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
+	var current_mode = DisplayServer.window_get_mode()
+	fullscreen_check.button_pressed = (current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN or current_mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	fullscreen_container.add_child(fullscreen_check)
 	
@@ -172,8 +183,8 @@ func _ready():
 	
 	var vsync_label = Label.new()
 	vsync_label.text = "VSync"
-	vsync_label.custom_minimum_size = Vector2(120, 30)
-	vsync_label.add_theme_font_size_override("font_size", 18)
+	vsync_label.custom_minimum_size = Vector2(100, 25)
+	vsync_label.add_theme_font_size_override("font_size", 14)
 	vsync_container.add_child(vsync_label)
 	
 	var vsync_check = CheckBox.new()
@@ -187,15 +198,15 @@ func _ready():
 	# Volume controls section title
 	var volume_title = Label.new()
 	volume_title.text = "AUDIO SETTINGS"
-	volume_title.add_theme_font_size_override("font_size", 24)
+	volume_title.add_theme_font_size_override("font_size", 20)
 	volume_title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	volume_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	main_container.add_child(volume_title)
 	
 	# Volume controls container
 	var volume_container = VBoxContainer.new()
-	volume_container.custom_minimum_size = Vector2(350, 200)
-	volume_container.add_theme_constant_override("separation", 15)
+	volume_container.custom_minimum_size = Vector2(280, 160)
+	volume_container.add_theme_constant_override("separation", 10)
 	main_container.add_child(volume_container)
 	
 	# Get bus indices
@@ -230,8 +241,8 @@ func _ready():
 func _create_menu_button(text: String, color: Color) -> Button:
 	var button = Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(300, 60)
-	button.add_theme_font_size_override("font_size", 24)
+	button.custom_minimum_size = Vector2(250, 45)
+	button.add_theme_font_size_override("font_size", 18)
 	
 	# Create style
 	var normal_style = StyleBoxFlat.new()
@@ -274,8 +285,8 @@ func _create_volume_control(parent: Node, label_text: String, bus_idx: int, call
 	# Label
 	var label = Label.new()
 	label.text = label_text
-	label.custom_minimum_size = Vector2(120, 20)
-	label.add_theme_font_size_override("font_size", 16)
+	label.custom_minimum_size = Vector2(100, 20)
+	label.add_theme_font_size_override("font_size", 12)
 	control_container.add_child(label)
 	
 	# Slider
@@ -283,7 +294,7 @@ func _create_volume_control(parent: Node, label_text: String, bus_idx: int, call
 	slider.min_value = 0.0
 	slider.max_value = 1.0
 	slider.step = 0.05
-	slider.custom_minimum_size = Vector2(150, 20)
+	slider.custom_minimum_size = Vector2(120, 20)
 	
 	# Set initial value from current bus
 	var current_db = AudioServer.get_bus_volume_db(bus_idx)
@@ -296,8 +307,8 @@ func _create_volume_control(parent: Node, label_text: String, bus_idx: int, call
 	var percent_label = Label.new()
 	percent_label.name = label_text.replace(" ", "") + "Percent"
 	percent_label.text = "%d%%" % int(slider.value * 100)
-	percent_label.custom_minimum_size = Vector2(50, 20)
-	percent_label.add_theme_font_size_override("font_size", 16)
+	percent_label.custom_minimum_size = Vector2(40, 20)
+	percent_label.add_theme_font_size_override("font_size", 12)
 	control_container.add_child(percent_label)
 	
 	return slider
@@ -306,14 +317,14 @@ func _setup_twitch_integration_section(parent: Node):
 	# Twitch Integration section title
 	var twitch_title = Label.new()
 	twitch_title.text = "TWITCH INTEGRATION"
-	twitch_title.add_theme_font_size_override("font_size", 24)
+	twitch_title.add_theme_font_size_override("font_size", 20)
 	twitch_title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	twitch_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	parent.add_child(twitch_title)
 	
 	# Twitch config container
 	var twitch_container = HBoxContainer.new()
-	twitch_container.add_theme_constant_override("separation", 15)
+	twitch_container.add_theme_constant_override("separation", 10)
 	twitch_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	parent.add_child(twitch_container)
 	
@@ -330,9 +341,9 @@ func _setup_twitch_integration_section(parent: Node):
 
 func _create_twitch_config_button() -> Button:
 	var button = Button.new()
-	button.text = "Twitch Integration: %s" % current_twitch_channel
-	button.custom_minimum_size = Vector2(350, 50)
-	button.add_theme_font_size_override("font_size", 18)
+	button.text = "Twitch: %s" % current_twitch_channel
+	button.custom_minimum_size = Vector2(250, 40)
+	button.add_theme_font_size_override("font_size", 14)
 	
 	# Create clean style
 	var normal_style = StyleBoxFlat.new()
@@ -400,8 +411,8 @@ func _update_twitch_button_text():
 	# Find the Twitch config button more reliably
 	var buttons = find_children("*", "Button", true, false)
 	for button in buttons:
-		if button.text.begins_with("Twitch Integration:"):
-			button.text = "Twitch Integration: %s" % current_twitch_channel
+		if button.text.begins_with("Twitch:"):
+			button.text = "Twitch: %s" % current_twitch_channel
 			print("🔄 Updated button text to: %s" % button.text)
 			return
 	
@@ -574,9 +585,13 @@ func show_menu():
 		_update_volume_label("DialogVolumePercent", dialog_volume_slider.value)
 	
 	# Focus the resume button for keyboard navigation
-	var button_container = get_child(1).get_child(2)  # Main container -> button container
-	if button_container.get_child_count() > 0:
-		button_container.get_child(0).grab_focus()
+	var scroll = get_child(1)  # Get scroll container (after background)
+	if scroll and scroll.get_child_count() > 0:
+		var main_cont = scroll.get_child(0)  # Get main container
+		if main_cont and main_cont.get_child_count() > 2:
+			var button_cont = main_cont.get_child(2)  # Get button container
+			if button_cont and button_cont.get_child_count() > 0:
+				button_cont.get_child(0).grab_focus()
 
 func hide_menu():
 	visible = false
