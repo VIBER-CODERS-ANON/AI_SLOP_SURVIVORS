@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cxld78tf7d6ek"
+path="res://.godot/imported/babag or fortnite.mp3-0f17d08d67af6b15bec19110be3682b4.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/babag or fortnite.mp3"
+dest_files=["res://.godot/imported/babag or fortnite.mp3-0f17d08d67af6b15bec19110be3682b4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

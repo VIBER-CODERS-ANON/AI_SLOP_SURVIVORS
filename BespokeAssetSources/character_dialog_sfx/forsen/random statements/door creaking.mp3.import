@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://l0vef1aqy8re"
+path="res://.godot/imported/door creaking.mp3-a209bb26550ad3f0a4ad8b5f55b22653.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/door creaking.mp3"
+dest_files=["res://.godot/imported/door creaking.mp3-a209bb26550ad3f0a4ad8b5f55b22653.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bav3jhsag1tt1"
+path="res://.godot/imported/no one cared until he put on the mask.mp3-4b2a67c57a4f84adc9802b3ef456a1e7.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/no one cared until he put on the mask.mp3"
+dest_files=["res://.godot/imported/no one cared until he put on the mask.mp3-4b2a67c57a4f84adc9802b3ef456a1e7.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

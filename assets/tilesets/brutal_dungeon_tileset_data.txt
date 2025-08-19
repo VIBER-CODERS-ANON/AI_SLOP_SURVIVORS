@@ -1,0 +1,22 @@
+PIXELLAB TILESET DATA
+====================
+Tileset ID: 20a60f66-8292-401d-8607-efbdc256cc3a
+Download URL: https://api.pixellab.ai/mcp/tileset/20a60f66-8292-401d-8607-efbdc256cc3a/download
+
+This is a 4x4 grid tileset (128x128px total, 32x32px per tile)
+16 tiles total representing all corner combinations for Wang tiles
+
+Grid Layout:
+Row 0: Tiles 0-3
+Row 1: Tiles 4-7  
+Row 2: Tiles 8-11
+Row 3: Tiles 12-15
+
+Each tile represents a corner configuration where:
+- Bit 0: Top-left corner
+- Bit 1: Top-right corner  
+- Bit 2: Bottom-left corner
+- Bit 3: Bottom-right corner
+
+0 = Stone floor
+1 = Blood/gore floor

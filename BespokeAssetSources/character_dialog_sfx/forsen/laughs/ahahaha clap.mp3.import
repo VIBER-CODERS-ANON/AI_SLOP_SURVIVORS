@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b4qpheuxlah3j"
+path="res://.godot/imported/ahahaha clap.mp3-faadaf6f0de137561e7132784bb317d0.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/laughs/ahahaha clap.mp3"
+dest_files=["res://.godot/imported/ahahaha clap.mp3-faadaf6f0de137561e7132784bb317d0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

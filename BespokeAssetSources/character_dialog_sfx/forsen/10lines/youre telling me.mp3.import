@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b6go70ekfyw2s"
+path="res://.godot/imported/youre telling me.mp3-6df1ed8f1a0ce84cb89a0efa6df748b0.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/youre telling me.mp3"
+dest_files=["res://.godot/imported/youre telling me.mp3-6df1ed8f1a0ce84cb89a0efa6df748b0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bfa01vkwby00v"
+path="res://.godot/imported/it is what it is.mp3-8e357e4006b80c455d777def03980e84.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/it is what it is.mp3"
+dest_files=["res://.godot/imported/it is what it is.mp3-8e357e4006b80c455d777def03980e84.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

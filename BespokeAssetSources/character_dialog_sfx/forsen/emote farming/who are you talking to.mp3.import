@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dtttocjt20tii"
+path="res://.godot/imported/who are you talking to.mp3-c9182a558aebc831af2b0485a4ad3220.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/who are you talking to.mp3"
+dest_files=["res://.godot/imported/who are you talking to.mp3-c9182a558aebc831af2b0485a4ad3220.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

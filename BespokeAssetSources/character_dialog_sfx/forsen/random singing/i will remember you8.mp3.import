@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bmm5vl8icb4e6"
+path="res://.godot/imported/i will remember you8.mp3-099fd362e1f1823fbf583c5a66959b62.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/i will remember you8.mp3"
+dest_files=["res://.godot/imported/i will remember you8.mp3-099fd362e1f1823fbf583c5a66959b62.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

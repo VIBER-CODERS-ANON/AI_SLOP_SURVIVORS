@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dkdtkm4dcqyfd"
+path="res://.godot/imported/china number 1 2.mp3-dd9fc719a041e808b145e6526792ed3f.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/china number 1 2.mp3"
+dest_files=["res://.godot/imported/china number 1 2.mp3-dd9fc719a041e808b145e6526792ed3f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

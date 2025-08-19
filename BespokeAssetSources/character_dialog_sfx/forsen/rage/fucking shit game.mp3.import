@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c4rkj5oo1x6as"
+path="res://.godot/imported/fucking shit game.mp3-1f6f8574228a3c35af750984a8c80254.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/rage/fucking shit game.mp3"
+dest_files=["res://.godot/imported/fucking shit game.mp3-1f6f8574228a3c35af750984a8c80254.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

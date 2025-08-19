@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cq5boi5dblieb"
+path="res://.godot/imported/i made you my bitch.mp3-a9055de4364d5a33d4527af3e4e5ef54.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/boasting/i made you my bitch.mp3"
+dest_files=["res://.godot/imported/i made you my bitch.mp3-a9055de4364d5a33d4527af3e4e5ef54.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

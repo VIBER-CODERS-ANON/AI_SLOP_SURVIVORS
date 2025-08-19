@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cm0k4vl7582gx"
+path="res://.godot/imported/never gonna give you up.mp3-1ef1a0bb8c40d5656be40cb6ef7c935e.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/never gonna give you up.mp3"
+dest_files=["res://.godot/imported/never gonna give you up.mp3-1ef1a0bb8c40d5656be40cb6ef7c935e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

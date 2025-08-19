@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bnnm6tfs5hx12"
+path="res://.godot/imported/mist3.mp3-3db8fcc7b7b04eb0f2ea785b880d31f4.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/mist3.mp3"
+dest_files=["res://.godot/imported/mist3.mp3-3db8fcc7b7b04eb0f2ea785b880d31f4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

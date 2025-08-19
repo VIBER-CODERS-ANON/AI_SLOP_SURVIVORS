@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b2wq1jtvn4fdy"
+path="res://.godot/imported/previously on lost2.mp3-2e1dbfe6d15810336e1ab224dbb1536f.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/previously on lost2.mp3"
+dest_files=["res://.godot/imported/previously on lost2.mp3-2e1dbfe6d15810336e1ab224dbb1536f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://decmmrtt0wda1"
+path="res://.godot/imported/feelsdankman1.mp3-1841a496b879a5e25e0c72c70ca957e4.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/feelsdankman1.mp3"
+dest_files=["res://.godot/imported/feelsdankman1.mp3-1841a496b879a5e25e0c72c70ca957e4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

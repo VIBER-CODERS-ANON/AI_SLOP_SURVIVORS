@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dk65dk204y2na"
+path="res://.godot/imported/hide your kids hide your wife.mp3-b5bbda57c4fca408a789c57b0b4b9ef6.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/hide your kids hide your wife.mp3"
+dest_files=["res://.godot/imported/hide your kids hide your wife.mp3-b5bbda57c4fca408a789c57b0b4b9ef6.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

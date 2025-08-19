@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cuhwuj1k0tfut"
+path="res://.godot/imported/you face jaraxxus.mp3-d03dc783d4d9aad52e2b5832a974c0fa.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/you face jaraxxus.mp3"
+dest_files=["res://.godot/imported/you face jaraxxus.mp3-d03dc783d4d9aad52e2b5832a974c0fa.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

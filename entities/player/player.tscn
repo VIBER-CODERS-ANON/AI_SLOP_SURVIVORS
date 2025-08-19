@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://dg8cnevixvv84"]
+
+[ext_resource type="Script" uid="uid://dm8galadrvsxx" path="res://entities/player/player.gd" id="1"]
+[ext_resource type="SpriteFrames" uid="uid://b64bgqxyt8w0b" path="res://entities/player/quin_sprite_frames.tres" id="2"]
+[ext_resource type="Script" uid="uid://2jj1oj3e72kx" path="res://systems/weapon_system/arcing_sword_weapon.gd" id="3"]
+[ext_resource type="Script" uid="uid://lfewbu5i4qx2" path="res://systems/lighting/player_light.gd" id="4"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
+radius = 16.0
+height = 60.0
+
+[node name="Player" type="CharacterBody2D"]
+z_index = 5
+collision_mask = 3
+script = ExtResource("1")
+
+[node name="SpriteContainer" type="Node2D" parent="."]
+z_index = 1
+
+[node name="Sprite" type="AnimatedSprite2D" parent="SpriteContainer"]
+z_index = 1
+scale = Vector2(0.9, 0.9)
+sprite_frames = ExtResource("2")
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_1")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="ArcingSwordWeapon" type="Node2D" parent="."]
+z_index = 10
+script = ExtResource("3")
+arc_radius = 140.0
+sword_sprite_path = "res://BespokeAssetSources/sword/sword.png"
+base_damage = 1.0
+
+[node name="PlayerLight" type="Node2D" parent="."]
+script = ExtResource("4")

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://2rjwhmvikjbu"
+path="res://.godot/imported/deep inside your mama.mp3-c1a929d62f3d7a57c5f14b93fd0e983a.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/your mom/deep inside your mama.mp3"
+dest_files=["res://.godot/imported/deep inside your mama.mp3-c1a929d62f3d7a57c5f14b93fd0e983a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

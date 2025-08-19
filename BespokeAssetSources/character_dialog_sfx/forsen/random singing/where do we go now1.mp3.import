@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://hgsxjh6yymm3"
+path="res://.godot/imported/where do we go now1.mp3-b6aaa36f51a1ff769018e0045a389401.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/where do we go now1.mp3"
+dest_files=["res://.godot/imported/where do we go now1.mp3-b6aaa36f51a1ff769018e0045a389401.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://entities/effects/explosion_effect.gd" id="1"]
+
+[node name="ExplosionEffect" type="Node2D"]
+script = ExtResource("1")
+damage = 10.0
+explosion_radius = 240.0
+telegraph_time = 0.8
+explosion_duration = 0.5
+damage_tags = ["AoE", "Fire"]

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d0t5qx8fgf0vp"
+path="res://.godot/imported/oh baby a cripple.mp3-2cec9589ebb13f986223d0305b73717d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/unused samples/oh baby a cripple.mp3"
+dest_files=["res://.godot/imported/oh baby a cripple.mp3-2cec9589ebb13f986223d0305b73717d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

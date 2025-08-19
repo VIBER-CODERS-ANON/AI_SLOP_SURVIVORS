@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bim16hxw4hhmq"
+path="res://.godot/imported/my name is barry allen.mp3-3960bed6fdfbcaeb8fe02614a42e031a.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/my name is barry allen.mp3"
+dest_files=["res://.godot/imported/my name is barry allen.mp3-3960bed6fdfbcaeb8fe02614a42e031a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

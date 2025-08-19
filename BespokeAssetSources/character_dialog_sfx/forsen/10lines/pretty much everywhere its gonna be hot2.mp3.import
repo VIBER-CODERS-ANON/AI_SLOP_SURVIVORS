@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bcbki3klu18ra"
+path="res://.godot/imported/pretty much everywhere its gonna be hot2.mp3-8f4036fee4e11a55aeeb1db9b34ec693.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/pretty much everywhere its gonna be hot2.mp3"
+dest_files=["res://.godot/imported/pretty much everywhere its gonna be hot2.mp3-8f4036fee4e11a55aeeb1db9b34ec693.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

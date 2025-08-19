@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bvqlnerxysymj"
+path="res://.godot/imported/first try mathafak1.mp3-261e709fa2a85ab5820fffb1295f473a.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/boasting/first try mathafak1.mp3"
+dest_files=["res://.godot/imported/first try mathafak1.mp3-261e709fa2a85ab5820fffb1295f473a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

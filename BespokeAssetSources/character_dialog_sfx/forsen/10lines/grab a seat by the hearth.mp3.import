@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ckxac23epnoev"
+path="res://.godot/imported/grab a seat by the hearth.mp3-aa169f26d47485ebdbc39989cc0cc7bb.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/grab a seat by the hearth.mp3"
+dest_files=["res://.godot/imported/grab a seat by the hearth.mp3-aa169f26d47485ebdbc39989cc0cc7bb.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

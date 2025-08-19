@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://coyoj8qaxo00l"
+path="res://.godot/imported/help2.mp3-a70486ff9d2fb1f1a5f02b61f0116524.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/help2.mp3"
+dest_files=["res://.godot/imported/help2.mp3-a70486ff9d2fb1f1a5f02b61f0116524.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

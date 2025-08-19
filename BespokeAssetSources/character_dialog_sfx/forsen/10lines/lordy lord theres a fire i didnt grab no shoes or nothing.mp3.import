@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bmgo4amhgthfl"
+path="res://.godot/imported/lordy lord theres a fire i didnt grab no shoes or nothing.mp3-713dbd20d794619265c82e2f0bcf98f2.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/lordy lord theres a fire i didnt grab no shoes or nothing.mp3"
+dest_files=["res://.godot/imported/lordy lord theres a fire i didnt grab no shoes or nothing.mp3-713dbd20d794619265c82e2f0bcf98f2.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cvjc4c75eiogm"
+path="res://.godot/imported/stayin alive2.mp3-fabb3fa5edbb519860052c32f4a27fda.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/stayin alive2.mp3"
+dest_files=["res://.godot/imported/stayin alive2.mp3-fabb3fa5edbb519860052c32f4a27fda.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

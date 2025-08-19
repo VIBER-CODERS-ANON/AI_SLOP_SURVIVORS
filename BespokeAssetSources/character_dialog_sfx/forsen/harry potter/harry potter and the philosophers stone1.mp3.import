@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://vorn08g8prqr"
+path="res://.godot/imported/harry potter and the philosophers stone1.mp3-fcebaebaccb101290a7fa754b033bd97.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/harry potter/harry potter and the philosophers stone1.mp3"
+dest_files=["res://.godot/imported/harry potter and the philosophers stone1.mp3-fcebaebaccb101290a7fa754b033bd97.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

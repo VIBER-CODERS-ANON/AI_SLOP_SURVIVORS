@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://mowdja73eg2n"
+path="res://.godot/imported/skidiki pap pap.mp3-bc073cc9ee84a1e8af0219f2029b3060.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/skidiki pap pap.mp3"
+dest_files=["res://.godot/imported/skidiki pap pap.mp3-bc073cc9ee84a1e8af0219f2029b3060.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

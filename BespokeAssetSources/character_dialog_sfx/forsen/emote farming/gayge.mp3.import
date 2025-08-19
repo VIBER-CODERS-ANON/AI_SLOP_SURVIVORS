@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b4r4ltvlqdh7o"
+path="res://.godot/imported/gayge.mp3-d96774bbbdbf03d68f71df283612ad00.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/gayge.mp3"
+dest_files=["res://.godot/imported/gayge.mp3-d96774bbbdbf03d68f71df283612ad00.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

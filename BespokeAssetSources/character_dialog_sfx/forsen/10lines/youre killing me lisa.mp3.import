@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cfhfoe7juysng"
+path="res://.godot/imported/youre killing me lisa.mp3-5a23b9f9efedfe662bcfa99950c79d39.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/youre killing me lisa.mp3"
+dest_files=["res://.godot/imported/youre killing me lisa.mp3-5a23b9f9efedfe662bcfa99950c79d39.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

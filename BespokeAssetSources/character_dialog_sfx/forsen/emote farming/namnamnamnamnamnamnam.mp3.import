@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bds5na2nugtct"
+path="res://.godot/imported/namnamnamnamnamnamnam.mp3-fb7df4a5090245750bb471b18ec8a440.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/namnamnamnamnamnamnam.mp3"
+dest_files=["res://.godot/imported/namnamnamnamnamnamnam.mp3-fb7df4a5090245750bb471b18ec8a440.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

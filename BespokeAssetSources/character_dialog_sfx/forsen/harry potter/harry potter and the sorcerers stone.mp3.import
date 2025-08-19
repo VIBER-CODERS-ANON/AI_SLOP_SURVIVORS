@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://do3ioctc4l55e"
+path="res://.godot/imported/harry potter and the sorcerers stone.mp3-dde37074fe1a8680b44ebe5adf331c47.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/harry potter/harry potter and the sorcerers stone.mp3"
+dest_files=["res://.godot/imported/harry potter and the sorcerers stone.mp3-dde37074fe1a8680b44ebe5adf331c47.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

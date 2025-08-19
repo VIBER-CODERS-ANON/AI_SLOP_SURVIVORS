@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://g05wxhunmc61"
+path="res://.godot/imported/i have shit fly in my eye fuck i cant see.mp3-3fc32a2e92f83f2f172f9768a4bd3ad0.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/i have shit fly in my eye fuck i cant see.mp3"
+dest_files=["res://.godot/imported/i have shit fly in my eye fuck i cant see.mp3-3fc32a2e92f83f2f172f9768a4bd3ad0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

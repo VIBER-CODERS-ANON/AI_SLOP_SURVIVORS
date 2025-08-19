@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d4ghhw4qx5jqd"
+path="res://.godot/imported/it do go down2.mp3-e85ff9c771702f24b70e2d8b217d0e7e.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/it do go down2.mp3"
+dest_files=["res://.godot/imported/it do go down2.mp3-e85ff9c771702f24b70e2d8b217d0e7e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

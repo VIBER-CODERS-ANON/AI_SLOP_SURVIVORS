@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://entities/pickups/xp_orb.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 12.0
+
+[node name="XPOrb" type="Area2D"]
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="OuterGlow" type="Polygon2D" parent="Visual"]
+color = Color(1, 0.6, 0.2, 0.3)
+polygon = PackedVector2Array(-15, 0, -10.5, -10.5, 0, -15, 10.5, -10.5, 15, 0, 10.5, 10.5, 0, 15, -10.5, 10.5)
+
+[node name="InnerOrb" type="Polygon2D" parent="Visual"]
+color = Color(1, 0.7, 0.3, 1)
+polygon = PackedVector2Array(-8, 0, -5.6, -5.6, 0, -8, 5.6, -5.6, 8, 0, 5.6, 5.6, 0, 8, -5.6, 5.6)
+
+[node name="Center" type="Polygon2D" parent="Visual"]
+color = Color(1, 1, 1, 0.8)
+polygon = PackedVector2Array(-3, 0, -2.1, -2.1, 0, -3, 2.1, -2.1, 3, 0, 2.1, 2.1, 0, 3, -2.1, 2.1)

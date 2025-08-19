@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dqhntcmo43drv"
+path="res://.godot/imported/peppah i will eat your unborn children.mp3-166d58a6708f5de911227fbe2a00c7a8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/peppah i will eat your unborn children.mp3"
+dest_files=["res://.godot/imported/peppah i will eat your unborn children.mp3-166d58a6708f5de911227fbe2a00c7a8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

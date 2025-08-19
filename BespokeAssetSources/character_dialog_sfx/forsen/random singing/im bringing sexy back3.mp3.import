@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dqrvkstuaoua4"
+path="res://.godot/imported/im bringing sexy back3.mp3-70e4932dd134b65d28b900474549e014.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/im bringing sexy back3.mp3"
+dest_files=["res://.godot/imported/im bringing sexy back3.mp3-70e4932dd134b65d28b900474549e014.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

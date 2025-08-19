@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/xp_bar.gd" id="1"]
+
+[node name="XPBar" type="Control"]
+custom_minimum_size = Vector2(400, 30)
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.5)
+
+[node name="XPProgressBar" type="ProgressBar" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+value = 0.0
+show_percentage = false
+
+[node name="LevelLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+anchor_left = 0.0
+anchor_right = 0.0
+offset_left = 10.0
+offset_right = 100.0
+text = "Level 1"
+vertical_alignment = 1
+
+[node name="XPLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_right = -10.0
+text = "0 / 10 XP"
+horizontal_alignment = 2
+vertical_alignment = 1

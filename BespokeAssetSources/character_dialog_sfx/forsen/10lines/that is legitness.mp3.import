@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://1j5frvnv8bba"
+path="res://.godot/imported/that is legitness.mp3-c79d47a7fc524a43ac0a74f7609a696b.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/that is legitness.mp3"
+dest_files=["res://.godot/imported/that is legitness.mp3-c79d47a7fc524a43ac0a74f7609a696b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

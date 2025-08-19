@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bn033u2facce7"
+path="res://.godot/imported/trihard.mp3-c82b563597a6409d4c3c211880944013.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/trihard.mp3"
+dest_files=["res://.godot/imported/trihard.mp3-c82b563597a6409d4c3c211880944013.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

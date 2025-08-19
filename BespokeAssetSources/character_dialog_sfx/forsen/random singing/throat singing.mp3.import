@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bfpgkefgh5dm5"
+path="res://.godot/imported/throat singing.mp3-ca2a0fdd6dd50edbbc9dd13e03fd8271.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/throat singing.mp3"
+dest_files=["res://.godot/imported/throat singing.mp3-ca2a0fdd6dd50edbbc9dd13e03fd8271.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

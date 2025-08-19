@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dnshd2s0l32es"
+path="res://.godot/imported/better call saul theme.mp3-2c272dc6eb4bb9b400377cd4a0492d3a.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/better call saul theme.mp3"
+dest_files=["res://.godot/imported/better call saul theme.mp3-2c272dc6eb4bb9b400377cd4a0492d3a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

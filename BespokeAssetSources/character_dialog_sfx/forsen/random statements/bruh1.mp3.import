@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cgv3027vxeht6"
+path="res://.godot/imported/bruh1.mp3-0de43e601070c3981e9df82134f9ff38.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/bruh1.mp3"
+dest_files=["res://.godot/imported/bruh1.mp3-0de43e601070c3981e9df82134f9ff38.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

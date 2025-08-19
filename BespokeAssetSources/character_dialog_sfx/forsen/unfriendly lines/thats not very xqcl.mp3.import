@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cvi3eeaxq5rge"
+path="res://.godot/imported/thats not very xqcl.mp3-73c2a9b274f263af66a452bbcb2b74bb.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/unfriendly lines/thats not very xqcl.mp3"
+dest_files=["res://.godot/imported/thats not very xqcl.mp3-73c2a9b274f263af66a452bbcb2b74bb.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

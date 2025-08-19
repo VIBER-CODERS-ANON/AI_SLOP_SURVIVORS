@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://detbf2qt6rhun"
+path="res://.godot/imported/high noon1.mp3-15018f7b8c5c3de10e32cb359054f936.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/high noon1.mp3"
+dest_files=["res://.godot/imported/high noon1.mp3-15018f7b8c5c3de10e32cb359054f936.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

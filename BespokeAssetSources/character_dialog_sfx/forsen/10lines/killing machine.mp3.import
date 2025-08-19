@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bwdcto2qhhr2r"
+path="res://.godot/imported/killing machine.mp3-1c6a8dbbd3641ffd2bc5bdfa5f985d50.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/killing machine.mp3"
+dest_files=["res://.godot/imported/killing machine.mp3-1c6a8dbbd3641ffd2bc5bdfa5f985d50.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

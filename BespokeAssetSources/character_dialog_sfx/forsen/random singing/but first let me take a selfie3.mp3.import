@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://di5vvf2g8quak"
+path="res://.godot/imported/but first let me take a selfie3.mp3-5622cd3969a3a523dbd38063fc81f7da.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/but first let me take a selfie3.mp3"
+dest_files=["res://.godot/imported/but first let me take a selfie3.mp3-5622cd3969a3a523dbd38063fc81f7da.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

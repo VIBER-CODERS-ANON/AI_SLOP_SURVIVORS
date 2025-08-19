@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b576qunqobka5"
+path="res://.godot/imported/shut up meg.mp3-20bfd3f791a8c3ab78157af279a0749d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/shut up meg.mp3"
+dest_files=["res://.godot/imported/shut up meg.mp3-20bfd3f791a8c3ab78157af279a0749d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

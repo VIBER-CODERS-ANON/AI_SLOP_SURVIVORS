@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://0s6l0ceciqjh"
+path="res://.godot/imported/shit talk.mp3-e58901cf5ee4b3b8f09ebe6645349242.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/unused samples/shit talk.mp3"
+dest_files=["res://.godot/imported/shit talk.mp3-e58901cf5ee4b3b8f09ebe6645349242.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

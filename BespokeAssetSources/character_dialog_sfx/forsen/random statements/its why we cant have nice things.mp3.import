@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cqidd220go53r"
+path="res://.godot/imported/its why we cant have nice things.mp3-8290188489d6749c8c2600cfe8ac09f2.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/its why we cant have nice things.mp3"
+dest_files=["res://.godot/imported/its why we cant have nice things.mp3-8290188489d6749c8c2600cfe8ac09f2.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

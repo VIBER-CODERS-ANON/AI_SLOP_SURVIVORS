@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dbjqy828syjwg"
+path="res://.godot/imported/spartans lower your weapons.mp3-b58e28fdd3efab62edbd467666924caa.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/spartans lower your weapons.mp3"
+dest_files=["res://.godot/imported/spartans lower your weapons.mp3-b58e28fdd3efab62edbd467666924caa.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

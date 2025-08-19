@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dilxg7ym1cjcn"
+path="res://.godot/imported/risk it for the biscuit3.mp3-22d18e75f7e276a35a714ef4005f8115.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/risk it for the biscuit3.mp3"
+dest_files=["res://.godot/imported/risk it for the biscuit3.mp3-22d18e75f7e276a35a714ef4005f8115.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

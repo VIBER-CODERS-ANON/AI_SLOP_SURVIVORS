@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b7j8cl0sxbw3h"
+path="res://.godot/imported/pay attention class.mp3-77426f3b4e34dad3383e50e147c7d38f.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/pay attention class.mp3"
+dest_files=["res://.godot/imported/pay attention class.mp3-77426f3b4e34dad3383e50e147c7d38f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

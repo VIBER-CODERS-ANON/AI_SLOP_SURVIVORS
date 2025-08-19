@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://khe8j3h0ju40"
+path="res://.godot/imported/forsen forsen im your number 1 fan4.mp3-b7114e1a8d2822be6938e004efc9e0d8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/forsen forsen im your number 1 fan4.mp3"
+dest_files=["res://.godot/imported/forsen forsen im your number 1 fan4.mp3-b7114e1a8d2822be6938e004efc9e0d8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dms0wpv5uk7dq"
+path="res://.godot/imported/well see well see11.mp3-3ceed60161b34918e6800b791bfc7854.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/well see well see11.mp3"
+dest_files=["res://.godot/imported/well see well see11.mp3-3ceed60161b34918e6800b791bfc7854.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

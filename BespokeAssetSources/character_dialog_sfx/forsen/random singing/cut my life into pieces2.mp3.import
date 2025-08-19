@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cxefrhtgy3w8v"
+path="res://.godot/imported/cut my life into pieces2.mp3-fc31a07ac38b9569609ebb44b95fec40.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/cut my life into pieces2.mp3"
+dest_files=["res://.godot/imported/cut my life into pieces2.mp3-fc31a07ac38b9569609ebb44b95fec40.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

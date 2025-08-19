@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://j5fq1hhvsien"
+path="res://.godot/imported/hecking batchest man.mp3-e896ad083dc731466abbc77346353f98.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/hecking batchest man.mp3"
+dest_files=["res://.godot/imported/hecking batchest man.mp3-e896ad083dc731466abbc77346353f98.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

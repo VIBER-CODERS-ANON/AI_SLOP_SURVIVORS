@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dxdv751qu41ah"
+path="res://.godot/imported/easy when its hard.mp3-fedbca9c38bf349382906e718ac5cf4c.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/your mom/easy when its hard.mp3"
+dest_files=["res://.godot/imported/easy when its hard.mp3-fedbca9c38bf349382906e718ac5cf4c.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

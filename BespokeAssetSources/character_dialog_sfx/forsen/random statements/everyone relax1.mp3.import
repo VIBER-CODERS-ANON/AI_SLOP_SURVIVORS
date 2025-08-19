@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://twxg72dp5wg7"
+path="res://.godot/imported/everyone relax1.mp3-349e9c9571a20d0d7f79ef390e5c7aaf.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/everyone relax1.mp3"
+dest_files=["res://.godot/imported/everyone relax1.mp3-349e9c9571a20d0d7f79ef390e5c7aaf.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://donh8d08dapec"
+path="res://.godot/imported/hey hey hey.mp3-8770ec90df724c2e4b37c5c05350ccae.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/hey hey hey.mp3"
+dest_files=["res://.godot/imported/hey hey hey.mp3-8770ec90df724c2e4b37c5c05350ccae.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

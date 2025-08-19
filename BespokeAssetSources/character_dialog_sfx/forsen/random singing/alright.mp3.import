@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bs76gkclcmj7v"
+path="res://.godot/imported/alright.mp3-45e0793f0c4ebf7017f0fc9789056b64.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/alright.mp3"
+dest_files=["res://.godot/imported/alright.mp3-45e0793f0c4ebf7017f0fc9789056b64.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

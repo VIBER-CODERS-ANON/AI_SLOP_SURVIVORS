@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://em1wn1wegyxv"
+path="res://.godot/imported/sneaky snitch.mp3-f3381e305e7c4186a109f095d8ff02b4.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/sneaky snitch.mp3"
+dest_files=["res://.godot/imported/sneaky snitch.mp3-f3381e305e7c4186a109f095d8ff02b4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

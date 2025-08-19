@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://duw2a4rq8dqk1"
+path="res://.godot/imported/all out of cock cant restock.mp3-72deb1a8ef0a21fc60150aea2e7f9aa2.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/all out of cock cant restock.mp3"
+dest_files=["res://.godot/imported/all out of cock cant restock.mp3-72deb1a8ef0a21fc60150aea2e7f9aa2.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

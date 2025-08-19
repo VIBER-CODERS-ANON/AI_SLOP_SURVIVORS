@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://vdtv4qrkhho0"
+path="res://.godot/imported/spartans hold your postions.mp3-de028d35df7bd6196c2c5c8624ad8423.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/spartans hold your postions.mp3"
+dest_files=["res://.godot/imported/spartans hold your postions.mp3-de028d35df7bd6196c2c5c8624ad8423.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

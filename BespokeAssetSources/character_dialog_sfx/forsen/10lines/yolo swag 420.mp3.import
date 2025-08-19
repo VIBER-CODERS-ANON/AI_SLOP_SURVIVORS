@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b2r5w2k4tni4x"
+path="res://.godot/imported/yolo swag 420.mp3-aac87f0ffb466400f9de2b1c49b315af.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/yolo swag 420.mp3"
+dest_files=["res://.godot/imported/yolo swag 420.mp3-aac87f0ffb466400f9de2b1c49b315af.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

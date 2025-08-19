@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dw53ly0ob2bfb"
+path="res://.godot/imported/get a life you fat fuck.mp3-3eb4a2aa243592d5ba0287fc157e95c0.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/hit/get a life you fat fuck.mp3"
+dest_files=["res://.godot/imported/get a life you fat fuck.mp3-3eb4a2aa243592d5ba0287fc157e95c0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

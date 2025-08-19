@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c2my8nhyb3ola"
+path="res://.godot/imported/idk kev1.mp3-e22d016c28752f04bc5800cba1e1b352.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/idk kev1.mp3"
+dest_files=["res://.godot/imported/idk kev1.mp3-e22d016c28752f04bc5800cba1e1b352.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

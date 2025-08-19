@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://db7wsekd8l42p"
+path="res://.godot/imported/that is unlucky dude.mp3-61b3c45ba4ceca17c2695ceb44c734b9.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/hit/that is unlucky dude.mp3"
+dest_files=["res://.godot/imported/that is unlucky dude.mp3-61b3c45ba4ceca17c2695ceb44c734b9.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

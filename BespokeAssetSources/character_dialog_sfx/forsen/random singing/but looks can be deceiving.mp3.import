@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://68ow8cufa3i6"
+path="res://.godot/imported/but looks can be deceiving.mp3-675dbf91bf7cf29bd4dbdc80269d064b.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/but looks can be deceiving.mp3"
+dest_files=["res://.godot/imported/but looks can be deceiving.mp3-675dbf91bf7cf29bd4dbdc80269d064b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

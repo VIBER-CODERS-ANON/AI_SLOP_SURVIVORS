@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://byqxnx30qwuat"
+path="res://.godot/imported/when the moon hits the sky3.mp3-38ccfefe49cbf06c5d253e375500e094.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/when the moon hits the sky3.mp3"
+dest_files=["res://.godot/imported/when the moon hits the sky3.mp3-38ccfefe49cbf06c5d253e375500e094.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

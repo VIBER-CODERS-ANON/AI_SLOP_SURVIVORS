@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://fhbavq1i7l2s"
+path="res://.godot/imported/thank you very much.mp3-4824f42378f6243e409e48317568ac3c.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/spawn/thank you very much.mp3"
+dest_files=["res://.godot/imported/thank you very much.mp3-4824f42378f6243e409e48317568ac3c.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

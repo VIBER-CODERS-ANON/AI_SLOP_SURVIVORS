@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cpnoom3mjtvh"
+path="res://.godot/imported/666 The number of the beast.mp3-01bfe6f6fdfb14fe94153ea9ffecf5f4.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/666 The number of the beast.mp3"
+dest_files=["res://.godot/imported/666 The number of the beast.mp3-01bfe6f6fdfb14fe94153ea9ffecf5f4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

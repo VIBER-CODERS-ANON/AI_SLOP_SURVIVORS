@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://2h5hbtwigs25"
+path="res://.godot/imported/shit game is so shit.mp3-c2ba1d55b39cd37d5b8c77e02563123e.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/rage/shit game is so shit.mp3"
+dest_files=["res://.godot/imported/shit game is so shit.mp3-c2ba1d55b39cd37d5b8c77e02563123e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

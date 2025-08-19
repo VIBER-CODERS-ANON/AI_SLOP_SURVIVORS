@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bx413udt332xj"
+path="res://.godot/imported/im hashem lo yivneh bayis.mp3-71323a575a0e7fe20a81f190e01c700e.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/im hashem lo yivneh bayis.mp3"
+dest_files=["res://.godot/imported/im hashem lo yivneh bayis.mp3-71323a575a0e7fe20a81f190e01c700e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

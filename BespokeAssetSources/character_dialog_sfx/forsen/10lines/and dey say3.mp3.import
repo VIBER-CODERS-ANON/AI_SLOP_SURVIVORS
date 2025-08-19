@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://my720g7m2sc0"
+path="res://.godot/imported/and dey say3.mp3-b0c66fe079bb8d58fd685d345079b431.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/and dey say3.mp3"
+dest_files=["res://.godot/imported/and dey say3.mp3-b0c66fe079bb8d58fd685d345079b431.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

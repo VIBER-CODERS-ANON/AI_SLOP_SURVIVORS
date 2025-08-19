@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ce8ivgsi7otrc"
+path="res://.godot/imported/master master wheres the dreams that ive been after.mp3-e5d23d14f977d7d3506fbcef79861260.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/master master wheres the dreams that ive been after.mp3"
+dest_files=["res://.godot/imported/master master wheres the dreams that ive been after.mp3-e5d23d14f977d7d3506fbcef79861260.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

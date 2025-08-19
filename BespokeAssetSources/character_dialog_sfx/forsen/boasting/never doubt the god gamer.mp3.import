@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dvidwnvfjy8vu"
+path="res://.godot/imported/never doubt the god gamer.mp3-76a688be66f435c2ac7658460c7ec0e8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/boasting/never doubt the god gamer.mp3"
+dest_files=["res://.godot/imported/never doubt the god gamer.mp3-76a688be66f435c2ac7658460c7ec0e8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

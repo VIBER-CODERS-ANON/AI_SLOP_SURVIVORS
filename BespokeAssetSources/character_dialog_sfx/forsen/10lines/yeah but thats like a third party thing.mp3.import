@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dopyrnebaotjv"
+path="res://.godot/imported/yeah but thats like a third party thing.mp3-4537a57959dfecb0ce8db42e855ad09a.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/yeah but thats like a third party thing.mp3"
+dest_files=["res://.godot/imported/yeah but thats like a third party thing.mp3-4537a57959dfecb0ce8db42e855ad09a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

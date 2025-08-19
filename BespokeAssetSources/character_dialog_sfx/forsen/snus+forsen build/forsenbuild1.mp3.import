@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cn17kmlmc8eht"
+path="res://.godot/imported/forsenbuild1.mp3-f150f96e1d6c8b5f65e8b644b6aa971d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/snus+forsen build/forsenbuild1.mp3"
+dest_files=["res://.godot/imported/forsenbuild1.mp3-f150f96e1d6c8b5f65e8b644b6aa971d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

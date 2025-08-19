@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b4e0j5rjvjg8a"
+path="res://.godot/imported/game complainers.mp3-f4c6f1d051c22f8d732470114d4a35da.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/mods/game complainers.mp3"
+dest_files=["res://.godot/imported/game complainers.mp3-f4c6f1d051c22f8d732470114d4a35da.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

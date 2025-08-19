@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dvxdvtjvhb7n1"
+path="res://.godot/imported/nina4.mp3-0a08fa00a35c26eebbc9cf2f7c7778e6.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/nina4.mp3"
+dest_files=["res://.godot/imported/nina4.mp3-0a08fa00a35c26eebbc9cf2f7c7778e6.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

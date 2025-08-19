@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bcxwseky5bh66"
+path="res://.godot/imported/specimen.ogg-591772788b35d62ffe5225dd06c1e295.oggvorbisstr"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/specimen.ogg"
+dest_files=["res://.godot/imported/specimen.ogg-591772788b35d62ffe5225dd06c1e295.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

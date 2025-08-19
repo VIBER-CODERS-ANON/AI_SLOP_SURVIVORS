@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c7t7mklj7kyev"
+path="res://.godot/imported/last christmas2.mp3-10f6ecefc115e1231e04dff63182d515.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/last christmas2.mp3"
+dest_files=["res://.godot/imported/last christmas2.mp3-10f6ecefc115e1231e04dff63182d515.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

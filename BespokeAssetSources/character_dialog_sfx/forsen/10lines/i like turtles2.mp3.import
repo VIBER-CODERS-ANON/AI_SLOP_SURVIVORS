@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b44dhdtd8jej"
+path="res://.godot/imported/i like turtles2.mp3-a3d2bb548806f70d8e325c33d56b55b8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/i like turtles2.mp3"
+dest_files=["res://.godot/imported/i like turtles2.mp3-a3d2bb548806f70d8e325c33d56b55b8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

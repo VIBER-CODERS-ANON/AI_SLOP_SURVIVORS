@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://djl5satx2gyyj"
+path="res://.godot/imported/xqcl in the chat.mp3-6c6c7d5599c51665680e057193fc6e83.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/summon_swarm/xqcl in the chat.mp3"
+dest_files=["res://.godot/imported/xqcl in the chat.mp3-6c6c7d5599c51665680e057193fc6e83.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

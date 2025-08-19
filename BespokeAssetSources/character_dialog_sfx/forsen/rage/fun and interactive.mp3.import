@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://h3gj1s4716q8"
+path="res://.godot/imported/fun and interactive.mp3-ddaaa3ebfca9c261611a1f04dd282590.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/rage/fun and interactive.mp3"
+dest_files=["res://.godot/imported/fun and interactive.mp3-ddaaa3ebfca9c261611a1f04dd282590.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

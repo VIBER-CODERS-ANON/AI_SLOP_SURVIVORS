@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cw4kfhn2mw8lp"
+path="res://.godot/imported/what the fuck.mp3-e7b7eae6d2eea8bcc93a5169b5576b96.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/rage/what the fuck.mp3"
+dest_files=["res://.godot/imported/what the fuck.mp3-e7b7eae6d2eea8bcc93a5169b5576b96.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

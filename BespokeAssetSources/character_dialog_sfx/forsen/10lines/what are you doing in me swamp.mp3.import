@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ckx7xro6jkea8"
+path="res://.godot/imported/what are you doing in me swamp.mp3-5580da5c2a30023eb9371df36ce6ce6e.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/what are you doing in me swamp.mp3"
+dest_files=["res://.godot/imported/what are you doing in me swamp.mp3-5580da5c2a30023eb9371df36ce6ce6e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

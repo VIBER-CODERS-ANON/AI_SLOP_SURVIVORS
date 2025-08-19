@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bjgvwm3linhfb"
+path="res://.godot/imported/ws in the chat.mp3-3cce7d6f2b1d1fb45ddadb7165726bc1.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/ws in the chat.mp3"
+dest_files=["res://.godot/imported/ws in the chat.mp3-3cce7d6f2b1d1fb45ddadb7165726bc1.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

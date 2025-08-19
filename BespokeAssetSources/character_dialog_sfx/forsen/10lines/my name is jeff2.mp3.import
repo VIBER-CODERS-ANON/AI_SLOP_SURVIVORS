@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://4pkcuc82kyv6"
+path="res://.godot/imported/my name is jeff2.mp3-335d9bf16318b0b03537c31074929cb6.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/my name is jeff2.mp3"
+dest_files=["res://.godot/imported/my name is jeff2.mp3-335d9bf16318b0b03537c31074929cb6.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

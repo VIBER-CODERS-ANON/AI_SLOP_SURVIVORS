@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ist3mx30x56l"
+path="res://.godot/imported/ill give you what you want.mp3-84b82e4aded2502b8f17d46f290f4830.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/ill give you what you want.mp3"
+dest_files=["res://.godot/imported/ill give you what you want.mp3-84b82e4aded2502b8f17d46f290f4830.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

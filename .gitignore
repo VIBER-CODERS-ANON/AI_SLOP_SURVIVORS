@@ -1,0 +1,37 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# MCP and API Key Protection
+**/mcp.json
+**/*mcp*.json
+mcp_config.json
+mcp_servers.json
+.cursor/
+.claude/
+
+# API Key patterns
+*api_key*
+*API_KEY*
+*api-key*
+*apikey*
+*sk_*
+*pk_*
+*token*
+*TOKEN*
+*secret*
+*SECRET*
+*credential*
+*CREDENTIAL*
+
+# Specific API services
+*elevenlabs*
+*ELEVENLABS*
+*openai*
+*OPENAI*
+*replicate*
+*REPLICATE*
+*obsidian*
+*OBSIDIAN*
+*pixellab*
+*PIXELLAB*

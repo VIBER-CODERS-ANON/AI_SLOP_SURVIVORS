@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://hhf8epkvwq2f"
+path="res://.godot/imported/illegal to jump down.mp3-9fe1f1b9fc446a6743036c172eb575b6.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/sven/illegal to jump down.mp3"
+dest_files=["res://.godot/imported/illegal to jump down.mp3-9fe1f1b9fc446a6743036c172eb575b6.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://uddyulxexqut"
+path="res://.godot/imported/do you suck dicks.mp3-9d38c0816eb5bb299dbe2973e4b53a4d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/do you suck dicks.mp3"
+dest_files=["res://.godot/imported/do you suck dicks.mp3-9d38c0816eb5bb299dbe2973e4b53a4d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

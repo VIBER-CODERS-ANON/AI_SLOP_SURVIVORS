@@ -1,0 +1,468 @@
+extends Control
+class_name PauseMenu
+
+## Pause menu UI with game controls
+
+signal resume_requested
+signal restart_requested
+signal quit_requested
+
+# Twitch config
+var twitch_config_dialog: TwitchConfigDialog
+var current_twitch_channel: String = "quin69"
+
+# Debug panel
+var debug_panel: Control
+var debug_panel_window: Control
+
+var master_volume_slider: HSlider
+var music_volume_slider: HSlider
+var sfx_volume_slider: HSlider
+var dialog_volume_slider: HSlider
+
+var master_bus_idx: int
+var music_bus_idx: int
+var sfx_bus_idx: int
+var dialog_bus_idx: int
+
+func _ready():
+	# This UI should work during pause
+	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	
+	# Load saved channel from settings
+	_load_saved_channel()
+	
+	# Get current channel from Twitch bot if available
+	_sync_with_twitch_bot()
+	
+	# Set up fullscreen overlay
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	
+	# Create dark background
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.85)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
+	
+	# Create main container
+	var main_container = VBoxContainer.new()
+	main_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	main_container.position = Vector2(-200, -350)  # Center the container
+	main_container.custom_minimum_size = Vector2(400, 700)
+	main_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	main_container.add_theme_constant_override("separation", 30)
+	add_child(main_container)
+	
+	# Title
+	var title = Label.new()
+	title.text = "GAME PAUSED"
+	title.add_theme_font_size_override("font_size", 48)
+	title.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	main_container.add_child(title)
+	
+	# Spacer
+	main_container.add_child(Control.new())
+	
+	# Button container
+	var button_container = VBoxContainer.new()
+	button_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	button_container.add_theme_constant_override("separation", 15)
+	main_container.add_child(button_container)
+	
+	# Resume button
+	var resume_btn = _create_menu_button("RESUME GAME", Color(0.2, 0.8, 0.2))
+	resume_btn.pressed.connect(_on_resume_pressed)
+	button_container.add_child(resume_btn)
+	
+	# Restart button
+	var restart_btn = _create_menu_button("RESTART GAME", Color(0.8, 0.6, 0.2))
+	restart_btn.pressed.connect(_on_restart_pressed)
+	button_container.add_child(restart_btn)
+	
+	# Quit button
+	var quit_btn = _create_menu_button("QUIT TO DESKTOP", Color(0.8, 0.2, 0.2))
+	quit_btn.pressed.connect(_on_quit_pressed)
+	button_container.add_child(quit_btn)
+	
+	# Debug Panel button
+	var debug_btn = _create_menu_button("🔧 DEBUG PANEL", Color(1, 0.3, 1))
+	debug_btn.pressed.connect(_on_debug_pressed)
+	button_container.add_child(debug_btn)
+	
+	# Spacer
+	main_container.add_child(Control.new())
+	
+	# Volume controls section title
+	var volume_title = Label.new()
+	volume_title.text = "AUDIO SETTINGS"
+	volume_title.add_theme_font_size_override("font_size", 24)
+	volume_title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	volume_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	main_container.add_child(volume_title)
+	
+	# Volume controls container
+	var volume_container = VBoxContainer.new()
+	volume_container.custom_minimum_size = Vector2(350, 200)
+	volume_container.add_theme_constant_override("separation", 15)
+	main_container.add_child(volume_container)
+	
+	# Get bus indices
+	master_bus_idx = AudioServer.get_bus_index("Master")
+	music_bus_idx = AudioServer.get_bus_index("Music")
+	sfx_bus_idx = AudioServer.get_bus_index("SFX")
+	dialog_bus_idx = AudioServer.get_bus_index("Dialog")
+	
+	# Create volume sliders
+	master_volume_slider = _create_volume_control(volume_container, "Master Volume", master_bus_idx, _on_master_volume_changed)
+	music_volume_slider = _create_volume_control(volume_container, "Music Volume", music_bus_idx, _on_music_volume_changed)
+	sfx_volume_slider = _create_volume_control(volume_container, "SFX Volume", sfx_bus_idx, _on_sfx_volume_changed)
+	dialog_volume_slider = _create_volume_control(volume_container, "Dialog Volume", dialog_bus_idx, _on_dialog_volume_changed)
+	
+	# Spacer before Twitch settings
+	main_container.add_child(Control.new())
+	
+	# Twitch Integration section
+	_setup_twitch_integration_section(main_container)
+	
+	# Instructions
+	var instructions = Label.new()
+	instructions.text = "Press ESC to close menu"
+	instructions.add_theme_font_size_override("font_size", 14)
+	instructions.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	instructions.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	main_container.add_child(instructions)
+	
+	# Start hidden
+	visible = false
+
+func _create_menu_button(text: String, color: Color) -> Button:
+	var button = Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(300, 60)
+	button.add_theme_font_size_override("font_size", 24)
+	
+	# Create style
+	var normal_style = StyleBoxFlat.new()
+	normal_style.bg_color = Color(0.1, 0.1, 0.1, 0.9)
+	normal_style.border_width_left = 3
+	normal_style.border_width_right = 3
+	normal_style.border_width_top = 3
+	normal_style.border_width_bottom = 3
+	normal_style.border_color = color
+	normal_style.corner_radius_top_left = 8
+	normal_style.corner_radius_top_right = 8
+	normal_style.corner_radius_bottom_left = 8
+	normal_style.corner_radius_bottom_right = 8
+	
+	var hover_style = normal_style.duplicate()
+	hover_style.bg_color = color * Color(0.3, 0.3, 0.3, 1.0)
+	hover_style.border_width_left = 5
+	hover_style.border_width_right = 5
+	hover_style.border_width_top = 5
+	hover_style.border_width_bottom = 5
+	
+	var pressed_style = normal_style.duplicate()
+	pressed_style.bg_color = color * Color(0.5, 0.5, 0.5, 1.0)
+	
+	button.add_theme_stylebox_override("normal", normal_style)
+	button.add_theme_stylebox_override("hover", hover_style)
+	button.add_theme_stylebox_override("pressed", pressed_style)
+	button.add_theme_color_override("font_color", Color.WHITE)
+	button.add_theme_color_override("font_hover_color", Color.WHITE)
+	button.add_theme_color_override("font_pressed_color", Color.WHITE)
+	
+	return button
+
+func _create_volume_control(parent: Node, label_text: String, bus_idx: int, callback: Callable) -> HSlider:
+	# Container for this control
+	var control_container = HBoxContainer.new()
+	control_container.add_theme_constant_override("separation", 10)
+	parent.add_child(control_container)
+	
+	# Label
+	var label = Label.new()
+	label.text = label_text
+	label.custom_minimum_size = Vector2(120, 20)
+	label.add_theme_font_size_override("font_size", 16)
+	control_container.add_child(label)
+	
+	# Slider
+	var slider = HSlider.new()
+	slider.min_value = 0.0
+	slider.max_value = 1.0
+	slider.step = 0.05
+	slider.custom_minimum_size = Vector2(150, 20)
+	
+	# Set initial value from current bus
+	var current_db = AudioServer.get_bus_volume_db(bus_idx)
+	slider.value = db_to_linear(current_db)
+	
+	slider.value_changed.connect(callback)
+	control_container.add_child(slider)
+	
+	# Percentage label
+	var percent_label = Label.new()
+	percent_label.name = label_text.replace(" ", "") + "Percent"
+	percent_label.text = "%d%%" % int(slider.value * 100)
+	percent_label.custom_minimum_size = Vector2(50, 20)
+	percent_label.add_theme_font_size_override("font_size", 16)
+	control_container.add_child(percent_label)
+	
+	return slider
+
+func _setup_twitch_integration_section(parent: Node):
+	# Twitch Integration section title
+	var twitch_title = Label.new()
+	twitch_title.text = "TWITCH INTEGRATION"
+	twitch_title.add_theme_font_size_override("font_size", 24)
+	twitch_title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	twitch_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	parent.add_child(twitch_title)
+	
+	# Twitch config container
+	var twitch_container = HBoxContainer.new()
+	twitch_container.add_theme_constant_override("separation", 15)
+	twitch_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	parent.add_child(twitch_container)
+	
+	# Config button
+	var config_button = _create_twitch_config_button()
+	config_button.pressed.connect(_on_twitch_config_pressed)
+	twitch_container.add_child(config_button)
+	
+	# Create and setup the dialog
+	twitch_config_dialog = TwitchConfigDialog.new()
+	twitch_config_dialog.set_current_channel(current_twitch_channel)
+	twitch_config_dialog.channel_changed.connect(_on_twitch_channel_changed)
+	add_child(twitch_config_dialog)
+
+func _create_twitch_config_button() -> Button:
+	var button = Button.new()
+	button.text = "Twitch Integration: %s" % current_twitch_channel
+	button.custom_minimum_size = Vector2(350, 50)
+	button.add_theme_font_size_override("font_size", 18)
+	
+	# Create clean style
+	var normal_style = StyleBoxFlat.new()
+	normal_style.bg_color = Color(0.15, 0.15, 0.15, 0.9)
+	normal_style.border_width_left = 2
+	normal_style.border_width_right = 2
+	normal_style.border_width_top = 2
+	normal_style.border_width_bottom = 2
+	normal_style.border_color = Color(0.6, 0.4, 0.9)  # Purple accent
+	normal_style.corner_radius_top_left = 6
+	normal_style.corner_radius_top_right = 6
+	normal_style.corner_radius_bottom_left = 6
+	normal_style.corner_radius_bottom_right = 6
+	
+	var hover_style = normal_style.duplicate()
+	hover_style.bg_color = Color(0.25, 0.25, 0.25, 0.9)
+	hover_style.border_color = Color(0.8, 0.6, 1.0)  # Brighter purple on hover
+	
+	var pressed_style = normal_style.duplicate()
+	pressed_style.bg_color = Color(0.35, 0.35, 0.35, 0.9)
+	
+	button.add_theme_stylebox_override("normal", normal_style)
+	button.add_theme_stylebox_override("hover", hover_style)
+	button.add_theme_stylebox_override("pressed", pressed_style)
+	button.add_theme_color_override("font_color", Color.WHITE)
+	button.add_theme_color_override("font_hover_color", Color.WHITE)
+	button.add_theme_color_override("font_pressed_color", Color.WHITE)
+	
+	return button
+
+func _on_twitch_config_pressed():
+	if twitch_config_dialog:
+		twitch_config_dialog.popup_centered()
+
+func _on_twitch_channel_changed(new_channel: String):
+	current_twitch_channel = new_channel
+	
+	# Save the new channel to settings
+	if SettingsManager.instance:
+		SettingsManager.instance.set_twitch_channel(new_channel)
+	
+	# Update button text
+	_update_twitch_button_text()
+	
+	# Notify game controller about channel change
+	if GameController.instance:
+		GameController.instance._on_twitch_channel_changed(new_channel)
+
+func _load_saved_channel():
+	# Load channel from settings
+	if SettingsManager.instance:
+		current_twitch_channel = SettingsManager.instance.get_twitch_channel()
+		print("📺 Loaded saved Twitch channel: %s" % current_twitch_channel)
+
+func _sync_with_twitch_bot():
+	# Get current channel from Twitch bot
+	if GameController.instance and GameController.instance.twitch_bot:
+		var bot = GameController.instance.twitch_bot
+		if bot.has_method("get_current_channel"):
+			current_twitch_channel = bot.get_current_channel()
+		elif "channel_name" in bot:
+			current_twitch_channel = bot.channel_name
+
+func _update_twitch_button_text():
+	# Find the Twitch config button more reliably
+	var buttons = find_children("*", "Button", true, false)
+	for button in buttons:
+		if button.text.begins_with("Twitch Integration:"):
+			button.text = "Twitch Integration: %s" % current_twitch_channel
+			print("🔄 Updated button text to: %s" % button.text)
+			return
+	
+	print("⚠️ Could not find Twitch Integration button to update")
+
+func _on_master_volume_changed(value: float):
+	AudioServer.set_bus_volume_db(master_bus_idx, linear_to_db(value))
+	_update_volume_label("MasterVolumePercent", value)
+	# Save settings
+	if SettingsManager.instance:
+		SettingsManager.instance.save_audio_settings()
+
+func _on_music_volume_changed(value: float):
+	AudioServer.set_bus_volume_db(music_bus_idx, linear_to_db(value))
+	_update_volume_label("MusicVolumePercent", value)
+	# Save settings
+	if SettingsManager.instance:
+		SettingsManager.instance.save_audio_settings()
+
+func _on_sfx_volume_changed(value: float):
+	AudioServer.set_bus_volume_db(sfx_bus_idx, linear_to_db(value))
+	_update_volume_label("SFXVolumePercent", value)
+	# Save settings
+	if SettingsManager.instance:
+		SettingsManager.instance.save_audio_settings()
+
+func _on_dialog_volume_changed(value: float):
+	AudioServer.set_bus_volume_db(dialog_bus_idx, linear_to_db(value))
+	_update_volume_label("DialogVolumePercent", value)
+	# Save settings
+	if SettingsManager.instance:
+		SettingsManager.instance.save_audio_settings()
+
+func _update_volume_label(label_name: String, value: float):
+	# Find the label more reliably by searching through all children
+	var labels = find_children(label_name, "Label", true, false)
+	if labels.size() > 0:
+		labels[0].text = "%d%%" % int(value * 100)
+
+func _on_resume_pressed():
+	hide()
+	resume_requested.emit()
+
+func _on_restart_pressed():
+	hide()
+	restart_requested.emit()
+
+func _on_quit_pressed():
+	quit_requested.emit()
+
+func _on_debug_pressed():
+	# Create debug panel window if it doesn't exist
+	if not debug_panel_window:
+		debug_panel_window = Control.new()
+		debug_panel_window.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		debug_panel_window.z_index = 100
+		debug_panel_window.process_mode = Node.PROCESS_MODE_WHEN_PAUSED  # Work during pause
+		debug_panel_window.mouse_filter = Control.MOUSE_FILTER_STOP  # Capture mouse events
+		call_deferred("add_child", debug_panel_window)
+		
+		# Dark background that allows click-through to panel
+		var bg = ColorRect.new()
+		bg.color = Color(0, 0, 0, 0.85)
+		bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Pass through to panel
+		bg.z_index = -1  # Behind panel content
+		debug_panel_window.add_child(bg)
+		
+		# Main container with margin
+		var margin = MarginContainer.new()
+		margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		margin.add_theme_constant_override("margin_left", 100)
+		margin.add_theme_constant_override("margin_right", 100)
+		margin.add_theme_constant_override("margin_top", 50)
+		margin.add_theme_constant_override("margin_bottom", 50)
+		margin.mouse_filter = Control.MOUSE_FILTER_PASS  # Allow interaction with children
+		debug_panel_window.add_child(margin)
+		
+		# Panel background
+		var panel_bg = PanelContainer.new()
+		panel_bg.mouse_filter = Control.MOUSE_FILTER_PASS  # Allow interaction with children
+		margin.add_child(panel_bg)
+		
+		# Vertical container for header and content
+		var vbox = VBoxContainer.new()
+		panel_bg.add_child(vbox)
+		
+		# Header with close button
+		var header = HBoxContainer.new()
+		vbox.add_child(header)
+		
+		var title = Label.new()
+		title.text = "  🔧 DEBUG PANEL"
+		title.add_theme_font_size_override("font_size", 20)
+		header.add_child(title)
+		
+		# Spacer
+		var spacer = Control.new()
+		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		header.add_child(spacer)
+		
+		# Close button
+		var close_btn = Button.new()
+		close_btn.text = " X "
+		close_btn.add_theme_font_size_override("font_size", 20)
+		close_btn.pressed.connect(func(): debug_panel_window.visible = false)
+		header.add_child(close_btn)
+		
+		# Create debug panel
+		var DebugPanelClass = load("res://ui/debug_panel.gd")
+		debug_panel = DebugPanelClass.new()
+		debug_panel.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+		vbox.add_child(debug_panel)
+		
+		debug_panel_window.visible = false  # Start hidden
+	
+	# Toggle visibility
+	debug_panel_window.visible = !debug_panel_window.visible
+
+func show_menu():
+	visible = true
+	
+	# Sync with current Twitch channel and update button
+	_sync_with_twitch_bot()
+	_update_twitch_button_text()
+	
+	# Update volume sliders to current values
+	if master_volume_slider:
+		var current_db = AudioServer.get_bus_volume_db(master_bus_idx)
+		master_volume_slider.value = db_to_linear(current_db)
+		_update_volume_label("MasterVolumePercent", master_volume_slider.value)
+	
+	if music_volume_slider:
+		var current_db = AudioServer.get_bus_volume_db(music_bus_idx)
+		music_volume_slider.value = db_to_linear(current_db)
+		_update_volume_label("MusicVolumePercent", music_volume_slider.value)
+	
+	if sfx_volume_slider:
+		var current_db = AudioServer.get_bus_volume_db(sfx_bus_idx)
+		sfx_volume_slider.value = db_to_linear(current_db)
+		_update_volume_label("SFXVolumePercent", sfx_volume_slider.value)
+	
+	if dialog_volume_slider:
+		var current_db = AudioServer.get_bus_volume_db(dialog_bus_idx)
+		dialog_volume_slider.value = db_to_linear(current_db)
+		_update_volume_label("DialogVolumePercent", dialog_volume_slider.value)
+	
+	# Focus the resume button for keyboard navigation
+	var button_container = get_child(1).get_child(2)  # Main container -> button container
+	if button_container.get_child_count() > 0:
+		button_container.get_child(0).grab_focus()
+
+func hide_menu():
+	visible = false

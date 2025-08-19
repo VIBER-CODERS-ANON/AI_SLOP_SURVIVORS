@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bdm2iem6xa1mg"
+path="res://.godot/imported/fuck you leather man.mp3-c2844a3cb41132f26eb755be4ecc6a96.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/fuck you leather man.mp3"
+dest_files=["res://.godot/imported/fuck you leather man.mp3-c2844a3cb41132f26eb755be4ecc6a96.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

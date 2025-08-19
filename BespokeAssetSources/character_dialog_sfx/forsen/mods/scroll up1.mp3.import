@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d0lly50rmwthx"
+path="res://.godot/imported/scroll up1.mp3-2e473375923ba734b237c67e13f565fe.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/mods/scroll up1.mp3"
+dest_files=["res://.godot/imported/scroll up1.mp3-2e473375923ba734b237c67e13f565fe.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

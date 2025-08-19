@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://by7rp4b7wq8tf"
+path="res://.godot/imported/where are my dragons6.mp3-f4257810bd2312ffe2f9cd12e258e250.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/where are my dragons6.mp3"
+dest_files=["res://.godot/imported/where are my dragons6.mp3-f4257810bd2312ffe2f9cd12e258e250.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

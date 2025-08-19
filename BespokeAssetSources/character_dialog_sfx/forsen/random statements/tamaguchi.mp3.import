@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b2t477dre75bg"
+path="res://.godot/imported/tamaguchi.mp3-593c5e0560ca85c3bdd5f48e6eac11e8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/tamaguchi.mp3"
+dest_files=["res://.godot/imported/tamaguchi.mp3-593c5e0560ca85c3bdd5f48e6eac11e8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

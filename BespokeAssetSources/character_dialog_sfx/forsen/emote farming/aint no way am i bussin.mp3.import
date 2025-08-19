@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dph34aagg1713"
+path="res://.godot/imported/aint no way am i bussin.mp3-0282e4aad1904c3d7eafea63693607c5.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/aint no way am i bussin.mp3"
+dest_files=["res://.godot/imported/aint no way am i bussin.mp3-0282e4aad1904c3d7eafea63693607c5.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

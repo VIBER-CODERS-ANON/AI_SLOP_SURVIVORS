@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://sncholrlq5v5"
+path="res://.godot/imported/somebody that i used to know1.mp3-15188a2c1fc4f047c721b68c19022d76.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/somebody that i used to know1.mp3"
+dest_files=["res://.godot/imported/somebody that i used to know1.mp3-15188a2c1fc4f047c721b68c19022d76.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://csevk7qrbsxx6"
+path="res://.godot/imported/random noises.mp3-33ab477c84d8305044d74bf3cd3e249d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/charge/random noises.mp3"
+dest_files=["res://.godot/imported/random noises.mp3-33ab477c84d8305044d74bf3cd3e249d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ds75wjnmfoykh"
+path="res://.godot/imported/i turned myself into a pickle.mp3-0606151a2e89f4248ab3180b13d90ae2.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/i turned myself into a pickle.mp3"
+dest_files=["res://.godot/imported/i turned myself into a pickle.mp3-0606151a2e89f4248ab3180b13d90ae2.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://de6qa0ml1wvtj"
+path="res://.godot/imported/spamming those little baby precious emotes.mp3-4095e5edae3c7118dc74c1fb7117be8d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/spamming those little baby precious emotes.mp3"
+dest_files=["res://.godot/imported/spamming those little baby precious emotes.mp3-4095e5edae3c7118dc74c1fb7117be8d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

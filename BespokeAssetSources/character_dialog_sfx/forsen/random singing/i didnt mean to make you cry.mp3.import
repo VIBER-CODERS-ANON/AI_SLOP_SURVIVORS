@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ctxsfn0wbx3mx"
+path="res://.godot/imported/i didnt mean to make you cry.mp3-0cd962293f53a7d4b7009cd14be7d990.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/i didnt mean to make you cry.mp3"
+dest_files=["res://.godot/imported/i didnt mean to make you cry.mp3-0cd962293f53a7d4b7009cd14be7d990.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://br7iqnbpsgxlo"
+path="res://.godot/imported/meep meep.mp3-b87d8691372524b6f56df36dffadf024.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/meep meep.mp3"
+dest_files=["res://.godot/imported/meep meep.mp3-b87d8691372524b6f56df36dffadf024.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d3lk87yp8uegk"
+path="res://.godot/imported/they see me maldin.mp3-7279345f6e639a4a0f08728c47aba95d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/they see me maldin.mp3"
+dest_files=["res://.godot/imported/they see me maldin.mp3-7279345f6e639a4a0f08728c47aba95d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

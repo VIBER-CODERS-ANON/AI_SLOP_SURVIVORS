@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://do1ivlhpn32wl"
+path="res://.godot/imported/whatcha talkin bout willis2.mp3-dd48475a87faedbc79dd5720fc5a9274.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/whatcha talkin bout willis2.mp3"
+dest_files=["res://.godot/imported/whatcha talkin bout willis2.mp3-dd48475a87faedbc79dd5720fc5a9274.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

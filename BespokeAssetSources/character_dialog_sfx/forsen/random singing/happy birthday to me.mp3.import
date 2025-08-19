@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://qwimukxxg34n"
+path="res://.godot/imported/happy birthday to me.mp3-37f265dc9dfe1a318749feb5725787f6.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/happy birthday to me.mp3"
+dest_files=["res://.godot/imported/happy birthday to me.mp3-37f265dc9dfe1a318749feb5725787f6.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

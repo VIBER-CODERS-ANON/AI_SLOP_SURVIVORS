@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://coq53af38y2u5"
+path="res://.godot/imported/bacon is good for us.mp3-7d9344a8505175d2e91fccc11603a9db.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/bacon is good for us.mp3"
+dest_files=["res://.godot/imported/bacon is good for us.mp3-7d9344a8505175d2e91fccc11603a9db.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

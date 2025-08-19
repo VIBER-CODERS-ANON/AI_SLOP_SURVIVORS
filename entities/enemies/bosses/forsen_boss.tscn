@@ -1,0 +1,61 @@
+[gd_scene load_steps=5 format=3 uid="uid://forsen_boss_scene"]
+
+[ext_resource type="Script" path="res://entities/enemies/bosses/forsen_boss.gd" id="1_forsen"]
+[ext_resource type="Texture2D" path="res://BespokeAssetSources/forsen/forsen.png" id="2_forsen_sprite"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 35.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2"]
+radius = 1500.0
+
+[node name="ForsenBoss" type="CharacterBody2D"]
+z_index = 4
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_forsen")
+boss_name = "Forsen"
+boss_title = "The Meme Lord"
+boss_health = 700.0
+boss_damage = 20.0
+boss_move_speed = 100.0
+boss_attack_range = 60.0
+boss_attack_cooldown = 1.5
+boss_scale = 1.2
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+texture = ExtResource("2_forsen_sprite")
+scale = Vector2(1.2, 1.2)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1")
+
+[node name="HealthContainer" type="Node2D" parent="."]
+position = Vector2(0, -60)
+
+[node name="HealthBar" type="ProgressBar" parent="HealthContainer"]
+modulate = Color(1, 0.2, 0.2, 1)
+offset_left = -50.0
+offset_top = -10.0
+offset_right = 50.0
+offset_bottom = -5.0
+max_value = 700.0
+value = 700.0
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="HealthContainer"]
+offset_left = -50.0
+offset_top = -30.0
+offset_right = 50.0
+offset_bottom = -10.0
+text = "700/700"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AggroArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="AggroRadius" type="CollisionShape2D" parent="AggroArea"]
+shape = SubResource("CircleShape2D_2")
+debug_color = Color(0.5, 0.5, 0, 0.1)

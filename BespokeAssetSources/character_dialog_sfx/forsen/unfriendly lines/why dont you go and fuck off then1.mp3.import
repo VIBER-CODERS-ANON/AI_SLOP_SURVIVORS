@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bp3hrd8cnhi3p"
+path="res://.godot/imported/why dont you go and fuck off then1.mp3-f0746087b20064fb2d48be6f4567a89d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/unfriendly lines/why dont you go and fuck off then1.mp3"
+dest_files=["res://.godot/imported/why dont you go and fuck off then1.mp3-f0746087b20064fb2d48be6f4567a89d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

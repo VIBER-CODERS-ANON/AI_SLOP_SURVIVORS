@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dblsnwn2y4kah"
+path="res://.godot/imported/pepega1.mp3-ff8350f1b9c66128900ea56e73e0795e.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/pepega1.mp3"
+dest_files=["res://.godot/imported/pepega1.mp3-ff8350f1b9c66128900ea56e73e0795e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

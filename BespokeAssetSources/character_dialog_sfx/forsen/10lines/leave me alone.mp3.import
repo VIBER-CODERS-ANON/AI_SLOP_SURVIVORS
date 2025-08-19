@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cp0fscvwu4hgv"
+path="res://.godot/imported/leave me alone.mp3-c354bc7cdcf297a036bf0887ada21c4d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/leave me alone.mp3"
+dest_files=["res://.godot/imported/leave me alone.mp3-c354bc7cdcf297a036bf0887ada21c4d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

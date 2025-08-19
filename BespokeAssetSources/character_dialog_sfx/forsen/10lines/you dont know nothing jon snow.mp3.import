@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bj2jfdyir8lk6"
+path="res://.godot/imported/you dont know nothing jon snow.mp3-647f515ae3ea85e25f925984bec82f26.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/you dont know nothing jon snow.mp3"
+dest_files=["res://.godot/imported/you dont know nothing jon snow.mp3-647f515ae3ea85e25f925984bec82f26.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

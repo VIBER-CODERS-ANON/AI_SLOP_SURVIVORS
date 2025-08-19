@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c3j5xwx18v1oq"
+path="res://.godot/imported/off off off with your head.mp3-a60fe06fed7f2323d51043d5e2c35096.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/off off off with your head.mp3"
+dest_files=["res://.godot/imported/off off off with your head.mp3-a60fe06fed7f2323d51043d5e2c35096.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

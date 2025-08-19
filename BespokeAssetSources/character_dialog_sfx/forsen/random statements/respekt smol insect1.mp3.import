@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b0wt5u8mv5t0j"
+path="res://.godot/imported/respekt smol insect1.mp3-e4aa5c8f0dc00cc86a56b0d036f65443.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/respekt smol insect1.mp3"
+dest_files=["res://.godot/imported/respekt smol insect1.mp3-e4aa5c8f0dc00cc86a56b0d036f65443.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dy2f3mpbfxqkx"
+path="res://.godot/imported/audio for ants.mp3-d10df6c36b3a384fe58ce36c412e8d55.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/uncategorized/audio for ants.mp3"
+dest_files=["res://.godot/imported/audio for ants.mp3-d10df6c36b3a384fe58ce36c412e8d55.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

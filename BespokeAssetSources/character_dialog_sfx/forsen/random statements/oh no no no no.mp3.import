@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bevufd8npxfrt"
+path="res://.godot/imported/oh no no no no.mp3-0ff6bc9ec751e1f7b71eadeac434e53f.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/oh no no no no.mp3"
+dest_files=["res://.godot/imported/oh no no no no.mp3-0ff6bc9ec751e1f7b71eadeac434e53f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

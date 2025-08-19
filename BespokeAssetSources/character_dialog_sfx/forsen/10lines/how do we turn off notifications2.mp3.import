@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://p5yvjyb23ukp"
+path="res://.godot/imported/how do we turn off notifications2.mp3-e2dcffdf9735a4a12182396549f7ee0d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/how do we turn off notifications2.mp3"
+dest_files=["res://.godot/imported/how do we turn off notifications2.mp3-e2dcffdf9735a4a12182396549f7ee0d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

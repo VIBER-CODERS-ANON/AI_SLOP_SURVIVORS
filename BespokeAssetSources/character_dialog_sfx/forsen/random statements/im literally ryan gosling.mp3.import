@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c7f7o8yvfr5t6"
+path="res://.godot/imported/im literally ryan gosling.mp3-ad4f14e3913df505ebfe77f1c8c7c6c1.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/im literally ryan gosling.mp3"
+dest_files=["res://.godot/imported/im literally ryan gosling.mp3-ad4f14e3913df505ebfe77f1c8c7c6c1.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

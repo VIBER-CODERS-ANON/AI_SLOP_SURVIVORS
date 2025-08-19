@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://co4ukt2awxnhn"
+path="res://.godot/imported/very unfortunate.mp3-ce7853e160f438fe7a457649dac7ec17.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/sven/very unfortunate.mp3"
+dest_files=["res://.godot/imported/very unfortunate.mp3-ce7853e160f438fe7a457649dac7ec17.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

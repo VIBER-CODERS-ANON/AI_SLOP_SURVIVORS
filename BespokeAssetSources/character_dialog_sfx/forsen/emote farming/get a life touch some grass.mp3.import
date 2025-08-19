@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cjuav88yyl67u"
+path="res://.godot/imported/get a life touch some grass.mp3-15aeb0cb21c4e268135645d65d70137f.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/get a life touch some grass.mp3"
+dest_files=["res://.godot/imported/get a life touch some grass.mp3-15aeb0cb21c4e268135645d65d70137f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

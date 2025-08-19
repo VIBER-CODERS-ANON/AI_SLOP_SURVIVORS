@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://6r5yygmmsd07"
+path="res://.godot/imported/why you always lying.mp3-b3e74fa5e29a46b9914fd5bc2b38f4c8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/why you always lying.mp3"
+dest_files=["res://.godot/imported/why you always lying.mp3-b3e74fa5e29a46b9914fd5bc2b38f4c8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

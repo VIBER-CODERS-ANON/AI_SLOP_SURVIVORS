@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b5bcqikl26h5v"
+path="res://.godot/imported/where is she where is rachel.mp3-4ee6592e356c5c0ec3660881e8ad8da7.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/where is she where is rachel.mp3"
+dest_files=["res://.godot/imported/where is she where is rachel.mp3-4ee6592e356c5c0ec3660881e8ad8da7.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

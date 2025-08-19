@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c2feq32nvuxnm"
+path="res://.godot/imported/epic wutface battles of history.mp3-095a7ead635b33d05da1a9b5d29c56b0.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/epic wutface battles of history.mp3"
+dest_files=["res://.godot/imported/epic wutface battles of history.mp3-095a7ead635b33d05da1a9b5d29c56b0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b7kqmj786803o"
+path="res://.godot/imported/im batman1.mp3-7a3e2a744a0a7c60c62e2223c6acb8db.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/im batman1.mp3"
+dest_files=["res://.godot/imported/im batman1.mp3-7a3e2a744a0a7c60c62e2223c6acb8db.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

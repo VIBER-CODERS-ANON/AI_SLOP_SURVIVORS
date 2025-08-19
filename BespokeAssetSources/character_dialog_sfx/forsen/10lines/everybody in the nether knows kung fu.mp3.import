@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bai4xry8n2w2j"
+path="res://.godot/imported/everybody in the nether knows kung fu.mp3-5fc44905aea3d2ff0ae306fff6ccd4ba.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/everybody in the nether knows kung fu.mp3"
+dest_files=["res://.godot/imported/everybody in the nether knows kung fu.mp3-5fc44905aea3d2ff0ae306fff6ccd4ba.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

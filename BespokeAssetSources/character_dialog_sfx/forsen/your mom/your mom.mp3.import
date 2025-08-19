@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cy5oxi703e74a"
+path="res://.godot/imported/your mom.mp3-1fd320f73d04337253a23f7917ce4ec5.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/your mom/your mom.mp3"
+dest_files=["res://.godot/imported/your mom.mp3-1fd320f73d04337253a23f7917ce4ec5.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

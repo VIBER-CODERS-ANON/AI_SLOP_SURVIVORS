@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bemb10c8dsibu"
+path="res://.godot/imported/tell me lies.mp3-1b55b3470ae33ec0911a69457bef3413.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/tell me lies.mp3"
+dest_files=["res://.godot/imported/tell me lies.mp3-1b55b3470ae33ec0911a69457bef3413.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

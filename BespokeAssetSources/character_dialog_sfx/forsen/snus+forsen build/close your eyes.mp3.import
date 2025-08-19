@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bqmrni2al5sfv"
+path="res://.godot/imported/close your eyes.mp3-4b3273fb76bb02e2e6e4c0cfadd7436c.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/snus+forsen build/close your eyes.mp3"
+dest_files=["res://.godot/imported/close your eyes.mp3-4b3273fb76bb02e2e6e4c0cfadd7436c.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

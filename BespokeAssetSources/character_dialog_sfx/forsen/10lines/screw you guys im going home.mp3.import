@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dayunwvccblr8"
+path="res://.godot/imported/screw you guys im going home.mp3-01a3515e14fc8a121aa75a39f2a9c8f3.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/screw you guys im going home.mp3"
+dest_files=["res://.godot/imported/screw you guys im going home.mp3-01a3515e14fc8a121aa75a39f2a9c8f3.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

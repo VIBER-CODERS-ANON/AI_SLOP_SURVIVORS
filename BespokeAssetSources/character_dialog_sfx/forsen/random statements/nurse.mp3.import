@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://fhp730hfknm7"
+path="res://.godot/imported/nurse.mp3-795c127e71a5a9dcc1ca8a52d1340d97.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/nurse.mp3"
+dest_files=["res://.godot/imported/nurse.mp3-795c127e71a5a9dcc1ca8a52d1340d97.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

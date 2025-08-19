@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cbx0t5qeoxurt"
+path="res://.godot/imported/teenage mutant ninja turtles2.mp3-9c003ae8ba8e29b33cb964e08623d581.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/teenage mutant ninja turtles2.mp3"
+dest_files=["res://.godot/imported/teenage mutant ninja turtles2.mp3-9c003ae8ba8e29b33cb964e08623d581.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

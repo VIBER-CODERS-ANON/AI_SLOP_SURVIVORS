@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://e2drtg3bpdy"
+path="res://.godot/imported/there we go master bruce1.mp3-e45ed66b914c63c89564559e46f53e97.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/there we go master bruce1.mp3"
+dest_files=["res://.godot/imported/there we go master bruce1.mp3-e45ed66b914c63c89564559e46f53e97.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

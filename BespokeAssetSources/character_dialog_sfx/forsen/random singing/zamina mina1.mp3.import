@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://28i3bayl5p43"
+path="res://.godot/imported/zamina mina1.mp3-1291b50e3a941bdf4f4fae5a10e323dc.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/zamina mina1.mp3"
+dest_files=["res://.godot/imported/zamina mina1.mp3-1291b50e3a941bdf4f4fae5a10e323dc.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

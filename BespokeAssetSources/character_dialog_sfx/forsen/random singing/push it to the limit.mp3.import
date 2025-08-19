@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dj041ik3354av"
+path="res://.godot/imported/push it to the limit.mp3-d8fd81bcb6cbdcd0fa5360043f400787.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/push it to the limit.mp3"
+dest_files=["res://.godot/imported/push it to the limit.mp3-d8fd81bcb6cbdcd0fa5360043f400787.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

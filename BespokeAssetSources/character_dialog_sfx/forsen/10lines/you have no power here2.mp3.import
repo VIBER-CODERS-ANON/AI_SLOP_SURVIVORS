@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cjj4b682l83rx"
+path="res://.godot/imported/you have no power here2.mp3-19a3792ccb1b2038951e012c8e7464fb.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/you have no power here2.mp3"
+dest_files=["res://.godot/imported/you have no power here2.mp3-19a3792ccb1b2038951e012c8e7464fb.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

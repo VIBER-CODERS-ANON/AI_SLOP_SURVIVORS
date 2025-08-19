@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ppl3epsljais"
+path="res://.godot/imported/boys boys boys2.mp3-d21623cc2b4d4b086f6eb93834a6cac8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/boys boys boys2.mp3"
+dest_files=["res://.godot/imported/boys boys boys2.mp3-d21623cc2b4d4b086f6eb93834a6cac8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

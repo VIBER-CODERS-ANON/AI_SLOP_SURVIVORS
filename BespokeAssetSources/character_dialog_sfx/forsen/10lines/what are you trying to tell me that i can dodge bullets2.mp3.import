@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://6mqjndt25510"
+path="res://.godot/imported/what are you trying to tell me that i can dodge bullets2.mp3-8e42af29824cbe9c9620e05e99e9f951.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/what are you trying to tell me that i can dodge bullets2.mp3"
+dest_files=["res://.godot/imported/what are you trying to tell me that i can dodge bullets2.mp3-8e42af29824cbe9c9620e05e99e9f951.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://qx37ovxxtflp"
+path="res://.godot/imported/who said that mods scroll up.mp3-b966935a93c33f1ebcf29b7bd15d8d65.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/mods/who said that mods scroll up.mp3"
+dest_files=["res://.godot/imported/who said that mods scroll up.mp3-b966935a93c33f1ebcf29b7bd15d8d65.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://byargcl3eje58"
+path="res://.godot/imported/harry potter12.mp3-eceb16f95fa6dbe35248f028a3bc3abc.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/harry potter/harry potter12.mp3"
+dest_files=["res://.godot/imported/harry potter12.mp3-eceb16f95fa6dbe35248f028a3bc3abc.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

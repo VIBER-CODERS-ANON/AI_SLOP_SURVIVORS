@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c0ydghv4mn1ls"
+path="res://.godot/imported/with or without you.mp3-ef1689a0f53d5b39ea33ad77c4b9c300.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/with or without you.mp3"
+dest_files=["res://.godot/imported/with or without you.mp3-ef1689a0f53d5b39ea33ad77c4b9c300.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

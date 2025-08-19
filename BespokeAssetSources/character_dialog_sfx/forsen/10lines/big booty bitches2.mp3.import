@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c8shu2dr2olgn"
+path="res://.godot/imported/big booty bitches2.mp3-364f61741338f6baa1793480ba577394.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/big booty bitches2.mp3"
+dest_files=["res://.godot/imported/big booty bitches2.mp3-364f61741338f6baa1793480ba577394.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

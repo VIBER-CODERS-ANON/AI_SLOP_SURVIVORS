@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b5mqyp2b4nsgk"
+path="res://.godot/imported/wtf is that2.mp3-751db99cd603346e7b25791cb4ea29ea.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/rage/wtf is that2.mp3"
+dest_files=["res://.godot/imported/wtf is that2.mp3-751db99cd603346e7b25791cb4ea29ea.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

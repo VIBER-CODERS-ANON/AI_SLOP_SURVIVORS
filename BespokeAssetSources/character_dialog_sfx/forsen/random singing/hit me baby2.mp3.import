@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dclf3e3ll355h"
+path="res://.godot/imported/hit me baby2.mp3-dfd2913ec9a17f7f6621c3dd0eda7260.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/hit me baby2.mp3"
+dest_files=["res://.godot/imported/hit me baby2.mp3-dfd2913ec9a17f7f6621c3dd0eda7260.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

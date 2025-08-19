@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://do37ei7mm5ddf"
+path="res://.godot/imported/deja vu.mp3-4fbc7fab8c63c43d9a356ff573294ff0.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/deja vu.mp3"
+dest_files=["res://.godot/imported/deja vu.mp3-4fbc7fab8c63c43d9a356ff573294ff0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

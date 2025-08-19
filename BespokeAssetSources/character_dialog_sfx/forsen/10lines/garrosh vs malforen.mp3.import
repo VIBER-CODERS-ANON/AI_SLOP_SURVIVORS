@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://sxxvw2i1d08t"
+path="res://.godot/imported/garrosh vs malforen.mp3-3ed45ca40cee9fa80be8c42e027c63e1.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/garrosh vs malforen.mp3"
+dest_files=["res://.godot/imported/garrosh vs malforen.mp3-3ed45ca40cee9fa80be8c42e027c63e1.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

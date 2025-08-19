@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cooiw3oylcl67"
+path="res://.godot/imported/still fucking ur mom.mp3-cc14982f1a36b4698dd264a781d22ecb.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/your mom/still fucking ur mom.mp3"
+dest_files=["res://.godot/imported/still fucking ur mom.mp3-cc14982f1a36b4698dd264a781d22ecb.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c0ta8cgv1nj1w"
+path="res://.godot/imported/get a life.mp3-2e10adfa88e63cfc454b32ce64c14af8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/get a life.mp3"
+dest_files=["res://.godot/imported/get a life.mp3-2e10adfa88e63cfc454b32ce64c14af8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

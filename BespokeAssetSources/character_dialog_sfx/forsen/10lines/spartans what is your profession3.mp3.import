@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cq2j0iosgw130"
+path="res://.godot/imported/spartans what is your profession3.mp3-43aeee55a74f26107298ca487eeabd13.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/spartans what is your profession3.mp3"
+dest_files=["res://.godot/imported/spartans what is your profession3.mp3-43aeee55a74f26107298ca487eeabd13.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

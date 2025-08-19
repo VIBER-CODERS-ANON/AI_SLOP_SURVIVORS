@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://03uguctln28n"
+path="res://.godot/imported/mr sandman.mp3-e07e2aa45e812a9a603d28c6a4c1575d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/mr sandman.mp3"
+dest_files=["res://.godot/imported/mr sandman.mp3-e07e2aa45e812a9a603d28c6a4c1575d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

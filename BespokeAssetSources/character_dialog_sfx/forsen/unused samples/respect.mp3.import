@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ducr6kf7dntxk"
+path="res://.godot/imported/respect.mp3-2e9b490ae430ec0c81fe2fd8dd72f4e1.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/unused samples/respect.mp3"
+dest_files=["res://.godot/imported/respect.mp3-2e9b490ae430ec0c81fe2fd8dd72f4e1.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

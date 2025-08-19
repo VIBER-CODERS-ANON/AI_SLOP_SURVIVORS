@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://btgi5m33hyplu"
+path="res://.godot/imported/im a god gamer.mp3-52bea2992f297f8496f7d29fb7af567e.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/boasting/im a god gamer.mp3"
+dest_files=["res://.godot/imported/im a god gamer.mp3-52bea2992f297f8496f7d29fb7af567e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

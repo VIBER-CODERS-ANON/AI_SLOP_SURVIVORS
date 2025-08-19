@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bflsnqym8xjm2"
+path="res://.godot/imported/somebodys watching me.mp3-7c52ca89c08f9dbc5d9dfece7c2d4caa.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/somebodys watching me.mp3"
+dest_files=["res://.godot/imported/somebodys watching me.mp3-7c52ca89c08f9dbc5d9dfece7c2d4caa.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

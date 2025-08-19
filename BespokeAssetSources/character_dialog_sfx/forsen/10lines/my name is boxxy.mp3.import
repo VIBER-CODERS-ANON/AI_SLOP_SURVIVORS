@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://duhwp0am28c0f"
+path="res://.godot/imported/my name is boxxy.mp3-201d9bee6204e71c7b22f06d0c6bc5cc.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/my name is boxxy.mp3"
+dest_files=["res://.godot/imported/my name is boxxy.mp3-201d9bee6204e71c7b22f06d0c6bc5cc.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cyfqsdfn3opio"
+path="res://.godot/imported/the absolute god gamer2.mp3-4fe88d208ddeb31cde75a4501218f3c5.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/boasting/the absolute god gamer2.mp3"
+dest_files=["res://.godot/imported/the absolute god gamer2.mp3-4fe88d208ddeb31cde75a4501218f3c5.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dty03lf7h7bnv"
+path="res://.godot/imported/is it me youre looking for.mp3-4d91863eb28836d59837d66cf8cbd83b.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/is it me youre looking for.mp3"
+dest_files=["res://.godot/imported/is it me youre looking for.mp3-4d91863eb28836d59837d66cf8cbd83b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

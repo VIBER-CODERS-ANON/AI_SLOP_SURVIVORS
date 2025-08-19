@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cj7vb5rytdmdb"
+path="res://.godot/imported/let me smell yo dick1.mp3-696a18980a92a684de3e6863d347dbe7.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/let me smell yo dick1.mp3"
+dest_files=["res://.godot/imported/let me smell yo dick1.mp3-696a18980a92a684de3e6863d347dbe7.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

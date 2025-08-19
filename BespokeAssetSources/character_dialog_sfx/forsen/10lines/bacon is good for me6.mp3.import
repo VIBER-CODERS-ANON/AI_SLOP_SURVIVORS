@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://p4px5jub11aq"
+path="res://.godot/imported/bacon is good for me6.mp3-4294e97a6c9362a6ddd3b9db709cb0be.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/bacon is good for me6.mp3"
+dest_files=["res://.godot/imported/bacon is good for me6.mp3-4294e97a6c9362a6ddd3b9db709cb0be.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

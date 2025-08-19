@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bfs104wp6t01y"
+path="res://.godot/imported/conductor we have a problem.mp3-c24bbfe9de84a0cde03bba266795729d.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/conductor we have a problem.mp3"
+dest_files=["res://.godot/imported/conductor we have a problem.mp3-c24bbfe9de84a0cde03bba266795729d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c1tjhki01vo3m"
+path="res://.godot/imported/its over anakin.mp3-73c01aefacfce4010a84b1edc56f7aeb.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/its over anakin.mp3"
+dest_files=["res://.godot/imported/its over anakin.mp3-73c01aefacfce4010a84b1edc56f7aeb.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

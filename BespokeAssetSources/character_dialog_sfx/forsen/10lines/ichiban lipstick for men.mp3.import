@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://buliqa486jt3d"
+path="res://.godot/imported/ichiban lipstick for men.mp3-0311b3cbe3ccbb1ff436e84f4885228e.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/ichiban lipstick for men.mp3"
+dest_files=["res://.godot/imported/ichiban lipstick for men.mp3-0311b3cbe3ccbb1ff436e84f4885228e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

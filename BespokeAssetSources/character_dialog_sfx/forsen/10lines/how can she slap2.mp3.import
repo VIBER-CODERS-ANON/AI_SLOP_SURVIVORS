@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bkv48km4snan6"
+path="res://.godot/imported/how can she slap2.mp3-b24066bf413eaebeddbf2549f67d72de.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/how can she slap2.mp3"
+dest_files=["res://.godot/imported/how can she slap2.mp3-b24066bf413eaebeddbf2549f67d72de.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

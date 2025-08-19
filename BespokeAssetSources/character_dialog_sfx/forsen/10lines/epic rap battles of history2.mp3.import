@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://brda2f50i4axv"
+path="res://.godot/imported/epic rap battles of history2.mp3-8332aa94d49d57aa37a1fd03d1a1c6c7.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/epic rap battles of history2.mp3"
+dest_files=["res://.godot/imported/epic rap battles of history2.mp3-8332aa94d49d57aa37a1fd03d1a1c6c7.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

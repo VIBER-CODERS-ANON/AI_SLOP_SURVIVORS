@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ca0khrinim2du"
+path="res://.godot/imported/do you know what it feels like2.mp3-65210c7322ad8b205d6c9de1adc0e440.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/do you know what it feels like2.mp3"
+dest_files=["res://.godot/imported/do you know what it feels like2.mp3-65210c7322ad8b205d6c9de1adc0e440.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

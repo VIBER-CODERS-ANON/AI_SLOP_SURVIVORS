@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cua6ldg3yvod1"
+path="res://.godot/imported/im retarded pogchamp.mp3-3a750e32ef03a8654ceb76c5ea623542.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/im retarded pogchamp.mp3"
+dest_files=["res://.godot/imported/im retarded pogchamp.mp3-3a750e32ef03a8654ceb76c5ea623542.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

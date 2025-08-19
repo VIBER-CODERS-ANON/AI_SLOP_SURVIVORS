@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://gbg4gfwkwj1t"
+path="res://.godot/imported/fuck her right in the pussy.mp3-7bfce92cb4f1e0b11d67a0aaee1aa3a9.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/fuck her right in the pussy.mp3"
+dest_files=["res://.godot/imported/fuck her right in the pussy.mp3-7bfce92cb4f1e0b11d67a0aaee1aa3a9.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

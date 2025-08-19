@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b84gq651v6x4w"
+path="res://.godot/imported/i came in like a wrecking ball.mp3-f6d3837b85c62dff5214433ff27452ee.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/unused samples/i came in like a wrecking ball.mp3"
+dest_files=["res://.godot/imported/i came in like a wrecking ball.mp3-f6d3837b85c62dff5214433ff27452ee.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

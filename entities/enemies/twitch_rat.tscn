@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3 uid="uid://6cut6jwysyd6"]
+
+[ext_resource type="Script" uid="uid://g32oidr5fn6d" path="res://entities/enemies/twitch_rat.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://dratty" path="res://entities/enemies/twitch_rat.png" id="2"]
+[ext_resource type="Script" uid="uid://be6cbaslihqx7" path="res://systems/tag_system/taggable.gd" id="3"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 8.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2"]
+radius = 400.0
+
+[node name="TwitchRat" type="CharacterBody2D"]
+z_index = 4
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(0.05, 0.05)
+texture = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(1.3, 0.8)
+shape = SubResource("CircleShape2D_1")
+
+[node name="Taggable" type="Node" parent="."]
+script = ExtResource("3")
+
+[node name="AggroArea" type="Area2D" parent="."]
+collision_layer = 0
+
+[node name="AggroRadius" type="CollisionShape2D" parent="AggroArea"]
+modulate = Color(1, 1, 1, 0.1)
+shape = SubResource("CircleShape2D_2")

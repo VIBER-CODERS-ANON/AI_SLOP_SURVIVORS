@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bd2sedpquam7j"
+path="res://.godot/imported/harry potter9.mp3-279b12a191678ca264b47b46371c9252.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/harry potter/harry potter9.mp3"
+dest_files=["res://.godot/imported/harry potter9.mp3-279b12a191678ca264b47b46371c9252.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

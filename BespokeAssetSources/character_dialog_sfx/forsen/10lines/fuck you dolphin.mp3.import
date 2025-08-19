@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bedx2pybsx5fu"
+path="res://.godot/imported/fuck you dolphin.mp3-d102e1943f016cd9558c311eb3a4f66f.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/fuck you dolphin.mp3"
+dest_files=["res://.godot/imported/fuck you dolphin.mp3-d102e1943f016cd9558c311eb3a4f66f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

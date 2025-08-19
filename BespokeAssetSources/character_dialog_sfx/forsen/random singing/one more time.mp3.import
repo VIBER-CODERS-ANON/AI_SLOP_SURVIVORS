@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dbx2goq2lha7"
+path="res://.godot/imported/one more time.mp3-30a1c5e0f7327a35e3fe77a5b3ce1489.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/one more time.mp3"
+dest_files=["res://.godot/imported/one more time.mp3-30a1c5e0f7327a35e3fe77a5b3ce1489.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

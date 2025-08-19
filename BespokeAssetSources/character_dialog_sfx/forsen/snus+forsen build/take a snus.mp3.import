@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://f2kc8cojp0u4"
+path="res://.godot/imported/take a snus.mp3-7ce05e759d69f5d4afaa90e64d144ec0.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/snus+forsen build/take a snus.mp3"
+dest_files=["res://.godot/imported/take a snus.mp3-7ce05e759d69f5d4afaa90e64d144ec0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

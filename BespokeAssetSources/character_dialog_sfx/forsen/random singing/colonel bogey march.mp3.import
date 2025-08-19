@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bo1ebuuyj2oaf"
+path="res://.godot/imported/colonel bogey march.mp3-240e0328828c496eacfd7c2fbba8a3dd.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/colonel bogey march.mp3"
+dest_files=["res://.godot/imported/colonel bogey march.mp3-240e0328828c496eacfd7c2fbba8a3dd.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

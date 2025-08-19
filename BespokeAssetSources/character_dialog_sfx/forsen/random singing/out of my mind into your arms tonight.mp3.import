@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dcgkq7feaxkss"
+path="res://.godot/imported/out of my mind into your arms tonight.mp3-1a69b76d0c6eef44c9e7e5b247ed106c.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/out of my mind into your arms tonight.mp3"
+dest_files=["res://.godot/imported/out of my mind into your arms tonight.mp3-1a69b76d0c6eef44c9e7e5b247ed106c.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

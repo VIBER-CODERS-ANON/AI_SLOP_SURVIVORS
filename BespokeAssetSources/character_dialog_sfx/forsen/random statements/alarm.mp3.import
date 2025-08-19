@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d2ogcajnyuets"
+path="res://.godot/imported/alarm.mp3-de7f3937521da66520f75c063ad94a81.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/alarm.mp3"
+dest_files=["res://.godot/imported/alarm.mp3-de7f3937521da66520f75c063ad94a81.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

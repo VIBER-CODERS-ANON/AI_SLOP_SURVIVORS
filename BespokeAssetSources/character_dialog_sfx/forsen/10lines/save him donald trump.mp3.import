@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d22rrprf1ve5q"
+path="res://.godot/imported/save him donald trump.mp3-4ad7eedc7906efdd3641a041d3da9f1f.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/10lines/save him donald trump.mp3"
+dest_files=["res://.godot/imported/save him donald trump.mp3-4ad7eedc7906efdd3641a041d3da9f1f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dwvhte62igw2v"
+path="res://.godot/imported/obamas elf3.mp3-362c9f5015faa0958fc4e5c89a1786d8.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random singing/obamas elf3.mp3"
+dest_files=["res://.godot/imported/obamas elf3.mp3-362c9f5015faa0958fc4e5c89a1786d8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

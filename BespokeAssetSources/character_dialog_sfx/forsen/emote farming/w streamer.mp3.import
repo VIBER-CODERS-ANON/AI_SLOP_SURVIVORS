@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bo21v1i4qnuug"
+path="res://.godot/imported/w streamer.mp3-1faa9d922518df3ab157c031d36de545.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/w streamer.mp3"
+dest_files=["res://.godot/imported/w streamer.mp3-1faa9d922518df3ab157c031d36de545.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

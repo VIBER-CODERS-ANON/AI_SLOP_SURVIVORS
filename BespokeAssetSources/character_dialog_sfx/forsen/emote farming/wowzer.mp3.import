@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cpt2hagyllrig"
+path="res://.godot/imported/wowzer.mp3-0fdbc13f0797740619d12c0a5543f824.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/emote farming/wowzer.mp3"
+dest_files=["res://.godot/imported/wowzer.mp3-0fdbc13f0797740619d12c0a5543f824.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

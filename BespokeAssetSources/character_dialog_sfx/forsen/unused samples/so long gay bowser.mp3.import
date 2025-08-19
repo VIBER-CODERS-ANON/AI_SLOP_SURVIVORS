@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://duuvovoqlikcm"
+path="res://.godot/imported/so long gay bowser.mp3-62fe3e97ff772dbd0ff78a76e5de0a59.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/unused samples/so long gay bowser.mp3"
+dest_files=["res://.godot/imported/so long gay bowser.mp3-62fe3e97ff772dbd0ff78a76e5de0a59.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

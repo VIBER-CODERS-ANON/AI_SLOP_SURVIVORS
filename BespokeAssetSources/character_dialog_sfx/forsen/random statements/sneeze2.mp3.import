@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ciou5sfeuut50"
+path="res://.godot/imported/sneeze2.mp3-51e3029f674561c38c1b7878e58a7b6b.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/sneeze2.mp3"
+dest_files=["res://.godot/imported/sneeze2.mp3-51e3029f674561c38c1b7878e58a7b6b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

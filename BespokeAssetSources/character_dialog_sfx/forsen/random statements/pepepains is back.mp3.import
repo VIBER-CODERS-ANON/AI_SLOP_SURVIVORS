@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://duqk2rc2cer6g"
+path="res://.godot/imported/pepepains is back.mp3-1114321be19ba8ca7332c5fb7d5af2f9.mp3str"
+
+[deps]
+
+source_file="res://BespokeAssetSources/character_dialog_sfx/forsen/random statements/pepepains is back.mp3"
+dest_files=["res://.godot/imported/pepepains is back.mp3-1114321be19ba8ca7332c5fb7d5af2f9.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
