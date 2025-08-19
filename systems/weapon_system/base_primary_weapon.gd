@@ -14,9 +14,17 @@ signal enemy_hit(enemy: Node, damage: float)
 @export var knockback_force: float = 100.0
 @export var weapon_tags: Array[String] = ["Melee", "Primary"]
 
+@export_group("Critical Hit Stats")
+@export var base_crit_chance: float = 0.05  # 5% default crit chance
+@export var base_crit_multiplier: float = 2.0  # 2x damage on crit
+
 # Owner reference
 var owner_entity: Node  # The player or entity wielding this weapon
 var attack_speed_multiplier: float = 1.0  # Modified by buffs/items
+
+# Crit modifiers (additive bonuses from boons/items)
+var bonus_crit_chance: float = 0.0  # Added by boons (e.g., +0.025 for +2.5%)
+var bonus_crit_multiplier: float = 0.0  # Added by items (e.g., +0.5 for +50% crit damage)
 
 # Attack timing
 var attack_cooldown_timer: float = 0.0
@@ -25,6 +33,7 @@ var is_attacking: bool = false
 # Statistical tracking
 var total_damage_dealt: float = 0.0
 var enemies_hit_count: int = 0
+var total_crits: int = 0  # Track critical hits
 
 func _ready():
 	print("🔧 BasePrimaryWeapon._ready() called!")
@@ -157,15 +166,44 @@ func _execute_attack():
 	push_error("BasePrimaryWeapon._execute_attack() must be overridden!")
 	is_attacking = false
 
+## Calculate final damage with crit chance
+func calculate_final_damage(base_dmg: float, damage_multiplier: float = 1.0) -> Dictionary:
+	var modified_damage = base_dmg * damage_multiplier
+	
+	# Calculate total crit chance (clamped between 0 and 1)
+	var total_crit_chance = clamp(base_crit_chance + bonus_crit_chance, 0.0, 1.0)
+	
+	# Roll for crit
+	var is_crit = randf() < total_crit_chance
+	
+	# Apply crit multiplier if critical hit
+	if is_crit:
+		var total_crit_mult = base_crit_multiplier + bonus_crit_multiplier
+		modified_damage *= total_crit_mult
+		total_crits += 1
+	
+	return {
+		"damage": modified_damage,
+		"is_crit": is_crit
+	}
+
 ## Apply damage to an enemy
 func deal_damage_to_enemy(enemy: Node, damage_multiplier: float = 1.0):
 	if not enemy or not enemy.has_method("take_damage"):
 		return
-		
-	var final_damage = base_damage * damage_multiplier
+	
+	# Calculate damage with crit system
+	var damage_result = calculate_final_damage(base_damage, damage_multiplier)
+	var final_damage = damage_result.damage
+	var is_crit = damage_result.is_crit
+	
+	# Prepare tags for damage application
+	var damage_tags = weapon_tags.duplicate()
+	if is_crit:
+		damage_tags.append("crit")
 	
 	# Deal damage with proper tags
-	enemy.take_damage(final_damage, owner_entity, weapon_tags)
+	enemy.take_damage(final_damage, owner_entity, damage_tags)
 	
 	# Track statistics
 	total_damage_dealt += final_damage
@@ -198,6 +236,32 @@ func get_weapon_type() -> String:
 ## Get current weapon tags
 func get_weapon_tags() -> Array:
 	return weapon_tags
+
+## Add crit chance (used by boons/items)
+func add_crit_chance(amount: float):
+	bonus_crit_chance += amount
+	print("⚔️ %s crit chance modified by %.1f%% (total: %.1f%%)" % [
+		get_weapon_type(), 
+		amount * 100, 
+		(base_crit_chance + bonus_crit_chance) * 100
+	])
+
+## Add crit multiplier (used by items)
+func add_crit_multiplier(amount: float):
+	bonus_crit_multiplier += amount
+	print("⚔️ %s crit multiplier modified by %.1fx (total: %.1fx)" % [
+		get_weapon_type(),
+		amount,
+		base_crit_multiplier + bonus_crit_multiplier
+	])
+
+## Get total crit chance for UI display
+func get_total_crit_chance() -> float:
+	return clamp(base_crit_chance + bonus_crit_chance, 0.0, 1.0)
+
+## Get total crit multiplier for UI display
+func get_total_crit_multiplier() -> float:
+	return base_crit_multiplier + bonus_crit_multiplier
 
 ## Add a tag to the weapon
 func add_weapon_tag(tag: String):

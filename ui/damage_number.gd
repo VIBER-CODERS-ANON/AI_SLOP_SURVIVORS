@@ -50,9 +50,6 @@ func setup(damage: float, crit: bool = false, player_damage: bool = false):
 		# Yellow color for crits
 		modulate = Color(1, 1, 0)
 		add_theme_font_size_override("font_size", 32)  # Bigger for crits
-		
-		# Add exclamation mark for emphasis
-		text = text + "!"
 	else:
 		# White color for normal hits
 		modulate = Color.WHITE

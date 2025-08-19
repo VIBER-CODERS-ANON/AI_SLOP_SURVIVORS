@@ -51,6 +51,12 @@ func _on_weapon_ready():
 	# Set weapon type and tags
 	weapon_tags = ["Melee", "Primary", "AoE", "AttackSpeed", "Sword"]
 	
+	# Set sword stats - simple and direct
+	base_damage = 1.0
+	base_attack_speed = 1.0  # 1 attack per second
+	knockback_force = 150.0
+	base_crit_chance = 0.1  # 10% base crit for swords
+	
 	# Validate and fix critical properties
 	if arc_duration <= 0:
 		push_warning("Invalid arc_duration, setting to 0.5")
