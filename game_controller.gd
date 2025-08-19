@@ -22,8 +22,6 @@ var is_paused: bool = false
 var cleanup_timer: float = 0.0  # Periodic cleanup
 
 # Spawning
-var mana_gem_spawn_timer: float = 60.0  # Start spawn after 1 minute
-var mana_gem_spawn_interval: float = 60.0  # Spawn every 60 seconds (1 per minute)
 var spawn_radius: float = 200.0  # Closer spawns for testing
 
 # Twitch chatter entity tracking - NOW HANDLED BY TicketSpawnManager
@@ -266,7 +264,6 @@ func _setup_world():
 		MXPManager.instance.reset_session()
 	player.level_up.connect(_on_player_level_up)
 	player.health_changed.connect(_on_player_health_changed)
-	player.mana_changed.connect(_on_player_mana_changed)
 	player.experience_gained.connect(_on_player_experience_gained)
 	
 	# Bosses are now spawned via voting system, not automatically
@@ -880,15 +877,6 @@ func _process(_delta):
 		if cleanup_timer >= 5.0:
 			cleanup_timer = 0.0
 			_cleanup_dead_references()
-		
-		# Update mana gem spawning
-		mana_gem_spawn_timer += _delta
-		if mana_gem_spawn_timer >= mana_gem_spawn_interval:
-			# Limit total mana gems to prevent lag
-			var gem_count = get_tree().get_nodes_in_group("mana_gems").size()
-			if gem_count < 10:  # Max 10 gems at once
-				_spawn_mana_gem()
-			mana_gem_spawn_timer = 0.0
 	
 	# Update UI displays
 	if player and is_instance_valid(player):
@@ -947,33 +935,10 @@ func _on_player_health_changed(new_health: float, max_health: float):
 	if player_stats and player_stats.has_method("update_health"):
 		player_stats.update_health(new_health, max_health)
 
-func _on_player_mana_changed(new_mana: float, max_mana: float):
-	# Update mana display
-	var player_stats = get_node_or_null("UILayer/PlayerStatsDisplay")
-	if player_stats and player_stats.has_method("update_mana"):
-		player_stats.update_mana(new_mana, max_mana)
-
 func _on_action_bar_slot_clicked(_slot_index: int):
 	# print("Action bar slot %d clicked!" % (slot_index + 1))
 	# For now, slot 0 (sword) doesn't do anything special as it's always active
 	pass
-
-func _spawn_mana_gem():
-	if not player or not is_instance_valid(player):
-		return
-	
-	# Get a random safe spawn position anywhere in the arena
-	var arena_size = 3000.0  # Match arena size
-	var spawn_pos = _get_random_safe_arena_position(arena_size * 0.9)  # Stay within 90% of arena
-	
-	# Create mana gem
-	var mana_gem = preload("res://entities/pickups/mana_gem.tscn").instantiate()
-	# Add directly to the game controller scene
-	mana_gem.process_mode = Node.PROCESS_MODE_PAUSABLE  # Should pause
-	add_child(mana_gem)
-	mana_gem.global_position = spawn_pos
-	mana_gem.z_index = 10  # Make sure it's above everything
-	# print("ðŸ’Ž Spawning mana gem at ", spawn_pos)
 
 func _get_safe_spawn_position(from_pos: Vector2, min_dist: float, max_dist: float) -> Vector2:
 	# Try to find a safe position avoiding pits and pillars
