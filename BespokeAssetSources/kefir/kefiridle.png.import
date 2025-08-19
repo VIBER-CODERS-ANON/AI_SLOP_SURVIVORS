@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://chh3vxu81lqa5"
-path="res://.godot/imported/kefirIdle.png-74a2f7b613a9547f1b7aaa941225bcd3.ctex"
+path="res://.godot/imported/kefiridle.png-9f8c60f47e25889f0acf8835497cd103.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://BespokeAssetSources/kefir/kefirIdle.png"
-dest_files=["res://.godot/imported/kefirIdle.png-74a2f7b613a9547f1b7aaa941225bcd3.ctex"]
+source_file="res://BespokeAssetSources/kefir/kefiridle.png"
+dest_files=["res://.godot/imported/kefiridle.png-9f8c60f47e25889f0acf8835497cd103.ctex"]
 
 [params]
 
