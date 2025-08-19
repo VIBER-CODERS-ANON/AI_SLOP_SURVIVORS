@@ -730,10 +730,21 @@ func _execute_command_on_all_entities(username: String, method_name: String):
 	if not TicketSpawnManager.instance:
 		return
 	
-	var entities = TicketSpawnManager.instance.get_alive_entities_for_chatter(username)
-	for entity in entities:
-		if is_instance_valid(entity) and entity.has_method(method_name):
-			entity.call(method_name)
+	# Convert method names to command names for the V2 system
+	var command = ""
+	match method_name:
+		"trigger_explode":
+			command = "explode"
+		"trigger_fart":
+			command = "fart"
+		"trigger_boost":
+			command = "boost"
+		_:
+			print("Unknown command method: ", method_name)
+			return
+	
+	# Use the proper V2 command execution system
+	TicketSpawnManager.instance.execute_command_on_entities(username, command)
 
 func _get_user_color(username: String) -> Color:
 	# Simple color generation based on username

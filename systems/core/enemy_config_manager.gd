@@ -34,9 +34,7 @@ func _load_enemy_configurations():
 			"scale": 1.6
 		},
 		"abilities": [
-			{"id": "explosion", "cooldown": 60.0},
-			{"id": "fart", "cooldown": 100.0},
-			{"id": "boost", "cooldown": 20.0, "duration": 3.0, "speed_multiplier": 3.0}
+			# Explosion, fart, and boost are command-triggered only, not automatic abilities
 		],
 		"tags": ["Lesser", "TwitchMob", "Rat", "Melee"],
 		"visuals": {

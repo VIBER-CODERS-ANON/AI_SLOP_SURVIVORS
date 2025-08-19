@@ -186,14 +186,14 @@ func _should_use_ability(enemy_id: int, ability: Dictionary) -> bool:
 	
 	match ability.id:
 		"explosion":
-			# Use explosion when close to player and rarely
-			return distance < 80.0 and randf() < 0.05
+			# Explosions should only happen via !explode command, not automatically
+			return false
 		"fart":
-			# Use fart occasionally when at medium distance
-			return distance < 150.0 and randf() < 0.1
+			# Farts should only happen via !fart command, not automatically
+			return false
 		"boost":
-			# Use boost when far from player
-			return distance > 200.0
+			# Boosts should only happen via !boost command, not automatically
+			return false
 		"heart_projectile":
 			# Use projectile when in range
 			return distance < 300.0 and distance > 50.0
