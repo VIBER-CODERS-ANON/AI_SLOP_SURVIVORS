@@ -49,7 +49,7 @@ var current_strike_index: int = 0  # Which strike we're on (0-based)
 
 func _on_weapon_ready():
 	# Set weapon type and tags
-	weapon_tags = ["Melee", "Primary", "AoE", "AttackSpeed", "Sword"]
+	weapon_tags = ["Melee", "Primary", "AoE", "AttackSpeed", "Crit", "Damage", "Sword"]
 	
 	# Set sword stats - simple and direct
 	base_damage = 1.0
@@ -122,6 +122,8 @@ func _execute_attack():
 	queue_redraw()
 
 func _create_sword_instance() -> Node2D:
+	# Get AOE scale for this attack
+	var aoe_scale = get_aoe_scale()
 	
 	# Create sword directly instead of using packed scene
 	var sword = Node2D.new()
@@ -135,8 +137,9 @@ func _create_sword_instance() -> Node2D:
 	sprite.name = "Sprite"
 	if ResourceLoader.exists(sword_sprite_path):
 		sprite.texture = load(sword_sprite_path)
-		# Use 1:1 pixel scale by default; allow override via sword_scale
-		sprite.scale = Vector2(sword_scale, sword_scale)
+		# Apply sword scale AND AOE scale
+		var final_scale = sword_scale * aoe_scale
+		sprite.scale = Vector2(final_scale, final_scale)
 	else:
 		var image = Image.create(200, 40, false, Image.FORMAT_RGBA8)
 		image.fill(Color(1.0, 0.2, 0.2, 1.0))  # Bright red for debugging
@@ -248,6 +251,13 @@ func _get_spawn_angle() -> float:
 	return center_angle + side_offset
 
 func _start_sword_arc(sword: Node2D):
+	# Get AOE scale for arc radius
+	var aoe_scale = get_aoe_scale()
+	var scaled_radius = arc_radius * aoe_scale
+	
+	# Store scaled radius on the sword for arc animation
+	sword.set_meta("scaled_arc_radius", scaled_radius)
+	
 	# Safety check for arc duration
 	if arc_duration <= 0:
 		push_error("Arc duration is 0 or negative! Setting to default 0.5")
@@ -345,7 +355,9 @@ func _update_sword_arc(sword: Node2D, t: float):
 		sword.set_meta("last_rotation_check", current_half_rotation)
 	
 	# Position sword on the arc relative to weapon's current position
-	var pos = circle_center + Vector2(cos(theta), sin(theta)) * arc_radius
+	# Use the scaled radius stored on the sword
+	var scaled_radius = sword.get_meta("scaled_arc_radius", arc_radius)
+	var pos = circle_center + Vector2(cos(theta), sin(theta)) * scaled_radius
 	# Transform the local position to global space relative to weapon
 	var weapon_transform = Transform2D(global_rotation, global_position)
 	sword.global_position = weapon_transform * pos

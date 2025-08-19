@@ -10,8 +10,6 @@ signal mana_changed(new_mana: float, max_mana: float)
 
 @export_group("Player Stats")
 @export var base_pickup_range: float = 100.0
-@export var base_crit_chance: float = 0.05
-@export var base_crit_damage: float = 2.0
 @export var max_mana: float = 100.0
 @export var mana_regen_per_second: float = 1.0
 @export var sprite_scale: float = 0.9  # 3x bigger than original 0.3
@@ -21,12 +19,17 @@ var level: int = 1
 var experience: int = 0
 var experience_to_next_level: int = 10
 
-# Stats that can be modified by buffs
+# Base stats (for player's own abilities if any)
 var pickup_range: float
-var crit_chance: float
-var crit_damage: float
 var current_mana: float
-var area_of_effect: float = 1.0  # Multiplier for AoE abilities (1.0 = 100%)
+
+# Bonus stats that affect weapons/abilities with matching tags
+var bonus_crit_chance: float = 0.0  # Added to weapons with "Crit" tag
+var bonus_crit_multiplier: float = 0.0  # Added to crit damage
+var bonus_attack_speed: float = 0.0  # Multiplier for "AttackSpeed" tag
+var area_of_effect: float = 1.0  # Multiplier for "AoE" tag (1.0 = 100%)
+var bonus_damage: float = 0.0  # Flat damage bonus for "Damage" tag
+var bonus_damage_multiplier: float = 1.0  # Multiplier for "Damage" tag
 
 # Cheat mode
 var invulnerable: bool = false  # God mode flag
@@ -67,8 +70,6 @@ func _entity_ready():
 	
 	# Initialize stats
 	pickup_range = base_pickup_range
-	crit_chance = base_crit_chance
-	crit_damage = base_crit_damage
 	current_mana = max_mana
 	
 	# DEV TOOL - Set up modular audio tester (can be removed)
@@ -348,18 +349,6 @@ func on_enemy_killed(_enemy: BaseEntity):
 		tween.chain().tween_callback(blood_effect.queue_free)
 		
 	
-## Calculate damage with player modifiers
-func calculate_damage(base_damage: float, _damage_tags: Array = []) -> float:
-	var final_damage = base_damage
-	
-	# Apply crit
-	if randf() < crit_chance:
-		final_damage *= crit_damage
-		
-	# Apply tag-based modifiers
-	# This will be expanded with the buff system
-	
-	return final_damage
 
 ## Override damage modifiers for player
 func _get_damage_modifiers() -> Dictionary:
@@ -838,12 +827,6 @@ func get_physical_power() -> float:
 
 func get_cooldown_reduction() -> float:
 	return 0.0  # No CDR by default
-
-func get_crit_chance() -> float:
-	return base_crit_chance
-
-func get_crit_damage() -> float:
-	return base_crit_damage
 
 func get_area_of_effect() -> float:
 	return area_of_effect

@@ -18,4 +18,4 @@ func _on_apply(entity: BaseEntity) -> void:
 		var player = entity as Player
 		var aoe_percent = get_effective_power(5.0)  # 5% MORE
 		player.area_of_effect *= (1.0 + aoe_percent / 100.0)
-		print("💥 %s gained %.0f%% MORE Area of Effect! (%.2fx multiplier)" % [player.name, aoe_percent, (1.0 + aoe_percent / 100.0)])
+		print("💥 %s gained %.0f%% MORE Area of Effect! (%.2fx total)" % [player.name, aoe_percent, player.area_of_effect])
