@@ -717,8 +717,9 @@ func _handle_chat_message(username: String, message: String, color: Color = Colo
 		_execute_command_on_all_entities(username, "trigger_explode")
 	if msg_lower.begins_with("!fart"):
 		_execute_command_on_all_entities(username, "trigger_fart")
-	if msg_lower.begins_with("!boost"):
-		_execute_command_on_all_entities(username, "trigger_boost")
+	# !boost command disabled
+	#if msg_lower.begins_with("!boost"):
+	#	_execute_command_on_all_entities(username, "trigger_boost")
 	
 	# Emote reactions
 	if "pog" in msg_lower or "poggers" in msg_lower:

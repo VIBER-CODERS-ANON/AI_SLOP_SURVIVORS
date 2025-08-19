@@ -160,7 +160,7 @@ func _populate_basic_commands():
 	var basic_commands = [
 		{"cmd": "!explode", "desc": "Explode your rat"},
 		{"cmd": "!fart", "desc": "Poison cloud"},
-		{"cmd": "!boost", "desc": "Speed boost"},
+		# {"cmd": "!boost", "desc": "Speed boost"}, # DISABLED
 		{"cmd": "!vote1/2/3", "desc": "Boss vote"}
 	]
 	

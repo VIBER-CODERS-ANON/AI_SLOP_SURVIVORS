@@ -6,7 +6,7 @@ class_name CommandsDisplay
 var command_list: Dictionary = {
 	"!explode": "Explode your rat (deals area damage)",
 	"!fart": "Release a poison cloud (2 DPS)",
-	"!boost": "300% speed for 1 second (20s cooldown)",
+	# "!boost": "300% speed for 1 second (20s cooldown)", # DISABLED
 	# "!evolvewoodlandjoe": "Evolve into Woodland Joe (3 MXP)", # TEMPORARILY DISABLED
 	"!vote1/2/3": "Vote for boss (during vote)"
 }
