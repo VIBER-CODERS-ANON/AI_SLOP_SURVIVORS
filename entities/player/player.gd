@@ -164,37 +164,42 @@ func _setup_dash_cooldown_ui():
 func _setup_health_bar_ui():
 	# Create a health bar that hovers above the player
 	var health_container = Node2D.new()
+	health_container.z_index = 69
 	health_container.name = "HealthContainer"
-	health_container.position = Vector2(0, -55)  # Position above the player sprite (moved up 15px)
+	health_container.position = Vector2(0, -55)
 	add_child(health_container)
-	
+
 	# Create the health bar
 	var health_bar = ProgressBar.new()
 	health_bar.name = "HealthBar"
-	health_bar.custom_minimum_size = Vector2(60, 6)  # Narrow bar
-	health_bar.position = Vector2(-30, 0)  # Center the bar
+	health_bar.custom_minimum_size = Vector2(60, 6)
+	health_bar.position = Vector2(-30, 0)
 	health_bar.show_percentage = false
 	health_bar.value = 100
 	health_bar.max_value = 100
-	
+
 	# Style the health bar background
 	var style_bg = StyleBoxFlat.new()
 	style_bg.bg_color = Color(0.2, 0.1, 0.1, 0.8)
 	style_bg.border_color = Color(0.3, 0.1, 0.1)
 	style_bg.set_border_width_all(1)
 	health_bar.add_theme_stylebox_override("background", style_bg)
-	
+
 	# Style the health bar fill
 	var style_fill = StyleBoxFlat.new()
 	style_fill.bg_color = Color(0.9, 0.1, 0.1)
 	health_bar.add_theme_stylebox_override("fill", style_fill)
-	
+
+	# Apply the glow shader using preload
+	var shader_material = ShaderMaterial.new()
+	shader_material.shader = preload("res://ui/shaders/health_bar_glow.gdshader")
+	shader_material.set_shader_parameter("glow_intensity", 1.5)
+	shader_material.set_shader_parameter("glow_color", Color(1.0, 0.1, 0.3, 1.0))
+	shader_material.set_shader_parameter("pulse_speed", 2.0)
+	health_bar.material = shader_material
+
 	health_container.add_child(health_bar)
-	
-	# Store reference for updating
 	set_meta("health_bar", health_bar)
-	
-	# Update health bar with current values
 	_update_health_bar_display()
 
 func _update_health_bar_display():
