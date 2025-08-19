@@ -68,7 +68,22 @@ func request_evolution(username: String, evolution_name: String) -> bool:
 				feed.add_message("❌ %s needs %d MXP (has %d)" % [username, config.mxp_cost, current_mxp], Color(1, 0.5, 0.5))
 		return false
 	
-	# Find the user's current entity
+	# Try V2 path first: evolve the user's live V2 enemies
+	if TicketSpawnManager.instance and EnemyManager.instance:
+		var ids: Array[int] = TicketSpawnManager.instance.get_alive_entities_for_chatter(username)
+		if not ids.is_empty():
+			var new_type_id = EnemyManager.instance.get_enemy_type_from_string(normalized_name)
+			for enemy_id in ids:
+				EnemyManager.instance.evolve_enemy(enemy_id, new_type_id)
+			# Deduct MXP and announce
+			MXPManager.instance.spend_mxp(username, config.mxp_cost, "evolution_" + normalized_name)
+			if GameController.instance and GameController.instance.has_method("get_action_feed"):
+				var feed = GameController.instance.get_action_feed()
+				if feed:
+					feed.add_message("🧬 %s evolved into %s!" % [username, config.display_name], Color(0.8, 0, 0.8))
+			return true
+
+	# Fallback to legacy node-based path
 	var current_entity = _find_user_entity(username)
 	if not current_entity:
 		evolution_failed.emit(username, "No active entity to evolve!")
@@ -81,8 +96,7 @@ func request_evolution(username: String, evolution_name: String) -> bool:
 	
 	# Deduct MXP
 	MXPManager.instance.spend_mxp(username, config.mxp_cost, "evolution_" + normalized_name)
-	
-	# Perform evolution
+	# Perform legacy evolution
 	_perform_evolution(username, current_entity, config)
 	return true
 

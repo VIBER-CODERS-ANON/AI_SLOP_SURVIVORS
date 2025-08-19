@@ -154,8 +154,10 @@ func _create_sword_instance() -> Node2D:
 	# Add hitbox
 	var hitbox = Area2D.new()
 	hitbox.name = "Hitbox"
-	hitbox.collision_layer = 4
-	hitbox.collision_mask = 2
+	hitbox.collision_layer = 4  # Weapons layer
+	hitbox.collision_mask = 2   # Detect enemies layer
+	hitbox.monitoring = true    # Enable collision detection
+	hitbox.monitorable = true   # Can be detected by others
 	sword.add_child(hitbox)
 	
 	# Add collision shape
@@ -168,6 +170,7 @@ func _create_sword_instance() -> Node2D:
 		tex_size = sprite.texture.get_size() * sprite.scale
 	shape.size = tex_size
 	collision.shape = shape
+	collision.disabled = false  # Ensure collision is enabled
 	hitbox.add_child(collision)
 	
 	# Set up collision detection
@@ -178,7 +181,12 @@ func _create_sword_instance() -> Node2D:
 	hitbox.body_entered.connect(_on_sword_body_entered.bind(hitbox))
 	hitbox.area_entered.connect(_on_sword_area_entered.bind(hitbox))
 	
-	add_child(sword)
+	# Add sword to the scene at game level, not as child of weapon
+	# This ensures proper collision detection
+	if owner_entity and owner_entity.get_parent():
+		owner_entity.get_parent().add_child(sword)
+	else:
+		get_tree().root.add_child(sword)
 	
 	# Set initial position based on spawn side using local-space perfect circle
 	# Compute mouse bearing in local space so arc is stable regardless of global rotation
@@ -197,13 +205,15 @@ func _create_sword_instance() -> Node2D:
 	var center_dir_local = Vector2.RIGHT.rotated(mouse_angle_local)
 	var circle_center = center_dir_local * arc_center_offset
 	var spawn_offset = circle_center + Vector2(cos(spawn_angle), sin(spawn_angle)) * arc_radius
-	sword.position = spawn_offset
+	# Transform the local position to global space relative to weapon
+	var weapon_transform = Transform2D(global_rotation, global_position)
+	sword.global_position = weapon_transform * spawn_offset
 	
 	# Set initial rotation based on spawn side
 	# If spawning on left, face right (towards where it will arc)
 	# If spawning on right, face left
-	# Set initial facing so tip is outward at spawn
-	sword.rotation = spawn_angle + sprite_forward_angle_offset
+	# Set initial facing so tip is outward at spawn, accounting for weapon rotation
+	sword.rotation = global_rotation + spawn_angle + sprite_forward_angle_offset
 
 	# Spawn FX: quick fade/scale in
 	sword.modulate.a = 0.0
@@ -328,12 +338,14 @@ func _update_sword_arc(sword: Node2D, t: float):
 
 		sword.set_meta("last_rotation_check", current_half_rotation)
 	
-	# Position sword on the arc
+	# Position sword on the arc relative to weapon's current position
 	var pos = circle_center + Vector2(cos(theta), sin(theta)) * arc_radius
-	sword.position = pos
+	# Transform the local position to global space relative to weapon
+	var weapon_transform = Transform2D(global_rotation, global_position)
+	sword.global_position = weapon_transform * pos
 
-	# Tip points outward (radially)
-	sword.rotation = theta + sprite_forward_angle_offset
+	# Tip points outward (radially), accounting for weapon rotation
+	sword.rotation = global_rotation + theta + sprite_forward_angle_offset
 	
 	# Update trail effect
 	if enable_trail:

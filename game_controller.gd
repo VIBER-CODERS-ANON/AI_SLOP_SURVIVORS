@@ -42,7 +42,7 @@ func _ready():
 	
 	# Initialize debug settings if not already created
 	if not DebugSettings.instance:
-		var debug_settings = preload("res://systems/debug_settings.gd").new()
+		var debug_settings = preload("res://systems/debug/debug_settings.gd").new()
 		debug_settings.name = "DebugSettings"
 		get_tree().root.call_deferred("add_child", debug_settings)
 		debug_settings.call_deferred("apply_settings")
@@ -92,27 +92,48 @@ func _ready():
 	add_child(chatter_manager)
 	
 	# Create settings manager
-	var settings_manager = preload("res://systems/settings_manager.gd").new()
+	var settings_manager = preload("res://systems/managers/settings_manager.gd").new()
 	settings_manager.name = "SettingsManager"
 	add_child(settings_manager)
 	
 	# Create boss vote manager
-	var boss_vote_manager = preload("res://systems/boss_vote_manager.gd").new()
+	var boss_vote_manager = preload("res://systems/managers/boss_vote_manager.gd").new()
 	boss_vote_manager.name = "BossVoteManager"
 	add_child(boss_vote_manager)
+	# AdvancedBossSpawner disabled: bosses use legacy node-based spawns
 	
-	# Create ticket spawn manager
-	var ticket_spawn_manager = TicketSpawnManager.new()
+	# Create ticket spawn manager for high-performance spawning
+	var ticket_spawn_manager = preload("res://systems/core/ticket_spawn_manager.gd").new()
 	ticket_spawn_manager.name = "TicketSpawnManager"
 	add_child(ticket_spawn_manager)
 	
+	# Create enemy config manager
+	var enemy_config_manager = preload("res://systems/core/enemy_config_manager.gd").new()
+	enemy_config_manager.name = "EnemyConfigManager"
+	add_child(enemy_config_manager)
+	
+	# Create enemy manager for high-performance enemy handling
+	var enemy_manager = preload("res://systems/core/enemy_manager.gd").new()
+	enemy_manager.name = "EnemyManager"
+	add_child(enemy_manager)
+	
+	# Create enemy bridge for integration with gameplay systems
+	var enemy_bridge = preload("res://systems/core/enemy_bridge.gd").new()
+	enemy_bridge.name = "EnemyBridge"
+	add_child(enemy_bridge)
+	
+	# Create enemy nameplate manager
+	var enemy_nameplate_manager = preload("res://systems/detection/enemy_nameplate_manager.gd").new()
+	enemy_nameplate_manager.name = "EnemyNameplateManager"
+	add_child(enemy_nameplate_manager)
+	
 	# Create flocking system for zombie horde behavior
-	var flocking_system = preload("res://systems/flocking_system.gd").new()
+	var flocking_system = preload("res://systems/detection/flocking_system.gd").new()
 	flocking_system.name = "FlockingSystem"
 	add_child(flocking_system)
 	
 	# Create boss buff manager
-	var boss_buff_manager = preload("res://systems/boss_buff_manager.gd").new()
+	var boss_buff_manager = preload("res://systems/managers/boss_buff_manager.gd").new()
 	boss_buff_manager.name = "BossBuffManager"
 	add_child(boss_buff_manager)
 	
@@ -153,8 +174,10 @@ func _ready():
 	# Show cheat instructions
 	var cheat_feed = get_action_feed()
 	if cheat_feed:
-		cheat_feed.add_message("🎮 Testing Cheats: CTRL+1 = God Mode | CTRL+2 = Spawn 100 XP | CTRL+4 = Boss Vote", Color(0.8, 0.8, 0.8))
-		cheat_feed.add_message("ðŸŽ® More Cheats: ALT+1 = +1 MXP All | ALT+2 = +500 HP & Full Heal", Color(0.8, 0.8, 0.8))
+		cheat_feed.add_message("Testing Cheats: CTRL+1 = God Mode | CTRL+2 = Spawn XP | CTRL+4 = Boss Vote", Color(0.8, 0.8, 0.8))
+		cheat_feed.add_message("More Cheats: ALT+1 = +1 MXP All | ALT+2 = +500 HP | ALT+3 = Spawn Rats", Color(0.8, 0.8, 0.8))
+		cheat_feed.add_message("Boss Spawns: ALT+5 = Forsen | ALT+6 = Thor | ALT+7 = Mika | ALT+8 = ZZran", Color(0.8, 0.8, 0.8))
+		cheat_feed.add_message("Performance: ALT+9 = Clear All Enemies", Color(0.8, 0.8, 0.8))
 
 func _setup_world():
 	# Arena size - DOUBLED to 3000
@@ -779,6 +802,16 @@ func _process(_delta):
 		elif get_meta("cheat_alt2_pressed", false):
 			set_meta("cheat_alt2_pressed", false)
 		
+		# ALT+3: Spawn test rats (holdable for continuous spawning)
+		if Input.is_key_pressed(KEY_ALT) and Input.is_key_pressed(KEY_3):
+			var current_time = Time.get_ticks_msec() / 1000.0
+			var last_spawn_time = get_meta("last_rat_spawn_time", 0.0)
+			
+			# Spawn rats at 5 per second when held
+			if current_time - last_spawn_time >= 0.2:  # 200ms between spawns
+				_spawn_test_rats(5)
+				set_meta("last_rat_spawn_time", current_time)
+		
 		# CTRL+4: Trigger boss vote
 		if Input.is_key_pressed(KEY_CTRL) and Input.is_key_pressed(KEY_4):
 			if not get_meta("cheat_4_pressed", false):
@@ -786,6 +819,46 @@ func _process(_delta):
 				_trigger_boss_vote()
 		elif get_meta("cheat_4_pressed", false):
 			set_meta("cheat_4_pressed", false)
+		
+		# ALT+5: Spawn Forsen Boss
+		if Input.is_key_pressed(KEY_ALT) and Input.is_key_pressed(KEY_5):
+			if not get_meta("cheat_alt5_pressed", false):
+				set_meta("cheat_alt5_pressed", true)
+				_spawn_boss_cheat("forsen")
+		elif get_meta("cheat_alt5_pressed", false):
+			set_meta("cheat_alt5_pressed", false)
+		
+		# ALT+6: Spawn Thor Boss
+		if Input.is_key_pressed(KEY_ALT) and Input.is_key_pressed(KEY_6):
+			if not get_meta("cheat_alt6_pressed", false):
+				set_meta("cheat_alt6_pressed", true)
+				_spawn_boss_cheat("thor")
+		elif get_meta("cheat_alt6_pressed", false):
+			set_meta("cheat_alt6_pressed", false)
+		
+		# ALT+7: Spawn Mika Boss
+		if Input.is_key_pressed(KEY_ALT) and Input.is_key_pressed(KEY_7):
+			if not get_meta("cheat_alt7_pressed", false):
+				set_meta("cheat_alt7_pressed", true)
+				_spawn_boss_cheat("mika")
+		elif get_meta("cheat_alt7_pressed", false):
+			set_meta("cheat_alt7_pressed", false)
+		
+		# ALT+8: Spawn ZZran Boss
+		if Input.is_key_pressed(KEY_ALT) and Input.is_key_pressed(KEY_8):
+			if not get_meta("cheat_alt8_pressed", false):
+				set_meta("cheat_alt8_pressed", true)
+				_spawn_boss_cheat("zzran")
+		elif get_meta("cheat_alt8_pressed", false):
+			set_meta("cheat_alt8_pressed", false)
+		
+		# ALT+9: Clear all enemies (performance cleanup)
+		if Input.is_key_pressed(KEY_ALT) and Input.is_key_pressed(KEY_9):
+			if not get_meta("cheat_alt9_pressed", false):
+				set_meta("cheat_alt9_pressed", true)
+				_clear_all_enemies()
+		elif get_meta("cheat_alt9_pressed", false):
+			set_meta("cheat_alt9_pressed", false)
 	
 	if not state_manager.is_paused():
 		game_time += _delta
@@ -1363,7 +1436,7 @@ func spawn_zzran_boss(spawn_position: Vector2) -> Node:
 	# print("🎯 spawn_zzran_boss called at position: ", spawn_position)
 	
 	# Create ZZran boss dynamically FIRST (before spawn effect)
-	var zzran_script = preload("res://entities/enemies/zzran_boss.gd")
+	var zzran_script = preload("res://entities/enemies/bosses/zzran/zzran_boss.gd")
 	var zzran = CharacterBody2D.new()
 	zzran.set_script(zzran_script)
 	zzran.name = "ZZranBoss"
@@ -1444,7 +1517,7 @@ func spawn_thor_boss(spawn_position: Vector2) -> Node:
 	add_child(spawn_effect)
 	
 	# Create THOR boss dynamically
-	var thor_script = preload("res://entities/enemies/thor_enemy.gd")
+	var thor_script = preload("res://entities/enemies/bosses/thor/thor_enemy.gd")
 	var thor = CharacterBody2D.new()
 	thor.name = "ThorBoss"
 	thor.script = thor_script
@@ -1465,7 +1538,7 @@ func spawn_thor_boss(spawn_position: Vector2) -> Node:
 	# Add sprite
 	var thor_sprite = Sprite2D.new()
 	thor_sprite.name = "Sprite"
-	thor_sprite.texture = preload("res://entities/enemies/pirate_skull.png")
+	thor_sprite.texture = preload("res://entities/enemies/bosses/thor/pirate_skull.png")
 	thor_sprite.scale = Vector2(0.1, 0.1)
 	thor.add_child(thor_sprite)
 	
@@ -1499,7 +1572,7 @@ func spawn_mika_boss(spawn_position: Vector2) -> Node:
 	add_child(spawn_effect)
 	
 	# Create Mika boss dynamically
-	var mika_script = preload("res://entities/enemies/mika_boss.gd")
+	var mika_script = preload("res://entities/enemies/bosses/mika/mika_boss.gd")
 	var mika = CharacterBody2D.new()
 	mika.set_script(mika_script)
 	mika.name = "MikaBoss"
@@ -1562,7 +1635,7 @@ func spawn_forsen_boss(spawn_position: Vector2) -> Node:
 	add_child(spawn_effect)
 	
 	# Create Forsen boss dynamically
-	var forsen_script = preload("res://entities/enemies/bosses/forsen_boss.gd")
+	var forsen_script = preload("res://entities/enemies/bosses/forsen/forsen_boss.gd")
 	var forsen = CharacterBody2D.new()
 	forsen.set_script(forsen_script)
 	forsen.name = "ForsenBoss"
@@ -1630,6 +1703,96 @@ func _trigger_boss_vote():
 	var vote_feed = get_action_feed()
 	if vote_feed:
 		vote_feed.add_message("ðŸ—³ï¸ Boss vote triggered! (CHEAT)", Color(1, 0.5, 0))
+
+func _spawn_test_rats(count: int = 1):
+	if not player:
+		print("No player found to spawn rats near!")
+		return
+	
+	# Check if EnemyManager is available
+	if not EnemyManager.instance:
+		print("⚠️ EnemyManager not available - skipping rat spawn (no legacy fallback)")
+		return
+	
+	# Get current active enemy count from V2 system
+	var current_enemy_count = EnemyManager.instance.get_active_enemy_count()
+	
+	# Spawn N test rats using V2 system at random safe positions near player
+	var spawn_count = max(1, count)
+	for i in range(spawn_count):
+		var spawn_pos = _get_safe_spawn_position(player.global_position, 120.0, 260.0)
+		
+		# Spawn using EnemyManager (type 0 = rat)
+		var enemy_id = EnemyManager.instance.spawn_enemy(
+			0,  # Rat type
+			spawn_pos,
+			"TestRat%d" % (i + 1),
+			Color(randf(), randf(), randf())
+		)
+		
+		if enemy_id < 0:
+			print("⚠️ Failed to spawn rat %d - EnemyManager may be full" % (i + 1))
+			break
+	
+	var new_enemy_count = EnemyManager.instance.get_active_enemy_count()
+	var spawned_count = new_enemy_count - current_enemy_count
+	
+	print("Spawned %d test rat(s) using V2 system (Total active: %d)" % [spawn_count, new_enemy_count])
+	var feed = get_action_feed()
+	if feed:
+		feed.add_message("🐀 %d Test rat(s) spawned via V2! Total: %d (CHEAT)" % [spawn_count, new_enemy_count], Color(0.8, 0.8, 0.2))
+
+
+func _clear_all_enemies():
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var count = enemies.size()
+	
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			enemy.queue_free()
+	
+	print("Cleared %d enemies for performance" % count)
+	var feed = get_action_feed()
+	if feed:
+		feed.add_message("🧹 Cleared %d enemies! (CHEAT)" % count, Color(0.5, 1, 0.5))
+
+func _spawn_boss_cheat(boss_type: String):
+	if not player:
+		print("No player found to spawn boss near!")
+		return
+	
+	# Use legacy node-based spawns with custom logic
+	# Calculate spawn position near player
+	var spawn_offset = Vector2(300, 0).rotated(randf() * TAU)
+	var spawn_pos = player.global_position + spawn_offset
+	
+	var boss = null
+	var boss_name_display = ""
+	
+	match boss_type:
+		"forsen":
+			boss = spawn_forsen_boss(spawn_pos)
+			boss_name_display = "Forsen"
+		"thor":
+			boss = spawn_thor_boss(spawn_pos)
+			boss_name_display = "THOR"
+		"mika":
+			boss = spawn_mika_boss(spawn_pos)
+			boss_name_display = "Mika"
+		"zzran":
+			boss = spawn_zzran_boss(spawn_pos)
+			boss_name_display = "ZZran"
+		_:
+			print("Unknown boss type: ", boss_type)
+			return
+	
+	if boss:
+		print("Spawned ", boss_name_display, " boss at ", spawn_pos)
+		var feed = get_action_feed()
+		if feed:
+			feed.add_message("%s Boss spawned! (CHEAT)" % boss_name_display, Color(1, 0, 0))
+	else:
+		print("Failed to spawn boss: ", boss_type)
 
 func _show_ziz_fullscreen_attack():
 	# print("🖼️ _show_ziz_fullscreen_attack() called!")

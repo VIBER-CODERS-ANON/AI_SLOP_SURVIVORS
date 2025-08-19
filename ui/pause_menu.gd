@@ -94,6 +94,96 @@ func _ready():
 	# Spacer
 	main_container.add_child(Control.new())
 	
+	# Display settings section title
+	var display_title = Label.new()
+	display_title.text = "DISPLAY SETTINGS"
+	display_title.add_theme_font_size_override("font_size", 24)
+	display_title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	display_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	main_container.add_child(display_title)
+	
+	# Display settings container
+	var display_container = VBoxContainer.new()
+	display_container.add_theme_constant_override("separation", 15)
+	main_container.add_child(display_container)
+	
+	# Resolution dropdown
+	var resolution_container = HBoxContainer.new()
+	resolution_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	display_container.add_child(resolution_container)
+	
+	var resolution_label = Label.new()
+	resolution_label.text = "Resolution"
+	resolution_label.custom_minimum_size = Vector2(120, 30)
+	resolution_label.add_theme_font_size_override("font_size", 18)
+	resolution_container.add_child(resolution_label)
+	
+	var resolution_dropdown = OptionButton.new()
+	resolution_dropdown.custom_minimum_size = Vector2(200, 30)
+	resolution_dropdown.add_theme_font_size_override("font_size", 16)
+	# Add common resolutions
+	resolution_dropdown.add_item("3840x2160 (4K)")
+	resolution_dropdown.add_item("2560x1440 (1440p)")
+	resolution_dropdown.add_item("1920x1080 (1080p)")
+	resolution_dropdown.add_item("1600x900")
+	resolution_dropdown.add_item("1366x768")
+	resolution_dropdown.add_item("1280x720 (720p)")
+	
+	# Set current resolution
+	var current_size = DisplayServer.window_get_size()
+	if current_size == Vector2i(3840, 2160):
+		resolution_dropdown.selected = 0
+	elif current_size == Vector2i(2560, 1440):
+		resolution_dropdown.selected = 1
+	elif current_size == Vector2i(1920, 1080):
+		resolution_dropdown.selected = 2
+	elif current_size == Vector2i(1600, 900):
+		resolution_dropdown.selected = 3
+	elif current_size == Vector2i(1366, 768):
+		resolution_dropdown.selected = 4
+	elif current_size == Vector2i(1280, 720):
+		resolution_dropdown.selected = 5
+	else:
+		resolution_dropdown.selected = 2  # Default to 1080p
+	
+	resolution_dropdown.item_selected.connect(_on_resolution_selected)
+	resolution_container.add_child(resolution_dropdown)
+	
+	# Fullscreen toggle
+	var fullscreen_container = HBoxContainer.new()
+	fullscreen_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	display_container.add_child(fullscreen_container)
+	
+	var fullscreen_label = Label.new()
+	fullscreen_label.text = "Fullscreen"
+	fullscreen_label.custom_minimum_size = Vector2(120, 30)
+	fullscreen_label.add_theme_font_size_override("font_size", 18)
+	fullscreen_container.add_child(fullscreen_label)
+	
+	var fullscreen_check = CheckBox.new()
+	fullscreen_check.button_pressed = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
+	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
+	fullscreen_container.add_child(fullscreen_check)
+	
+	# VSync toggle
+	var vsync_container = HBoxContainer.new()
+	vsync_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	display_container.add_child(vsync_container)
+	
+	var vsync_label = Label.new()
+	vsync_label.text = "VSync"
+	vsync_label.custom_minimum_size = Vector2(120, 30)
+	vsync_label.add_theme_font_size_override("font_size", 18)
+	vsync_container.add_child(vsync_label)
+	
+	var vsync_check = CheckBox.new()
+	vsync_check.button_pressed = DisplayServer.window_get_vsync_mode() == DisplayServer.VSYNC_ENABLED
+	vsync_check.toggled.connect(_on_vsync_toggled)
+	vsync_container.add_child(vsync_check)
+	
+	# Spacer
+	main_container.add_child(Control.new())
+	
 	# Volume controls section title
 	var volume_title = Label.new()
 	volume_title.text = "AUDIO SETTINGS"
@@ -344,6 +434,30 @@ func _on_dialog_volume_changed(value: float):
 	# Save settings
 	if SettingsManager.instance:
 		SettingsManager.instance.save_audio_settings()
+
+func _on_resolution_selected(index: int):
+	var resolutions = [
+		Vector2i(3840, 2160),  # 4K
+		Vector2i(2560, 1440),  # 1440p
+		Vector2i(1920, 1080),  # 1080p
+		Vector2i(1600, 900),
+		Vector2i(1366, 768),
+		Vector2i(1280, 720)    # 720p
+	]
+	
+	if index >= 0 and index < resolutions.size():
+		var res = resolutions[index]
+		if SettingsManager.instance:
+			SettingsManager.instance.set_resolution(res.x, res.y)
+		print("📺 Resolution changed to: %dx%d" % [res.x, res.y])
+
+func _on_fullscreen_toggled(pressed: bool):
+	if SettingsManager.instance:
+		SettingsManager.instance.set_fullscreen(pressed)
+
+func _on_vsync_toggled(pressed: bool):
+	if SettingsManager.instance:
+		SettingsManager.instance.set_vsync(pressed)
 
 func _update_volume_label(label_name: String, value: float):
 	# Find the label more reliably by searching through all children

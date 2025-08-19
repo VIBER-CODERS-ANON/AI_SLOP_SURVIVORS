@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://dx4scaainy0jk"]
+
+[ext_resource type="Script" uid="uid://cyeih3p5no8xw" path="res://entities/enemies/special/horse_enemy/horse_enemy.gd" id="1_horse"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(40, 30)
+
+[node name="HorseEnemy" type="CharacterBody2D"]
+z_index = 4
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_horse")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.25, 0.25)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")

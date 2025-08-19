@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://dg8cnevixvv84"]
+[gd_scene load_steps=7 format=3 uid="uid://dg8cnevixvv84"]
 
 [ext_resource type="Script" uid="uid://dm8galadrvsxx" path="res://entities/player/player.gd" id="1"]
 [ext_resource type="SpriteFrames" uid="uid://b64bgqxyt8w0b" path="res://entities/player/quin_sprite_frames.tres" id="2"]
 [ext_resource type="Script" uid="uid://2jj1oj3e72kx" path="res://systems/weapon_system/arcing_sword_weapon.gd" id="3"]
 [ext_resource type="Script" uid="uid://lfewbu5i4qx2" path="res://systems/lighting/player_light.gd" id="4"]
+[ext_resource type="Script" uid="uid://bvgvh4eju83vq" path="res://systems/detection/player_collision_detector.gd" id="5"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 16.0
@@ -37,3 +38,6 @@ base_damage = 1.0
 
 [node name="PlayerLight" type="Node2D" parent="."]
 script = ExtResource("4")
+
+[node name="PlayerCollisionDetector" type="Area2D" parent="."]
+script = ExtResource("5")

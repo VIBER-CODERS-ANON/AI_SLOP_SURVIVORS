@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chh3vxu81lqa5"
-path="res://.godot/imported/kefirIdle.png-74a2f7b613a9547f1b7aaa941225bcd3.ctex"
+uid="uid://dskull123"
+path="res://.godot/imported/pirate_skull.png-a9e51cabd2c953a9db9a5a1e188fedb6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://BespokeAssetSources/kefir/kefirIdle.png"
-dest_files=["res://.godot/imported/kefirIdle.png-74a2f7b613a9547f1b7aaa941225bcd3.ctex"]
+source_file="res://entities/enemies/bosses/thor/pirate_skull.png"
+dest_files=["res://.godot/imported/pirate_skull.png-a9e51cabd2c953a9db9a5a1e188fedb6.ctex"]
 
 [params]
 

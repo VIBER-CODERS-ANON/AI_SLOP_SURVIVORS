@@ -1,0 +1,25 @@
+[gd_scene load_steps=6 format=3 uid="uid://cxj7cjk38qwhi"]
+
+[ext_resource type="Script" uid="uid://u26wtj421usi" path="res://game_controller.gd" id="1"]
+[ext_resource type="Script" uid="uid://c0smjeft5n6bb" path="res://systems/twitch_system/twitch_bot.gd" id="2"]
+[ext_resource type="Script" uid="uid://b4tyymrfkfei3" path="res://systems/lighting/lighting_manager.gd" id="3"]
+[ext_resource type="Script" uid="uid://dwl24lfosqkec" path="res://systems/tilemap_system/tile_manager.gd" id="3_feb5d"]
+[ext_resource type="Script" uid="uid://byss3prwdspq2" path="res://systems/tilemap_system/dungeon_tilemap.gd" id="4_fc0e3"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1")
+
+[node name="TwitchBot" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="LightingManager" type="Node" parent="."]
+script = ExtResource("3")
+ambient_intensity = 0.15
+
+[node name="TileManager" type="Node" parent="."]
+script = ExtResource("3_feb5d")
+
+[node name="DungeonTileMap" type="TileMap" parent="."]
+z_index = -10
+format = 2
+script = ExtResource("4_fc0e3")

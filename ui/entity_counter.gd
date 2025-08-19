@@ -8,9 +8,9 @@ var update_timer: float = 0.0
 const UPDATE_INTERVAL: float = 0.1  # Update 10 times per second
 
 func _ready():
-	# Set up positioning - center of screen, near top
-	set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	position = Vector2(-100, 100)  # Centered horizontally, 100px from top
+	# Set up positioning - top right corner of screen
+	set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	position = Vector2(-250, 20)  # 250px from right edge, 20px from top
 	
 	# Create background panel
 	var panel = PanelContainer.new()
@@ -32,22 +32,22 @@ func _ready():
 	
 	# Create container for padding
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 15)
-	margin.add_theme_constant_override("margin_right", 15)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_top", 5)
+	margin.add_theme_constant_override("margin_bottom", 5)
 	panel.add_child(margin)
 	
 	# Create label
 	label = Label.new()
 	label.text = "ENTITIES: 0"
-	label.add_theme_font_size_override("font_size", 48)  # Much bigger
+	label.add_theme_font_size_override("font_size", 20)  # Smaller size
 	label.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0))
-	label.add_theme_constant_override("shadow_offset_x", 3)
-	label.add_theme_constant_override("shadow_offset_y", 3)
+	label.add_theme_constant_override("shadow_offset_x", 1)
+	label.add_theme_constant_override("shadow_offset_y", 1)
 	label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	label.add_theme_constant_override("outline_size", 2)
+	label.add_theme_constant_override("outline_size", 1)
 	margin.add_child(label)
 
 func _process(delta):
@@ -62,7 +62,11 @@ func _update_counter():
 	var player_count = 0
 	var total_count = 0
 	
-	# Count enemies
+	# Count V2 enemies first (high performance enemies)
+	if EnemyManager.instance:
+		enemy_count += EnemyManager.instance.get_active_enemy_count()
+	
+	# Count V1 enemies (legacy Node2D enemies)
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for enemy in enemies:
 		if is_instance_valid(enemy) and enemy.has_method("is_alive"):

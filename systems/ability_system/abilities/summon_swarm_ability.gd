@@ -7,7 +7,7 @@ extends BaseAbility
 # Ability properties
 @export var channel_duration: float = 10.0
 @export var summon_chance: float = 0.3  # 30% chance per emote
-@export var warrior_scene_path: String = "res://entities/enemies/ugandan_warrior.tscn"
+@export var warrior_scene_path: String = "res://entities/enemies/special/ugandan_warrior/ugandan_warrior.tscn"
 @export var max_warriors_per_user: int = 1
 
 # Visual/Audio
