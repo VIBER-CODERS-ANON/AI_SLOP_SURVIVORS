@@ -8,9 +8,9 @@ class_name EnemyNameplateManager
 static var instance: EnemyNameplateManager
 
 # Settings
-const MAX_VISIBLE_NAMEPLATES: int = 20  # Only show nearest 20 rat names
-const NAMEPLATE_DISTANCE: float = 300.0  # Max distance to show nameplates
-const UPDATE_INTERVAL: float = 0.033  # Update nameplates ~30 times per second for smoother movement
+const MAX_VISIBLE_NAMEPLATES: int = 50  # Show nearest 50 rat names
+const NAMEPLATE_DISTANCE: float = 1000.0  # Max distance to show nameplates
+const UPDATE_INTERVAL: float = 0.0  # Update every frame for smooth movement
 
 # Nameplate pool
 var nameplate_pool: Array[Label] = []
@@ -58,26 +58,15 @@ func _create_nameplate() -> Label:
 	label.focus_mode = Control.FOCUS_NONE
 	label.clip_contents = false
 	
-	# Add background for better readability
-	var bg = StyleBoxFlat.new()
-	bg.bg_color = Color(0, 0, 0, 0.7)  # Semi-transparent black
-	bg.corner_radius_top_left = 4
-	bg.corner_radius_top_right = 4
-	bg.corner_radius_bottom_left = 4
-	bg.corner_radius_bottom_right = 4
-	bg.content_margin_left = 4
-	bg.content_margin_right = 4
-	bg.content_margin_top = 2
-	bg.content_margin_bottom = 2
-	label.add_theme_stylebox_override("normal", bg)
+	# Remove background - no longer needed
+	# var bg = StyleBoxFlat.new()
+	# label.add_theme_stylebox_override("normal", bg)
 	
 	return label
 
-func _process(delta: float):
-	nameplate_timer += delta
-	if nameplate_timer >= UPDATE_INTERVAL:
-		nameplate_timer = 0.0
-		_update_nameplates()
+func _process(_delta: float):
+	# Update every frame for smooth movement
+	_update_nameplates()
 
 func _update_nameplates():
 	if not EnemyManager.instance:
@@ -205,21 +194,8 @@ func _show_nameplates_for_enemies(enemies: Array):
 		var base_height := 32.0
 		var target_pos = screen_pos + Vector2(0, - (base_height * enemy_scale * 0.5 + 12.0))
 		
-		# Store target position for smooth interpolation
-		nameplate_target_positions[enemy_id] = target_pos
-		
-		# Initialize current position if not set
-		if not nameplate_current_positions.has(enemy_id):
-			nameplate_current_positions[enemy_id] = target_pos
-		
-		# Smooth interpolation towards target
-		var current_pos = nameplate_current_positions[enemy_id]
-		var lerp_factor = min(get_process_delta_time() * 15.0, 1.0)  # Smooth following
-		current_pos = current_pos.lerp(target_pos, lerp_factor)
-		nameplate_current_positions[enemy_id] = current_pos
-		
-		# Apply smoothed position (pixel-snapped to avoid subpixel jitter)
-		nameplate.position = Vector2(round(current_pos.x), round(current_pos.y))
+		# Directly lock position to entity - no interpolation
+		nameplate.position = Vector2(round(target_pos.x), round(target_pos.y))
 		
 		# Light clamping to screen bounds (less aggressive)
 		_soft_clamp_nameplate_to_screen(nameplate)
