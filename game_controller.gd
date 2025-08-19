@@ -1735,7 +1735,7 @@ func _spawn_test_rats(count: int = 1):
 			break
 	
 	var new_enemy_count = EnemyManager.instance.get_active_enemy_count()
-	var spawned_count = new_enemy_count - current_enemy_count
+	var _spawned_count = new_enemy_count - current_enemy_count
 	
 	print("Spawned %d test rat(s) using V2 system (Total active: %d)" % [spawn_count, new_enemy_count])
 	var feed = get_action_feed()

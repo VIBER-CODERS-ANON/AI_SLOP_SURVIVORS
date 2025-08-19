@@ -182,7 +182,7 @@ func _show_nameplates_for_enemies(enemies: Array):
 		var enemy_pos = enemy_data.position as Vector2
 		var username = enemy_data.username as String
 		var color = enemy_data.color as Color
-		var scale: float = float(enemy_data.scale)
+		var enemy_scale: float = float(enemy_data.scale)
 		
 		# Reuse existing nameplate if active; otherwise take from pool
 		var nameplate: Label = active_nameplates.get(enemy_id, null)
@@ -203,7 +203,7 @@ func _show_nameplates_for_enemies(enemies: Array):
 		var screen_pos = _world_to_screen_position(enemy_pos)
 		# Position slightly above the rat head, accounting for mesh scale (base quad 32px)
 		var base_height := 32.0
-		var target_pos = screen_pos + Vector2(0, - (base_height * scale * 0.5 + 12.0))
+		var target_pos = screen_pos + Vector2(0, - (base_height * enemy_scale * 0.5 + 12.0))
 		
 		# Store target position for smooth interpolation
 		nameplate_target_positions[enemy_id] = target_pos

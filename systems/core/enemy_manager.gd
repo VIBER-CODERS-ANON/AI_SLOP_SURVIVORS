@@ -676,9 +676,9 @@ func _compute_avoidance_vector(pos: Vector2) -> Vector2:
 			var ppos: Vector2 = pit.get("position", Vector2.ZERO)
 			var prad: float = float(pit.get("radius", 0.0)) + pit_avoid_buffer
 			var d = pos - ppos
-			var len = d.length()
-			if len < prad and len > 0.001:
-				repel += d / len * ((prad - len) / prad)
+			var dist_len = d.length()
+			if dist_len < prad and dist_len > 0.001:
+				repel += d / dist_len * ((prad - dist_len) / prad)
 		var pillars = GameController.instance.get_meta("pillars", [])
 		for pil in pillars:
 			var ppos2: Vector2 = pil.get("position", Vector2.ZERO)
@@ -921,7 +921,7 @@ func _drop_xp_orb(enemy_id: int):
 	xp_orb.global_position = positions[enemy_id]
 	
 	if GameController.instance:
-		GameController.instance.add_child(xp_orb)
+		GameController.instance.call_deferred("add_child", xp_orb)
 
 func _grow_arrays():
 	var current_size = positions.size()
@@ -1001,8 +1001,8 @@ func _get_type_name_string(type: int) -> String:
 		6: return "zzran_boss"
 		_: return "unknown"
 
-func get_enemy_type_from_string(type_string: String) -> int:
-	match type_string.to_lower():
+func get_enemy_type_from_string(type_str: String) -> int:
+	match type_str.to_lower():
 		"twitch_rat": return 0
 		"succubus": return 1
 		"woodland_joe": return 2

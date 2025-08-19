@@ -378,8 +378,8 @@ func _update_sword_trail(sword: Node2D):
 	ghost.texture = original_sprite.texture
 	ghost.scale = original_sprite.scale
 	# Convert sword's global position to local position relative to weapon
-	ghost.position = sword.position
-	ghost.rotation = sword.rotation
+	ghost.position = to_local(sword.global_position)
+	ghost.rotation = sword.rotation - rotation
 	ghost.modulate = trail_color
 	ghost.z_index = -2  # Even further back
 	ghost.show_behind_parent = true

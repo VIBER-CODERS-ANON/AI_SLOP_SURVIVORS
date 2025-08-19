@@ -116,6 +116,11 @@ func _entity_ready():
 	
 	# Create health bar above the player
 	_setup_health_bar_ui()
+	
+	# Set camera zoom (smaller values = more zoomed out)
+	var camera = $Camera2D
+	if camera:
+		camera.zoom = Vector2(0.85, 0.85)  # Zoom out a bit
 
 func _setup_dash_cooldown_ui():
 	# Create a small cooldown indicator that appears under the player
