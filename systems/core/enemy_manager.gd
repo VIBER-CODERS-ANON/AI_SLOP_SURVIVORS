@@ -47,6 +47,10 @@ var chatter_usernames: Array[String]  # Username for each entity
 var chatter_colors: PackedColorArray  # Color for each entity
 var rarity_types: PackedByteArray  # NPCRarity.Type per entity (COMMON/MAGIC/RARE/UNIQUE)
 
+# Damage feedback (white flash)
+var flash_timers: PackedFloat32Array  # Timer for white flash effect
+const FLASH_DURATION: float = 0.15  # Duration of white flash in seconds
+
 # Entity pooling
 var free_ids: Array[int]  # Available entity IDs
 var active_count: int = 0  # Number of alive entities
@@ -168,6 +172,8 @@ func _initialize_arrays():
 	chatter_colors.resize(initial_capacity)
 	rarity_types = PackedByteArray()
 	rarity_types.resize(initial_capacity)
+	flash_timers = PackedFloat32Array()
+	flash_timers.resize(initial_capacity)
 	
 	# Initialize free ID pool with initial capacity
 	free_ids.clear()
@@ -186,6 +192,7 @@ func _setup_multimesh_rendering():
 	# Create MultiMesh resource
 	var multi_mesh = MultiMesh.new()
 	multi_mesh.transform_format = MultiMesh.TRANSFORM_2D
+	multi_mesh.use_colors = true  # Enable per-instance colors for flash effect
 	multi_mesh.instance_count = MAX_ENEMIES
 	
 	# Create quad mesh for rendering
@@ -211,6 +218,7 @@ func _setup_multimesh_rendering():
 	add_child(multi_mesh_minion_succubus)
 	var mm_succ = MultiMesh.new()
 	mm_succ.transform_format = MultiMesh.TRANSFORM_2D
+	mm_succ.use_colors = true
 	mm_succ.instance_count = MAX_ENEMIES
 	# Reuse quad mesh sizes, allow different scale via stats
 	var succ_mesh = QuadMesh.new()
@@ -229,6 +237,7 @@ func _setup_multimesh_rendering():
 	add_child(multi_mesh_minion_woodland)
 	var mm_wood = MultiMesh.new()
 	mm_wood.transform_format = MultiMesh.TRANSFORM_2D
+	mm_wood.use_colors = true
 	mm_wood.instance_count = MAX_ENEMIES
 	var wjoe_mesh = QuadMesh.new()
 	wjoe_mesh.size = Vector2(32, 32)
@@ -245,6 +254,7 @@ func _setup_multimesh_rendering():
 	add_child(multi_mesh_boss_thor)
 	var boss_mesh_thor = MultiMesh.new()
 	boss_mesh_thor.transform_format = MultiMesh.TRANSFORM_2D
+	boss_mesh_thor.use_colors = true
 	boss_mesh_thor.instance_count = MAX_ENEMIES
 	boss_mesh_thor.mesh = rat_mesh
 	multi_mesh_boss_thor.multimesh = boss_mesh_thor
@@ -261,6 +271,7 @@ func _setup_multimesh_rendering():
 	add_child(multi_mesh_boss_mika)
 	var boss_mesh_mika = MultiMesh.new()
 	boss_mesh_mika.transform_format = MultiMesh.TRANSFORM_2D
+	boss_mesh_mika.use_colors = true
 	boss_mesh_mika.instance_count = MAX_ENEMIES
 	boss_mesh_mika.mesh = rat_mesh
 	multi_mesh_boss_mika.multimesh = boss_mesh_mika
@@ -275,6 +286,7 @@ func _setup_multimesh_rendering():
 	add_child(multi_mesh_boss_forsen)
 	var boss_mesh_forsen = MultiMesh.new()
 	boss_mesh_forsen.transform_format = MultiMesh.TRANSFORM_2D
+	boss_mesh_forsen.use_colors = true
 	boss_mesh_forsen.instance_count = MAX_ENEMIES
 	boss_mesh_forsen.mesh = rat_mesh
 	multi_mesh_boss_forsen.multimesh = boss_mesh_forsen
@@ -289,6 +301,7 @@ func _setup_multimesh_rendering():
 	add_child(multi_mesh_boss_zzran)
 	var boss_mesh_zzran = MultiMesh.new()
 	boss_mesh_zzran.transform_format = MultiMesh.TRANSFORM_2D
+	boss_mesh_zzran.use_colors = true
 	boss_mesh_zzran.instance_count = MAX_ENEMIES
 	boss_mesh_zzran.mesh = rat_mesh
 	multi_mesh_boss_zzran.multimesh = boss_mesh_zzran
@@ -399,6 +412,7 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	behavior_wander_speed[id] = randf_range(1.0, 3.0)
 	burst_timer[id] = 0.0
 	burst_cooldown[id] = randf_range(0.8, 2.0)
+	flash_timers[id] = 0.0
 	
 	# Apply stats from configuration system
 	var enemy_type_str = _get_type_name_string(enemy_type)
@@ -505,6 +519,9 @@ func damage_enemy(id: int, damage: float, killer_name: String = "", death_cause:
 		return
 	
 	healths[id] = max(0, healths[id] - damage)
+	
+	# Trigger white flash for damage feedback
+	_flash_enemy_white(id)
 	
 	if healths[id] <= 0:
 		enemy_died.emit(id, killer_name, death_cause)
@@ -614,6 +631,9 @@ func _integrate_positions_and_behaviors(delta: float):
 			burst_timer[i] = max(0.0, burst_timer[i] - delta)
 		else:
 			burst_cooldown[i] = max(0.0, burst_cooldown[i] - delta)
+		# Update flash timer
+		if flash_timers[i] > 0.0:
+			flash_timers[i] = max(0.0, flash_timers[i] - delta)
 	if any_moved:
 		spatial_grid_dirty = true  # Mark grid as needing update
 
@@ -849,34 +869,48 @@ func _update_multimesh_transforms():
 		transform = transform.scaled(Vector2.ONE * scales[enemy_id])
 		transform.origin = positions[enemy_id]
 		
+		# Apply white flash color if enemy is flashing
+		var color = Color.WHITE
+		if flash_timers[enemy_id] > 0.0:
+			# Interpolate between normal and white based on flash timer
+			var flash_intensity = flash_timers[enemy_id] / FLASH_DURATION
+			color = Color(1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0)
+		
 		match int(entity_types[enemy_id]):
 			3:
 				if thor_count < boss_mesh_thor.instance_count:
 					boss_mesh_thor.set_instance_transform_2d(thor_count, transform)
+					boss_mesh_thor.set_instance_color(thor_count, color)
 				thor_count += 1
 			4:
 				if mika_count < boss_mesh_mika.instance_count:
 					boss_mesh_mika.set_instance_transform_2d(mika_count, transform)
+					boss_mesh_mika.set_instance_color(mika_count, color)
 				mika_count += 1
 			5:
 				if forsen_count < boss_mesh_forsen.instance_count:
 					boss_mesh_forsen.set_instance_transform_2d(forsen_count, transform)
+					boss_mesh_forsen.set_instance_color(forsen_count, color)
 				forsen_count += 1
 			6:
 				if zzran_count < boss_mesh_zzran.instance_count:
 					boss_mesh_zzran.set_instance_transform_2d(zzran_count, transform)
+					boss_mesh_zzran.set_instance_color(zzran_count, color)
 				zzran_count += 1
 			1:
 				if minion_succ_mesh and minion_succ_count < minion_succ_mesh.instance_count:
 					minion_succ_mesh.set_instance_transform_2d(minion_succ_count, transform)
+					minion_succ_mesh.set_instance_color(minion_succ_count, color)
 				minion_succ_count += 1
 			2:
 				if minion_wood_mesh and minion_wood_count < minion_wood_mesh.instance_count:
 					minion_wood_mesh.set_instance_transform_2d(minion_wood_count, transform)
+					minion_wood_mesh.set_instance_color(minion_wood_count, color)
 				minion_wood_count += 1
 			_:
 				if minion_count < minion_mesh.instance_count:
 					minion_mesh.set_instance_transform_2d(minion_count, transform)
+					minion_mesh.set_instance_color(minion_count, color)
 				minion_count += 1
 	
 	# Update visible counts per mesh
@@ -903,6 +937,11 @@ func evolve_enemy(enemy_id: int, new_type_id: int):
 	# Notify bridge to rebuild abilities/effects/lighting
 	if EnemyBridge.instance:
 		EnemyBridge.instance.evolve_enemy(enemy_id, enemy_type_str)
+
+func _flash_enemy_white(enemy_id: int):
+	if enemy_id < 0 or enemy_id >= flash_timers.size():
+		return
+	flash_timers[enemy_id] = FLASH_DURATION
 
 func _drop_xp_orb(enemy_id: int):
 	# Check if resource exists before trying to load
@@ -955,6 +994,7 @@ func _grow_arrays():
 	chatter_usernames.resize(new_size)
 	chatter_colors.resize(new_size)
 	rarity_types.resize(new_size)
+	flash_timers.resize(new_size)
 	
 	# Add new IDs to free pool
 	for i in range(current_size, new_size):
