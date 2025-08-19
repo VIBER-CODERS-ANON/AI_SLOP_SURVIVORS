@@ -32,13 +32,6 @@ var attack_timer: float = 0.0
 var is_fleeing: bool = false
 var flee_target: Node2D = null
 
-# Mana system (for special enemies like THOR)
-@export var has_mana: bool = false
-@export var max_mana: float = 0.0
-@export var current_mana: float = 0.0
-
-signal mana_changed(new_mana: float, max_mana: float)
-
 func _entity_ready():
 	super._entity_ready()
 	
@@ -62,10 +55,6 @@ func _entity_ready():
 	# Initialize visual scaling component
 	add_child(visual_scaler)
 	visual_scaler.initialize(self)
-	
-	# Initialize mana if applicable
-	if has_mana:
-		current_mana = 0.0  # Enemies start with no mana
 	
 	# Create enemy light if specified
 	if enemy_light_type != EnemyLight.EnemyLightType.NONE:
@@ -155,25 +144,6 @@ func _perform_attack():
 ## Virtual function - called when attack is performed
 func _on_attack_performed():
 	pass  # Override in subclasses for attack animations
-
-## Use mana (for enemies with mana system)
-func use_mana(amount: float) -> bool:
-	if not has_mana:
-		return false
-	
-	if current_mana >= amount:
-		current_mana -= amount
-		mana_changed.emit(current_mana, max_mana)
-		return true
-	return false
-
-## Add mana (for enemies with mana system)
-func add_mana(amount: float):
-	if not has_mana:
-		return
-	
-	current_mana = min(current_mana + amount, max_mana)
-	mana_changed.emit(current_mana, max_mana)
 
 ## Update AI target position based on attack type
 func _update_ai_target_position(ai_controller):

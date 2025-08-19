@@ -17,7 +17,5 @@ func _on_apply(entity: BaseEntity) -> void:
 	if entity is Player:
 		var player = entity as Player
 		var damage_increase = get_effective_power(1.0)
-		var weapon = player.get_primary_weapon()
-		if weapon:
-			weapon.base_damage += damage_increase
-			print("⚔️ %s gained +%.0f Base Damage!" % [player.name, damage_increase])
+		player.bonus_damage += damage_increase
+		print("⚔️ %s gained +%.0f Damage!" % [player.name, damage_increase])

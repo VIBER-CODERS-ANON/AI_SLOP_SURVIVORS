@@ -17,5 +17,7 @@ func _on_apply(entity: BaseEntity) -> void:
 	if entity is Player:
 		var player = entity as Player
 		var radius_percent = get_effective_power(10.0)
-		player.pickup_range *= (1.0 + radius_percent / 100.0)
+		var radius_bonus = player.base_pickup_range * (radius_percent / 100.0)
+		player.bonus_pickup_range += radius_bonus
+		player._update_derived_stats()
 		print("🧲 %s gained +%.0f%% Pickup Radius!" % [player.name, radius_percent])

@@ -220,13 +220,13 @@ func _setup_multimesh_rendering():
 	mm_succ.transform_format = MultiMesh.TRANSFORM_2D
 	mm_succ.use_colors = true
 	mm_succ.instance_count = MAX_ENEMIES
-	# Reuse quad mesh sizes, allow different scale via stats
+	# Succubus sprite is triple size for better visibility
 	var succ_mesh = QuadMesh.new()
-	succ_mesh.size = Vector2(32, 32)
+	succ_mesh.size = Vector2(96, 96)  # Triple size: 32 * 3 = 96
 	mm_succ.mesh = succ_mesh
 	multi_mesh_minion_succubus.multimesh = mm_succ
 	# Succubus texture (fallback to rat)
-	var succ_tex_path = "res://BespokeAssetSources/Succubus/succubusSpritesheet6framesUPDATE2.png"
+	var succ_tex_path = "res://BespokeAssetSources/succubus-tempfix.png"
 	if ResourceLoader.exists(succ_tex_path):
 		multi_mesh_minion_succubus.texture = load(succ_tex_path)
 	else:

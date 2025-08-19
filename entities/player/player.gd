@@ -6,12 +6,11 @@ class_name Player
 
 signal experience_gained(amount: int)
 signal level_up(new_level: int)
-signal mana_changed(new_mana: float, max_mana: float)
 
 @export_group("Player Stats")
+@export var base_move_speed: float = 210.0
 @export var base_pickup_range: float = 100.0
-@export var max_mana: float = 100.0
-@export var mana_regen_per_second: float = 1.0
+@export var base_health: float = 20.0
 @export var sprite_scale: float = 0.9  # 3x bigger than original 0.3
 
 # Leveling
@@ -19,11 +18,13 @@ var level: int = 1
 var experience: int = 0
 var experience_to_next_level: int = 10
 
-# Base stats (for player's own abilities if any)
+# Current values
 var pickup_range: float
-var current_mana: float
 
-# Bonus stats that affect weapons/abilities with matching tags
+# Bonus stats - ALL additive/multiplicative modifiers go here
+var bonus_move_speed: float = 0.0  # Flat bonus to movement
+var bonus_health: float = 0.0  # Flat bonus to max health
+var bonus_pickup_range: float = 0.0  # Flat bonus to pickup range
 var bonus_crit_chance: float = 0.0  # Added to weapons with "Crit" tag
 var bonus_crit_multiplier: float = 0.0  # Added to crit damage
 var bonus_attack_speed: float = 0.0  # Multiplier for "AttackSpeed" tag
@@ -69,8 +70,7 @@ func _entity_ready():
 	taggable.add_tag("Ground")
 	
 	# Initialize stats
-	pickup_range = base_pickup_range
-	current_mana = max_mana
+	_update_derived_stats()
 	
 	# DEV TOOL - Set up modular audio tester (can be removed)
 	if use_dev_audio_tester:
@@ -94,10 +94,7 @@ func _entity_ready():
 			dash_ability_ref.cooldown_started.connect(_on_dash_cooldown_started)
 			dash_ability_ref.cooldown_ended.connect(_on_dash_cooldown_ended)
 	
-	# Set player stats
-	max_health = 20
-	current_health = max_health  # Make sure current health matches max
-	move_speed = 210  # Reduced by 30% from 300
+	# Player stats are set in _update_derived_stats()
 	
 	# Get animated sprite and setup animation
 	var anim_sprite = get_node_or_null("SpriteContainer/Sprite")
@@ -199,19 +196,35 @@ func _setup_health_bar_ui():
 	_update_health_bar_display()
 
 func _update_health_bar_display():
-	var health_bar = get_meta("health_bar", null)
-	if health_bar:
-		health_bar.max_value = max_health
-		health_bar.value = current_health
+	# Check if health bar exists before trying to update it
+	if has_meta("health_bar"):
+		var health_bar = get_meta("health_bar")
+		if health_bar and is_instance_valid(health_bar):
+			health_bar.max_value = max_health
+			health_bar.value = current_health
+
+## Update all derived stats from base + bonus
+func _update_derived_stats():
+	# Movement
+	move_speed = base_move_speed + bonus_move_speed
+	
+	# Health
+	var old_max_health = max_health
+	max_health = base_health + bonus_health
+	
+	# If max health increased, heal the difference
+	if max_health > old_max_health:
+		current_health += (max_health - old_max_health)
+	
+	# Pickup
+	pickup_range = base_pickup_range + bonus_pickup_range
+	
+	# Update displays
+	_update_health_bar_display()
 
 func _entity_physics_process(_delta):
 	# Face the mouse cursor
 	_face_mouse()
-	
-	# Regenerate mana
-	if current_mana < max_mana:
-		current_mana = min(current_mana + mana_regen_per_second * _delta, max_mana)
-		mana_changed.emit(current_mana, max_mana)
 	
 	# Update combat timer
 	if in_combat:
@@ -732,11 +745,6 @@ func _on_death():
 	
 	# Don't queue_free immediately - might want to show death screen
 
-## Add mana to the player
-func add_mana(amount: float):
-	current_mana = min(current_mana + amount, max_mana)
-	mana_changed.emit(current_mana, max_mana)
-
 ## Get the primary weapon for modifications
 func get_primary_weapon() -> Node:
 	return get_node_or_null("ArcingSwordWeapon")
@@ -830,19 +838,6 @@ func get_cooldown_reduction() -> float:
 
 func get_area_of_effect() -> float:
 	return area_of_effect
-
-func get_current_mana() -> float:
-	return current_mana
-
-func get_max_mana() -> float:
-	return max_mana
-
-func spend_mana(amount: float) -> bool:
-	if current_mana >= amount:
-		current_mana -= amount
-		mana_changed.emit(current_mana, max_mana)
-		return true
-	return false
 
 func _unhandled_input(_event: InputEvent):
 	# Dash is now handled by AbilityManager keybinds

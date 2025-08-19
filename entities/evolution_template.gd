@@ -48,9 +48,6 @@ func _setup_evolution():
 	detection_range = 400.0
 	attack_cooldown = 1.0
 	
-	# Mana system (if needed)
-	has_mana = false
-	
 	# Set collision layers
 	collision_layer = 2  # Enemies layer
 	collision_mask = 3   # Can be hit by player weapons

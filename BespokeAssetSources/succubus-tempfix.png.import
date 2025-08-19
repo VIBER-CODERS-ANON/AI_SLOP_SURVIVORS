@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dmanagem"
-path="res://.godot/imported/mana_gem.png-5f823119579299854e86e0021b857f6c.ctex"
+uid="uid://dqg007nlrb8g1"
+path="res://.godot/imported/succubus-tempfix.png-8972a73349a3be62833b66dcfa1b01ab.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://entities/pickups/mana_gem.png"
-dest_files=["res://.godot/imported/mana_gem.png-5f823119579299854e86e0021b857f6c.ctex"]
+source_file="res://BespokeAssetSources/succubus-tempfix.png"
+dest_files=["res://.godot/imported/succubus-tempfix.png-8972a73349a3be62833b66dcfa1b01ab.ctex"]
 
 [params]
 
