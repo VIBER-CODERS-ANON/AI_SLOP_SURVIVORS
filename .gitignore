@@ -2,6 +2,9 @@
 .godot/
 /android/
 
+# Claude configuration
+CLAUDE.md
+
 # MCP and API Key Protection
 **/mcp.json
 **/*mcp*.json
