@@ -1,14 +1,16 @@
 # XP and MXP Scaling System
 
 ## Overview
-Enemies drop additional XP orbs based on how much MXP (Monster XP) they've spent on upgrades. This creates a risk/reward dynamic where players benefit from letting enemies buff themselves.
+Enemies have a chance to drop XP orbs with values scaled by their MXP spending. This creates a risk/reward dynamic where players benefit from letting enemies buff themselves, while reducing visual clutter through single high-value orbs.
 
 ## How It Works
 
-### Base System
-- All enemies drop 1 base XP orb when killed
-- Each MXP spent by the enemy adds +1 additional XP orb
-- Example: Enemy that spent 5 MXP drops 6 total XP orbs (1 base + 5 bonus)
+### Base System (Updated)
+- Enemies have 50% chance to drop XP
+- Base XP value increased to 2 (from 1)
+- Each MXP spent adds +2 to maximum potential XP
+- Drops single orb with value rolled between 1 and max
+- Example: Enemy with 5 MXP spent = max 12 XP (2 base + 10 MXP bonus), rolls 1-12
 
 ### Implementation Location
 The XP scaling is implemented in `systems/core/enemy_manager.gd` in the `_drop_xp_orb()` function:
@@ -37,22 +39,41 @@ func _drop_xp_orb(enemy_id: int):
 - `!ticket` - 3 MXP per ticket
 - `!gamble` - 1 MXP per gamble
 
+## XP Orb Visual System
+
+### Color Tiers (1-100+ XP)
+XP orbs change color based on their value (all orbs are the same size):
+
+- **1-5 XP**: Gray → Brown
+- **6-10 XP**: Red → Orange
+- **11-20 XP**: Orange → Yellow (+ slight glow)
+- **21-30 XP**: Yellow → Green
+- **31-40 XP**: Green → Cyan
+- **41-50 XP**: Cyan → Blue (+ more glow)
+- **51-60 XP**: Blue → Purple
+- **61-70 XP**: Purple → Pink
+- **71-80 XP**: Pink → Gold (+ strong glow)
+- **81-90 XP**: Gold → White
+- **91-100+ XP**: Rainbow prismatic effect (animated)
+
 ## Strategy Implications
 - Players can choose to let enemies buff for more XP rewards
 - Risk: Buffed enemies are harder to kill
-- Reward: More XP for leveling up faster
+- Reward: More XP for leveling up faster, chance for high-value orbs
+- Visual feedback: Different colors/glow effects = more value
 - Twitch chat engagement: Viewers spending MXP helps the player indirectly
 
 ## Technical Notes
 - Only works for enemies with usernames (Twitch chatter entities)
-- Regular spawned enemies without usernames drop base 1 XP
-- XP orbs spawn in a circle pattern when multiple drop
+- Regular spawned enemies without usernames: 50% chance to drop 1-2 XP
+- Single orb spawns instead of multiple to reduce clutter
 - System is in `enemy_manager.gd` NOT `base_enemy.gd` (which is deprecated)
+- All orbs are the same size - only color changes based on value
 
 ## Debugging
 Enable debug logs to see MXP spending and XP drops:
 ```
-DEBUG: Chatter 'username' spent 5 MXP, dropping 6 XP orbs
+DEBUG: Chatter 'username' spent 5 MXP, max XP: 12
 ```
 
 ## Future Considerations

@@ -1024,46 +1024,47 @@ func _flash_enemy_white(enemy_id: int):
 	flash_timers[enemy_id] = FLASH_DURATION
 
 func _drop_xp_orb(enemy_id: int):
+	# 50% chance to drop XP
+	if randf() > 0.5:
+		return
+	
 	# Check if resource exists before trying to load
 	var xp_orb_path = "res://entities/pickups/xp_orb.tscn"
 	if not ResourceLoader.exists(xp_orb_path):
 		print("⚠️ XP orb scene not found at: ", xp_orb_path)
 		return
 	
-	# Base XP value
-	var xp_to_drop = 1
+	# Base XP value (2x increase from 1 to 2)
+	var base_xp = 2
 	
 	# Scale XP based on MXP buffs if this is a chatter entity
+	var max_xp = base_xp
 	var username = chatter_usernames[enemy_id]
 	if username != "" and ChatterEntityManager.instance:
 		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
 		var total_mxp_spent = chatter_data.get("total_upgrades", 0)
 		
-		# Each MXP spent increases XP drop by 1
-		xp_to_drop += total_mxp_spent
+		# Each MXP spent adds 2 XP to max potential
+		max_xp += total_mxp_spent * 2
 		
 		if total_mxp_spent > 0:
-			print("DEBUG: Chatter '%s' spent %d MXP, dropping %d XP orbs" % [username, total_mxp_spent, xp_to_drop])
+			print("DEBUG: Chatter '%s' spent %d MXP, max XP: %d" % [username, total_mxp_spent, max_xp])
 	
-	# Spawn XP orb(s)
+	# Roll between 1 and max value
+	var xp_value = randi_range(1, max_xp)
+	
+	# Spawn single XP orb with rolled value
 	var xp_orb_scene = load(xp_orb_path)
 	if not xp_orb_scene:
 		print("⚠️ Failed to load XP orb scene")
 		return
 	
-	var death_position = positions[enemy_id]
+	var xp_orb = xp_orb_scene.instantiate()
+	xp_orb.global_position = positions[enemy_id]
+	xp_orb.xp_value = xp_value
 	
-	for i in range(xp_to_drop):
-		var xp_orb = xp_orb_scene.instantiate()
-		
-		# Spread orbs if multiple
-		var spread_radius = 20.0 if xp_to_drop > 1 else 0.0
-		var angle = (TAU / xp_to_drop) * i
-		var offset = Vector2(cos(angle), sin(angle)) * spread_radius
-		xp_orb.global_position = death_position + offset
-		
-		if GameController.instance:
-			GameController.instance.call_deferred("add_child", xp_orb)
+	if GameController.instance:
+		GameController.instance.call_deferred("add_child", xp_orb)
 
 func _grow_arrays():
 	var current_size = positions.size()
