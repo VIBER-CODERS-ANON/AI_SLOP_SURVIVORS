@@ -14,9 +14,16 @@ signal enemy_hit(enemy: Node, damage: float)
 @export var knockback_force: float = 100.0
 @export var weapon_tags: Array[String] = ["Melee", "Primary"]
 
+@export_group("Critical Hit Stats")
+@export var base_crit_chance: float = 0.05  # 5% default crit chance
+@export var base_crit_multiplier: float = 2.0  # 2x damage on crit
+
 # Owner reference
 var owner_entity: Node  # The player or entity wielding this weapon
 var attack_speed_multiplier: float = 1.0  # Modified by buffs/items
+
+# Cached player bonus references (updated each attack)
+var cached_player_bonuses: Dictionary = {}
 
 # Attack timing
 var attack_cooldown_timer: float = 0.0
@@ -25,6 +32,7 @@ var is_attacking: bool = false
 # Statistical tracking
 var total_damage_dealt: float = 0.0
 var enemies_hit_count: int = 0
+var total_crits: int = 0  # Track critical hits
 
 func _ready():
 	print("🔧 BasePrimaryWeapon._ready() called!")
@@ -157,15 +165,67 @@ func _execute_attack():
 	push_error("BasePrimaryWeapon._execute_attack() must be overridden!")
 	is_attacking = false
 
+## Update cached player bonuses
+func _update_player_bonuses():
+	if not owner_entity:
+		cached_player_bonuses = {}
+		return
+	
+	# Direct property access - we know owner is Player
+	cached_player_bonuses = {
+		"crit_chance": owner_entity.bonus_crit_chance,
+		"crit_multiplier": owner_entity.bonus_crit_multiplier,
+		"attack_speed": owner_entity.bonus_attack_speed,
+		"aoe": owner_entity.area_of_effect,
+		"damage": owner_entity.bonus_damage,
+		"damage_mult": owner_entity.bonus_damage_multiplier
+	}
+
+## Calculate final damage with crit chance
+func calculate_final_damage(base_dmg: float, damage_multiplier: float = 1.0) -> Dictionary:
+	_update_player_bonuses()
+	
+	# Apply damage bonuses if weapon has Damage tag
+	var modified_damage = base_dmg
+	if "Damage" in weapon_tags:
+		modified_damage += cached_player_bonuses.get("damage", 0.0)
+		modified_damage *= cached_player_bonuses.get("damage_mult", 1.0)
+	modified_damage *= damage_multiplier
+	
+	# Calculate crit if weapon has Crit tag
+	var is_crit = false
+	if "Crit" in weapon_tags:
+		var total_crit_chance = base_crit_chance + cached_player_bonuses.get("crit_chance", 0.0)
+		total_crit_chance = clamp(total_crit_chance, 0.0, 1.0)
+		is_crit = randf() < total_crit_chance
+		
+		if is_crit:
+			var total_crit_mult = base_crit_multiplier + cached_player_bonuses.get("crit_multiplier", 0.0)
+			modified_damage *= total_crit_mult
+			total_crits += 1
+	
+	return {
+		"damage": modified_damage,
+		"is_crit": is_crit
+	}
+
 ## Apply damage to an enemy
 func deal_damage_to_enemy(enemy: Node, damage_multiplier: float = 1.0):
 	if not enemy or not enemy.has_method("take_damage"):
 		return
-		
-	var final_damage = base_damage * damage_multiplier
+	
+	# Calculate damage with crit system
+	var damage_result = calculate_final_damage(base_damage, damage_multiplier)
+	var final_damage = damage_result.damage
+	var is_crit = damage_result.is_crit
+	
+	# Prepare tags for damage application
+	var damage_tags = weapon_tags.duplicate()
+	if is_crit:
+		damage_tags.append("crit")
 	
 	# Deal damage with proper tags
-	enemy.take_damage(final_damage, owner_entity, weapon_tags)
+	enemy.take_damage(final_damage, owner_entity, damage_tags)
 	
 	# Track statistics
 	total_damage_dealt += final_damage
@@ -189,7 +249,18 @@ func set_attack_speed_multiplier(multiplier: float):
 
 ## Get the current effective attack speed
 func get_effective_attack_speed() -> float:
-	return base_attack_speed * attack_speed_multiplier
+	_update_player_bonuses()
+	var speed = base_attack_speed * attack_speed_multiplier
+	if "AttackSpeed" in weapon_tags:
+		speed *= (1.0 + cached_player_bonuses.get("attack_speed", 0.0))
+	return speed
+
+## Get effective AOE scale
+func get_aoe_scale() -> float:
+	if "AoE" in weapon_tags:
+		_update_player_bonuses()
+		return cached_player_bonuses.get("aoe", 1.0)
+	return 1.0
 
 ## Get weapon type for various systems
 func get_weapon_type() -> String:
@@ -198,6 +269,20 @@ func get_weapon_type() -> String:
 ## Get current weapon tags
 func get_weapon_tags() -> Array:
 	return weapon_tags
+
+## Get total crit chance for UI display
+func get_total_crit_chance() -> float:
+	if "Crit" in weapon_tags:
+		_update_player_bonuses()
+		return clamp(base_crit_chance + cached_player_bonuses.get("crit_chance", 0.0), 0.0, 1.0)
+	return 0.0
+
+## Get total crit multiplier for UI display
+func get_total_crit_multiplier() -> float:
+	if "Crit" in weapon_tags:
+		_update_player_bonuses()
+		return base_crit_multiplier + cached_player_bonuses.get("crit_multiplier", 0.0)
+	return 0.0
 
 ## Add a tag to the weapon
 func add_weapon_tag(tag: String):

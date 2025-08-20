@@ -111,8 +111,9 @@ func execute(username: String, amount: int = 1) -> Dictionary:
 	result.amount_applied = actual_amount
 	result.message = get_success_message(username, actual_amount, chatter_data)
 	
-	# Send chat notification
-	notify_chat(username, result.message)
+	# Send chat notification only if something was actually applied
+	if actual_amount > 0:
+		notify_chat(username, result.message)
 	
 	return result
 

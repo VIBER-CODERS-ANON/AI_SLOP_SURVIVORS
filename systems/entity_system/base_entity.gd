@@ -189,8 +189,15 @@ func take_damage(amount: float, source: Node = null, damage_tags: Array = []):
 	# Visual feedback
 	_on_damaged(final_damage, source)
 	
+	# Check if this was a critical hit (exact "crit" tag, not "Crit" capability)
+	var is_crit = false
+	for tag in damage_tags:
+		if str(tag) == "crit":
+			is_crit = true
+			break
+	
 	# Spawn damage number
-	_spawn_damage_number(final_damage, damage_modifier > 1.5)
+	_spawn_damage_number(final_damage, is_crit)
 
 ## Heal the entity
 func heal(amount: float):

@@ -35,8 +35,9 @@ func take_damage(damage_amount: float, attacker: Node = null, _weapon_tags: Arra
 	var is_crit: bool = false
 	if _weapon_tags and _weapon_tags is Array:
 		for t in _weapon_tags:
-			var lt = str(t).to_lower()
-			if lt.find("crit") != -1 or lt == "headshot":
+			var tag_str = str(t)
+			# Check for exact "crit" tag (added only on actual crits), not "Crit" capability tag
+			if tag_str == "crit" or tag_str == "headshot":
 				is_crit = true
 				break
 	# Spawn damage number like node-based entities

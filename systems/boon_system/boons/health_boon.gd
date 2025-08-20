@@ -17,6 +17,6 @@ func _on_apply(entity: BaseEntity) -> void:
 	if entity is Player:
 		var player = entity as Player
 		var health_increase = get_effective_power(10.0)
-		player.max_health += health_increase
-		player.heal(health_increase)  # Also heal the new HP
+		player.bonus_health += health_increase
+		player._update_derived_stats()  # This handles healing the difference
 		print("🛡️ %s gained +%.0f Max HP!" % [player.name, health_increase])

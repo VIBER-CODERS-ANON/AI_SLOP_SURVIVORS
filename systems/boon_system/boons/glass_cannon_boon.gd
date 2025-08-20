@@ -16,14 +16,12 @@ func _on_apply(entity: BaseEntity) -> void:
 	if entity is Player:
 		var player = entity as Player
 		
-		# Double damage
-		var weapon = player.get_primary_weapon()
-		if weapon:
-			weapon.base_damage *= 2.0
+		# Double damage multiplier
+		player.bonus_damage_multiplier *= 2.0
 		
-		# Halve health
-		player.max_health *= 0.5
-		if player.current_health > player.max_health:
-			player.current_health = player.max_health
+		# Halve health (negative bonus)
+		var health_reduction = player.base_health * 0.5
+		player.bonus_health -= health_reduction
+		player._update_derived_stats()
 		
 		print("💣 %s became a Glass Cannon! Double damage, half health!" % player.name)

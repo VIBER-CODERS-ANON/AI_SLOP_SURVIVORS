@@ -44,9 +44,6 @@ func _setup_evolution():
 	attack_type = AttackType.RANGED
 	preferred_attack_distance = 280.0  # Stay at comfortable shooting distance (doubled)
 	
-	# No mana system for succubus
-	has_mana = false
-	
 	# Flying units have different collision
 	collision_layer = 2  # Enemies layer
 	collision_mask = 3   # Can be hit by player weapons

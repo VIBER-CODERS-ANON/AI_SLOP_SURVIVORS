@@ -9,7 +9,6 @@ class_name XPOrb
 @export var rotation_speed: float = 4.0
 
 # Magnetic attraction
-@export var attraction_radius: float = 150.0
 @export var attraction_speed: float = 400.0
 var is_attracted: bool = false
 var target_player: Node2D = null
@@ -76,9 +75,13 @@ func _check_attraction():
 	var players = get_tree().get_nodes_in_group("player")
 	if players.size() > 0:
 		var player = players[0]
-		if global_position.distance_to(player.global_position) <= attraction_radius:
+		# Direct access to player's pickup_range - no property checking
+		if global_position.distance_to(player.global_position) <= player.pickup_range:
 			is_attracted = true
 			target_player = player
+
+func can_be_picked_up() -> bool:
+	return not is_attracted  # Can be picked up if not already attracted
 
 func _on_body_entered(body: Node2D):
 	# Check if it's the player

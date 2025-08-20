@@ -1,35 +1,30 @@
 extends BaseMXPModifier
 class_name AOEModifier
 
-## !aoe command - Increases area of effect by 5% per MXP (increased/additive)
+## !aoe command - Flat area of effect increase  
+## Simple: +0.05 AOE multiplier per MXP spent (5% as flat addition)
 
-const AOE_INCREASE_PERCENT: float = 0.05  # 5% per use
+const FLAT_AOE_BONUS: float = 0.05  # +0.05 AOE multiplier per MXP
 
 func _init():
 	command_name = "aoe"
-	display_name = "Area of Effect"
-	description = "Increases area of effect by 5% per MXP"
+	display_name = "Area of Effect Boost"
+	description = "+5% area of effect per MXP (!aoe, !aoe5, !aoemax)"
 	cost_per_use = 1
 	emoji = "💥"
 
 func get_effect_description(stacks: int) -> String:
-	var total_increase = stacks * AOE_INCREASE_PERCENT * 100
-	return "+%.0f%% area of effect" % total_increase
+	var total_bonus = stacks * FLAT_AOE_BONUS * 100
+	return "Now at +%.0f%% total AOE!" % [total_bonus]
 
 func apply_effect(chatter_data: Dictionary, amount: int) -> Dictionary:
-	# Initialize aoe increased if not present
-	if not chatter_data.upgrades.has("aoe_increased_percent"):
-		chatter_data.upgrades["aoe_increased_percent"] = 0.0
+	# Initialize if not present
+	if not chatter_data.upgrades.has("bonus_aoe"):
+		chatter_data.upgrades["bonus_aoe"] = 0.0
 	
-	# Apply increased aoe % (additive)
-	chatter_data.upgrades["aoe_increased_percent"] += amount * AOE_INCREASE_PERCENT
-	
-	# Also update legacy aoe_multiplier for compatibility
-	if not chatter_data.upgrades.has("aoe_multiplier"):
-		chatter_data.upgrades["aoe_multiplier"] = 1.0
-	chatter_data.upgrades["aoe_multiplier"] = 1.0 + chatter_data.upgrades["aoe_increased_percent"]
+	# Apply flat AOE bonus
+	chatter_data.upgrades["bonus_aoe"] += amount * FLAT_AOE_BONUS
 	
 	return {
-		"aoe_increase_percent": chatter_data.upgrades["aoe_increased_percent"] * 100,
-		"total_aoe_percent": chatter_data.upgrades["aoe_multiplier"] * 100
+		"bonus_aoe": chatter_data.upgrades["bonus_aoe"]
 	}

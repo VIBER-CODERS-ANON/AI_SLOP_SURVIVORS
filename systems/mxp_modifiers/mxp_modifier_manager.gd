@@ -20,13 +20,12 @@ func _ready():
 func _register_all_modifiers():
 	# Register each modifier
 	register_modifier(GambleModifier.new())
-	register_modifier(AggroModifier.new())
 	register_modifier(HPModifier.new())
 	register_modifier(SpeedModifier.new())
 	register_modifier(AttackSpeedModifier.new())
 	register_modifier(AOEModifier.new())
 	register_modifier(RegenModifier.new())
-	register_modifier(RespawnSpeedModifier.new())
+	# RespawnSpeedModifier removed - no respawn system in game
 	register_modifier(TicketModifier.new())
 
 ## Register a modifier
@@ -56,6 +55,13 @@ func process_command(username: String, message: String) -> bool:
 	
 	var modifier: BaseMXPModifier = modifiers[command]
 	
+	# Handle "max" command - use all available MXP
+	if amount == -1:
+		var available_mxp = MXPManager.instance.get_available_mxp(username)
+		amount = available_mxp / modifier.cost_per_use  # Calculate max uses possible
+		if amount <= 0:
+			return false  # No MXP available
+	
 	# Execute the modifier
 	var result = modifier.execute(username, amount)
 	
@@ -77,8 +83,15 @@ func _parse_command(msg: String) -> Dictionary:
 		if msg.begins_with(command_name):
 			var remainder = msg.substr(command_name.length())
 			
+			# Check for "max" suffix - use all available MXP
+			if remainder == "max":
+				return {
+					"command": command_name,
+					"amount": -1  # Special value meaning "use max"
+				}
+			
 			# Check for numeric suffix
-			if remainder.is_valid_int():
+			elif remainder.is_valid_int():
 				return {
 					"command": command_name,
 					"amount": remainder.to_int()

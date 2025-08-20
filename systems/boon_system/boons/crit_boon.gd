@@ -17,5 +17,8 @@ func _on_apply(entity: BaseEntity) -> void:
 	if entity is Player:
 		var player = entity as Player
 		var crit_increase = get_effective_power(0.025)  # 2.5% as decimal
-		player.crit_chance += crit_increase
+		
+		# Apply to player's bonus stats (affects all weapons with "Crit" tag)
+		player.bonus_crit_chance += crit_increase
+		
 		print("✨ %s gained +%.1f%% Crit Chance!" % [player.name, crit_increase * 100])

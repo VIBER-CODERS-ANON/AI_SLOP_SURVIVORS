@@ -333,7 +333,14 @@ func _trigger_explode_for_entities(entity_ids: Array[int]):
 		
 		var pos = EnemyManager.instance.get_enemy_position(entity_id)
 		if pos != Vector2.ZERO:
-			_create_explosion_at_position(pos)
+			# Get username for this entity to apply AOE scaling
+			var username = ""
+			for user in alive_monsters:
+				if entity_id in alive_monsters[user]:
+					username = user
+					break
+			
+			_create_explosion_at_position(pos, username)
 			# Kill the entity after explosion
 			EnemyManager.instance.despawn_enemy(entity_id)
 
@@ -369,10 +376,18 @@ func _trigger_boost_for_entities(entity_ids: Array[int]):
 		add_child(timer)
 		timer.start()
 
-func _create_explosion_at_position(pos: Vector2):
+func _create_explosion_at_position(pos: Vector2, username: String = ""):
 	var explosion_scene = preload("res://entities/effects/explosion_effect.tscn")
 	var explosion = explosion_scene.instantiate()
 	explosion.global_position = pos
+	
+	# Apply chatter's AOE bonus if username provided
+	if username != "" and ChatterEntityManager.instance:
+		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+		if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
+			var bonus_aoe = chatter_data.upgrades.bonus_aoe
+			var rarity_mult = chatter_data.upgrades.get("rarity_multiplier", 1.0)
+			explosion.applied_aoe_scale = (1.0 + bonus_aoe) * rarity_mult
 	
 	if GameController.instance:
 		GameController.instance.add_child(explosion)

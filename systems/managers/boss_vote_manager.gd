@@ -8,7 +8,7 @@ signal vote_updated(votes: Dictionary)
 signal vote_ended(winner_boss_id: String)
 signal boss_spawned(boss_name: String)
 
-const VOTE_INTERVAL: float = 120.0  # 2 minutes
+const VOTE_INTERVAL: float = 300.0  # 5 minutes
 const VOTE_DURATION: float = 20.0   # 20 seconds
 
 # Boss registry - all available bosses
