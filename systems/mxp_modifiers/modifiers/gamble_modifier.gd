@@ -56,13 +56,20 @@ func get_success_message(username: String, amount: int, chatter_data: Dictionary
 	var total_winnings = effect_data.get("total_winnings", 0)
 	var net_result = effect_data.get("net_result", 0)
 	
+	# Get current MXP balance
+	var current_mxp = 0
+	if MXPManager.instance:
+		current_mxp = MXPManager.instance.get_available_mxp(username)
+	
 	if wins > 0:
-		return "%s %s gambled %d MXP and won %d times! Gained %d MXP (Net: %+d)" % [
-			emoji, username, amount, wins, total_winnings, net_result
+		var before_mxp = current_mxp - net_result
+		return "%s %s gambled %d MXP and won %d times! MXP: %d → %d (Net: %+d)" % [
+			emoji, username, amount, wins, before_mxp, current_mxp, net_result
 		]
 	else:
-		return "%s %s gambled %d MXP and lost it all! Better luck next time!" % [
-			emoji, username, amount
+		var before_mxp = current_mxp + amount
+		return "%s %s gambled %d MXP and lost! MXP: %d → %d (-%d)" % [
+			emoji, username, amount, before_mxp, current_mxp, amount
 		]
 
 func execute(username: String, amount: int = 1) -> Dictionary:
