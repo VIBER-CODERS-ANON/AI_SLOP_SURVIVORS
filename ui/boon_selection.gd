@@ -84,6 +84,7 @@ func _create_boon_card() -> Control:
 	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	content.add_theme_constant_override("separation", 10)
 	panel.add_child(content)
+	content.position.y += 10
 	
 	# Rarity label
 	var rarity_label = Label.new()
