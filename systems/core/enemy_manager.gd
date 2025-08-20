@@ -13,7 +13,7 @@ static var instance: EnemyManager
 const MAX_ENEMIES: int = 1000
 
 # Enemy movement and attack constants
-const ATTACK_REACH: float = 36.0 # how close they need to be to hit
+const ATTACK_REACH: float = 20.0 # how close they need to be to hit (tight melee range)
 const STOP_DISTANCE: float = 0
 const START_DISTANCE: float = STOP_DISTANCE + 10.0
 const ARRIVE_RADIUS: float = 120.0 # start easing off speed as they get near

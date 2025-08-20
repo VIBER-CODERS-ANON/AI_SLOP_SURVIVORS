@@ -16,7 +16,7 @@ enum AttackType {
 
 @export_group("Enemy Stats")
 @export var damage: float = 10.0
-@export var attack_range: float = 70.0
+@export var attack_range: float = 150.0
 @export var attack_cooldown: float = 0.5
 @export var attack_type: AttackType = AttackType.MELEE
 @export var preferred_attack_distance: float = -1.0  ## If -1, uses attack_range for ranged, attack_range * 0.8 for melee
@@ -119,8 +119,8 @@ func _entity_physics_process(delta):
 	if target_player and is_instance_valid(target_player):
 		var distance = global_position.distance_to(target_player.global_position)
 		
-		# For melee enemies, if we're basically touching (within 40 pixels), attack immediately
-		if attack_type == AttackType.MELEE and distance <= 40:
+		# For melee enemies, use a much larger attack zone
+		if attack_type == AttackType.MELEE and distance <= 100:
 			if can_attack:
 				_perform_attack()
 		# Otherwise use normal attack range

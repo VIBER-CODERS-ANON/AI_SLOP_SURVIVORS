@@ -1,17 +1,24 @@
 extends Area2D
 class_name PlayerCollisionDetector
 
-## INVERTED COLLISION SYSTEM
-## Instead of thousands of enemy collision bodies, the player has one Area2D
-## that detects overlaps with enemies using the EnemyManager data arrays
+## UNIFIED ENEMY ATTACK SYSTEM FOR DATA-ORIENTED MINIONS
+## This system handles all attacks from V2 enemies (rats, succubus, etc)
+## Node-based enemies (bosses) use their own BaseEnemy attack system
+##
+## CONFIGURATION:
+## - detection_radius: How close enemies need to be to attack (default: 100 pixels)
+## - damage_cooldown: Time between attacks from same enemy (default: 0.5s = 2 APS)
 
 signal enemy_overlap_detected(enemy_id: int)
 
-# Collision settings
-var detection_radius: float = 32.0  # How far from player center to detect enemies
-var damage_per_second: float = 60.0  # Base damage enemies deal to player
+# Attack configuration
+var detection_radius: float = 20.0  # Attack range for V2 enemies (tight melee range)
+var damage_cooldown: float = 0.5  # 0.5s = 2 attacks per second per enemy
 var last_damage_times: Dictionary = {}  # enemy_id -> last_damage_time
-var damage_cooldown: float = 1.0  # Cooldown between damage from same enemy
+
+# Player capsule hitbox dimensions (from player.tscn)
+var capsule_radius: float = 16.0
+var capsule_height: float = 60.0
 
 # Visual debug
 var debug_draw_enabled: bool = false
@@ -21,13 +28,8 @@ func _ready():
 	collision_layer = 0  # Player detector doesn't need to be on a layer
 	collision_mask = 0   # We'll handle detection manually
 	
-	# Create detection shape
-	var shape = CircleShape2D.new()
-	shape.radius = detection_radius
-	
-	var collision_shape = CollisionShape2D.new()
-	collision_shape.shape = shape
-	add_child(collision_shape)
+	# DON'T create a collision shape - this Area2D is only for manual detection
+	# The visual collision box should only come from the main CharacterBody2D
 	
 	# Connect to player
 	if get_parent().has_signal("health_changed"):
@@ -89,8 +91,8 @@ func _check_single_enemy_collision(enemy_id: int, player_pos: Vector2, current_t
 		return
 	var enemy_pos = enemy_manager.positions[enemy_id]
 	
-	# Check if enemy is within detection radius
-	var distance = player_pos.distance_to(enemy_pos)
+	# Calculate distance from enemy to edge of player's capsule hitbox
+	var distance = _get_distance_to_capsule_edge(player_pos, enemy_pos)
 	if distance > detection_radius:
 		return
 	
@@ -145,14 +147,33 @@ func _get_attack_name(enemy_type: int) -> String:
 		2: return "woodland strike"
 		_: return "unknown attack"
 
+## Calculate distance from a point to the edge of a capsule shape
+func _get_distance_to_capsule_edge(capsule_center: Vector2, point: Vector2) -> float:
+	# Capsule is vertical (taller than wide)
+	# It consists of a rectangle with semicircles on top and bottom
+	
+	# Half-height of the rectangular part (excluding the radius caps)
+	var half_rect_height = (capsule_height - capsule_radius * 2) / 2.0
+	
+	# Get point relative to capsule center
+	var relative_point = point - capsule_center
+	
+	# Clamp the y position to the rectangular part of the capsule
+	var clamped_y = clamp(relative_point.y, -half_rect_height, half_rect_height)
+	
+	# Find the closest point on the capsule's center line
+	var closest_on_centerline = Vector2(0, clamped_y)
+	
+	# Calculate distance from the point to the closest point on centerline
+	var dist_to_centerline = relative_point.distance_to(closest_on_centerline)
+	
+	# Subtract the capsule radius to get distance to edge
+	# If negative, the point is inside the capsule
+	return max(0, dist_to_centerline - capsule_radius)
+
 func set_detection_radius(new_radius: float):
 	detection_radius = new_radius
-	
-	# Update collision shape
-	var collision_shape = get_child(0) as CollisionShape2D
-	if collision_shape and collision_shape.shape is CircleShape2D:
-		var shape = collision_shape.shape as CircleShape2D
-		shape.radius = new_radius
+	# No collision shape to update - using manual detection only
 
 # Debug visualization
 func _draw():

@@ -238,6 +238,9 @@ func _entity_physics_process(_delta):
 	# Handle vampiric drain
 	_handle_vampiric_drain(_delta)
 	
+	# Push away nearby enemies (one-way collision)
+	_push_nearby_enemies()
+	
 	# Handle animation based on movement
 	var animated_sprite = get_node_or_null("SpriteContainer/Sprite")
 	if animated_sprite and animated_sprite is AnimatedSprite2D:
@@ -253,6 +256,31 @@ func _entity_physics_process(_delta):
 	
 	# Update abilities
 	_update_abilities(_delta)
+
+## Push nearby enemies away (one-way collision system)
+func _push_nearby_enemies():
+	var push_radius = 40.0  # How close enemies need to be to get pushed
+	var push_force = 200.0  # How hard to push enemies
+	
+	# Check all enemies in the scene
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if not is_instance_valid(enemy) or not enemy.has_method("get_global_position"):
+			continue
+			
+		var distance = global_position.distance_to(enemy.global_position)
+		if distance < push_radius and distance > 0:
+			# Calculate push direction (away from player)
+			var push_direction = (enemy.global_position - global_position).normalized()
+			
+			# Apply push force based on how close the enemy is (stronger when closer)
+			var push_strength = (1.0 - distance / push_radius) * push_force
+			
+			# Move the enemy away
+			if enemy.has_method("set_position"):
+				enemy.set_position(enemy.global_position + push_direction * push_strength * get_physics_process_delta_time())
+			else:
+				enemy.global_position += push_direction * push_strength * get_physics_process_delta_time()
 
 ## Check for and collect nearby pickups
 func _check_pickups():
