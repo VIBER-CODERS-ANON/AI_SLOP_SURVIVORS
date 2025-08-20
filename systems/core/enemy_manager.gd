@@ -536,6 +536,21 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 				attack_cooldowns[id] = 3.0
 	
 	active_count += 1
+	
+	# Apply MXP upgrades if this is a chatter entity
+	if username != "" and ChatterEntityManager.instance:
+		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+		
+		# Apply HP bonus
+		if chatter_data.upgrades.has("bonus_health"):
+			var hp_bonus = chatter_data.upgrades["bonus_health"]
+			max_healths[id] += hp_bonus
+			healths[id] += hp_bonus
+		
+		# Apply speed bonus
+		if chatter_data.upgrades.has("bonus_move_speed"):
+			var speed_bonus = chatter_data.upgrades["bonus_move_speed"]
+			move_speeds[id] += speed_bonus
 
 	# Assign rarity for V2 minions via NPCRarityManager (no visuals, stat/tint only)
 	if NPCRarityManager.get_instance():

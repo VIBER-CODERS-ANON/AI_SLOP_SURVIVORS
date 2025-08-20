@@ -207,7 +207,48 @@ func apply_upgrades_to_entity(entity: Node, username: String):
 
 ## Update active entity with new upgrades
 func _update_active_entity(username: String):
-	# Find the active entities for this chatter using new system
+	# Update V2 enemies in EnemyManager
+	if EnemyManager.instance:
+		var enemy_manager = EnemyManager.instance
+		var chatter_data_local = get_chatter_data(username)
+		
+		# Find all enemies belonging to this chatter
+		for id in range(enemy_manager.chatter_usernames.size()):
+			if enemy_manager.alive_flags[id] == 0:
+				continue
+			if enemy_manager.chatter_usernames[id] != username:
+				continue
+			
+			# Get base stats for this enemy type
+			var enemy_type = enemy_manager.entity_types[id]
+			var base_hp = 10.0
+			var base_speed = 80.0
+			
+			match enemy_type:
+				0: # Rat
+					base_hp = 10.0
+					base_speed = 80.0
+				1: # Succubus
+					base_hp = 25.0
+					base_speed = 100.0
+				2: # Woodland Joe
+					base_hp = 40.0
+					base_speed = 80.0
+			
+			# Apply HP bonus
+			if chatter_data_local.upgrades.has("bonus_health"):
+				var hp_bonus = chatter_data_local.upgrades["bonus_health"]
+				enemy_manager.max_healths[id] = base_hp + hp_bonus
+				# Also heal to new max if current health was at max
+				if enemy_manager.healths[id] >= base_hp:
+					enemy_manager.healths[id] = base_hp + hp_bonus
+			
+			# Apply speed bonus
+			if chatter_data_local.upgrades.has("bonus_move_speed"):
+				var speed_bonus = chatter_data_local.upgrades["bonus_move_speed"]
+				enemy_manager.move_speeds[id] = base_speed + speed_bonus
+	
+	# Find the active entities for this chatter using old system (if any remain)
 	if TicketSpawnManager.instance:
 		var entities = TicketSpawnManager.instance.get_alive_entities_for_chatter(username)
 		for entity in entities:
