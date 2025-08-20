@@ -269,10 +269,12 @@ func _setup_world():
 	# Bosses are now spawned via voting system, not automatically
 
 func _create_arena_walls(arena_size: float):
-	var wall_thickness = 50.0
+	# 500 pixels thick should stop ANY entity
+	var wall_thickness = 500.0
 	var half_size = arena_size / 2.0
 	
 	# Wall positions: [position, size, name]
+	# Positioned so the inner edge is exactly at the arena boundary
 	var walls = [
 		[Vector2(-half_size - wall_thickness/2.0, 0), Vector2(wall_thickness, arena_size + wall_thickness*2.0), "WestWall"],
 		[Vector2(half_size + wall_thickness/2.0, 0), Vector2(wall_thickness, arena_size + wall_thickness*2.0), "EastWall"],
@@ -285,8 +287,8 @@ func _create_arena_walls(arena_size: float):
 		var wall_body = StaticBody2D.new()
 		wall_body.name = wall_data[2]
 		wall_body.position = wall_data[0]
-		wall_body.collision_layer = 1
-		wall_body.collision_mask = 0
+		wall_body.collision_layer = 1  # Wall collision layer
+		wall_body.collision_mask = 0   # Walls don't need to detect anything
 		wall_body.process_mode = Node.PROCESS_MODE_PAUSABLE
 		add_child(wall_body)
 		
