@@ -110,7 +110,7 @@ func _setup_sprite():
 func _entity_physics_process(delta):
 	# Update sprite direction based on movement
 	if sprite and velocity.x != 0 and not is_preparing_charge:
-		sprite.flip_h = velocity.x < 0  # Flip when moving left
+		sprite.flip_h = velocity.x > 0  # Flip when moving right (inverted because base sprite is flipped)
 	
 	# Handle charge states
 	if is_preparing_charge:
@@ -213,7 +213,7 @@ func _handle_charging(_delta):
 	
 	# Update sprite direction during charge
 	if sprite and charge_direction.x != 0:
-		sprite.flip_h = charge_direction.x < 0  # Flip when charging left
+		sprite.flip_h = charge_direction.x > 0  # Flip when charging right (inverted because base sprite is flipped)
 	
 	# Check if we've reached the end position
 	var distance_to_end = global_position.distance_to(charge_end_position)
