@@ -14,6 +14,11 @@ func _ready():
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	
+	# Ensure proper rendering above nameplates
+	top_level = true
+	z_as_relative = false
+	z_index = 900  # High but below pause menu
+	
 	# Make sure this UI can process during pause
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	
@@ -133,6 +138,7 @@ func show_selection():
 	
 	# Show (pause is handled by game controller)
 	visible = true
+	# z_index = 4096 already ensures we're on top
 
 func _update_card(card: Control, boon_data: Dictionary, index: int):
 	var boon = boon_data["boon"] as BaseBoon

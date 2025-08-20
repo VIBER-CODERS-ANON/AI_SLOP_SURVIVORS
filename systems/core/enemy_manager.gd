@@ -12,6 +12,20 @@ static var instance: EnemyManager
 # Maximum enemy capacity (preallocated)
 const MAX_ENEMIES: int = 1000
 
+# Enemy movement and attack constants
+const ATTACK_REACH: float = 36.0 # how close they need to be to hit
+const STOP_DISTANCE: float = 0
+const START_DISTANCE: float = STOP_DISTANCE + 10.0
+const ARRIVE_RADIUS: float = 120.0 # start easing off speed as they get near
+const MIN_SPEED_SCALE: float = 0.05 # never fully stop until inside STOP_DISTANCE
+
+# Succubus animation constants
+const SUCCUBUS_FRAMES_H: int = 6
+const SUCCUBUS_FRAMES_V: int = 1
+const SUCCUBUS_ANIM_FPS: float = 8.0
+var succubus_mat: ShaderMaterial = null
+var _succubus_anim_time: float = 0.0
+
 # Entity data storage (Structure of Arrays)
 var positions: PackedVector2Array
 var velocities: PackedVector2Array
@@ -39,6 +53,7 @@ var behavior_wander_speed: PackedFloat32Array   # radians/sec for wander phase a
 var speed_jitter: PackedFloat32Array            # per-enemy speed multiplier (~0.9-1.2)
 var burst_timer: PackedFloat32Array             # seconds remaining of speed burst
 var burst_cooldown: PackedFloat32Array          # seconds until next burst
+var _halted: PackedByteArray                    # 0 = moving, 1 = halted near player
 
 # Entity metadata
 var alive_flags: PackedByteArray  # 0 = dead, 1 = alive
@@ -102,6 +117,9 @@ var instance_to_enemy_map: Dictionary = {}  # instance_index -> enemy_id
 var enemy_to_instance_map: Dictionary = {}  # enemy_id -> instance_index
 var next_instance_index: int = 0
 
+# Succubus animation tracking
+# (moved to top of file with other animation constants)
+
 func _ready():
 	instance = self
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -161,6 +179,8 @@ func _initialize_arrays():
 	burst_timer.resize(initial_capacity)
 	burst_cooldown = PackedFloat32Array()
 	burst_cooldown.resize(initial_capacity)
+	_halted = PackedByteArray()
+	_halted.resize(initial_capacity)
 	
 	alive_flags = PackedByteArray()
 	alive_flags.resize(initial_capacity)
@@ -219,18 +239,49 @@ func _setup_multimesh_rendering():
 	var mm_succ = MultiMesh.new()
 	mm_succ.transform_format = MultiMesh.TRANSFORM_2D
 	mm_succ.use_colors = true
+	# use_custom_data not supported properly in 2D - removed
 	mm_succ.instance_count = MAX_ENEMIES
 	# Succubus sprite is triple size for better visibility
 	var succ_mesh = QuadMesh.new()
 	succ_mesh.size = Vector2(96, 96)  # Triple size: 32 * 3 = 96
 	mm_succ.mesh = succ_mesh
 	multi_mesh_minion_succubus.multimesh = mm_succ
-	# Succubus texture (fallback to rat)
-	var succ_tex_path = "res://BespokeAssetSources/succubus-tempfix.png"
+	
+	# Use spritesheet texture and shader
+	var succ_tex_path := "res://BespokeAssetSources/Succubus/succubusSpritesheet6framesUPDATE2.png"
 	if ResourceLoader.exists(succ_tex_path):
 		multi_mesh_minion_succubus.texture = load(succ_tex_path)
 	else:
-		multi_mesh_minion_succubus.texture = multi_mesh_instance.texture
+		# Fallback to temp fix or rat texture
+		var fallback_path := "res://BespokeAssetSources/succubus-tempfix.png"
+		if ResourceLoader.exists(fallback_path):
+			multi_mesh_minion_succubus.texture = load(fallback_path)
+		else:
+			multi_mesh_minion_succubus.texture = multi_mesh_instance.texture
+	
+	# Apply the shader for spritesheet animation
+	var mat_path := "res://BespokeAssetSources/Succubus/succubus_atlas.tres"
+	if ResourceLoader.exists(mat_path):
+		multi_mesh_minion_succubus.material = load(mat_path)
+	else:
+		# Fallback: create material dynamically if .tres doesn't exist
+		var shader_path := "res://BespokeAssetSources/Succubus/succubus_atlas.gdshader"
+		if ResourceLoader.exists(shader_path):
+			var shader_mat := ShaderMaterial.new()
+			shader_mat.shader = load(shader_path)
+			shader_mat.set_shader_parameter("frames_h", SUCCUBUS_FRAMES_H)
+			shader_mat.set_shader_parameter("frames_v", SUCCUBUS_FRAMES_V)
+			if multi_mesh_minion_succubus.texture:
+				shader_mat.set_shader_parameter("tex", multi_mesh_minion_succubus.texture)
+			multi_mesh_minion_succubus.material = shader_mat
+	
+	# Keep a reference and push params (even if loaded from .tres)
+	succubus_mat = multi_mesh_minion_succubus.material as ShaderMaterial
+	if succubus_mat:
+		succubus_mat.set_shader_parameter("frames_h", SUCCUBUS_FRAMES_H)
+		succubus_mat.set_shader_parameter("frames_v", SUCCUBUS_FRAMES_V)
+		if multi_mesh_minion_succubus.texture:
+			succubus_mat.set_shader_parameter("tex", multi_mesh_minion_succubus.texture)
 
 	multi_mesh_minion_woodland = MultiMeshInstance2D.new()
 	multi_mesh_minion_woodland.name = "MinionMultiMesh_WoodlandJoe"
@@ -341,9 +392,29 @@ func _setup_collision_body_pool():
 	
 	print("✅ Collision body pool created - %d bodies" % MAX_LIVE_ENEMIES)
 
+# Succubus animation helper functions
+func _tick_succubus_anim(delta: float) -> void:
+	_succubus_anim_time += delta
+
+func _get_succubus_frame() -> Vector2i:
+	var total := SUCCUBUS_FRAMES_H * SUCCUBUS_FRAMES_V
+	if total <= 0: 
+		return Vector2i(0, 0)
+	var idx := int(floor(_succubus_anim_time * SUCCUBUS_ANIM_FPS)) % total
+	return Vector2i(idx % SUCCUBUS_FRAMES_H, idx / SUCCUBUS_FRAMES_H)
+
 func _physics_process(delta: float):
 	if get_tree().paused:
 		return
+	
+	# Tick succubus animation
+	_succubus_anim_time += delta
+	if succubus_mat:
+		var total: int = SUCCUBUS_FRAMES_H * SUCCUBUS_FRAMES_V
+		if total <= 0:
+			total = 1
+		var frame_idx: int = int(floor(_succubus_anim_time * SUCCUBUS_ANIM_FPS)) % total
+		succubus_mat.set_shader_parameter("frame", frame_idx)
 	
 	# Update player position for flow-field
 	if GameController.instance and GameController.instance.player:
@@ -545,6 +616,15 @@ func _process_enemy_slice(delta: float):
 	if current_slice_offset >= array_size:
 		current_slice_offset = 0
 
+func _arrive_scale(dist: float) -> float:
+	if dist <= STOP_DISTANCE:
+		return 0.0
+	if dist >= ARRIVE_RADIUS:
+		return 1.0
+	var t: float = (dist - STOP_DISTANCE) / max(ARRIVE_RADIUS - STOP_DISTANCE, 1.0)
+	t = t * t * (3.0 - 2.0 * t) # smoothstep
+	return MIN_SPEED_SCALE + (1.0 - MIN_SPEED_SCALE) * t
+
 func _update_enemy_movement(id: int, delta: float):
 	var current_pos = positions[id]
 	
@@ -582,8 +662,21 @@ func _update_enemy_movement(id: int, delta: float):
 		burst_timer[id] = randf_range(0.15, 0.4)
 		burst_cooldown[id] = randf_range(1.0, 2.0)
 	
-	# Apply movement with smoothing
-	var target_velocity = combined_direction * effective_speed
+	# Decide if this enemy should slow down or stop near the player (arrive + jitter logic)
+	var to_player: Vector2 = player_position - current_pos
+	var dist: float = to_player.length()
+	var halted: bool = _halted[id] == 1
+	if halted:
+		if dist > START_DISTANCE:
+			halted = false
+	else:
+		if dist <= STOP_DISTANCE:
+			halted = true
+	_halted[id] = 1 if halted else 0
+	var speed_scale: float = 0.0 if halted else _arrive_scale(dist)
+	
+	# Apply movement with smoothing (scale by arrive factor near the player)
+	var target_velocity = combined_direction * (effective_speed * speed_scale)
 	
 	# Smooth velocity transitions to reduce jankiness
 	var current_velocity = velocities[id]
@@ -595,10 +688,13 @@ func _update_enemy_movement(id: int, delta: float):
 	
 	# Position integration moved to _integrate_positions_and_behaviors for smoother motion
 	
-	# Update rotation to face movement direction with smoothing
-	if velocities[id].length() > 10.0:  # Only rotate when moving with meaningful speed
-		var target_rotation = velocities[id].angle()
-		rotations[id] = lerp_angle(rotations[id], target_rotation, delta * 6.0)
+	# Update rotation to face path direction (reduces wobble from strafe/avoidance jitter)
+	if target_direction.length() > 0.001:
+		var target_rotation: float = target_direction.angle()
+		# small deadband so tiny changes don't cause constant wiggle
+		var d: float = abs(wrapf(target_rotation - rotations[id], -PI, PI))
+		if d > 0.08:
+			rotations[id] = lerp_angle(rotations[id], target_rotation, delta * 4.0)
 
 func _update_enemy_attack(id: int, _delta: float):
 	var time_seconds = Time.get_ticks_msec() / 1000.0
@@ -609,7 +705,7 @@ func _update_enemy_attack(id: int, _delta: float):
 	
 	# Check if close enough to player to attack
 	var distance_to_player = positions[id].distance_to(player_position)
-	if distance_to_player > 60.0:  # Attack range
+	if distance_to_player > ATTACK_REACH:  # Attack range
 		return
 	
 	# Perform attack (damage will be handled by player collision detection)
@@ -902,6 +998,7 @@ func _update_multimesh_transforms():
 				if minion_succ_mesh and minion_succ_count < minion_succ_mesh.instance_count:
 					minion_succ_mesh.set_instance_transform_2d(minion_succ_count, transform)
 					minion_succ_mesh.set_instance_color(minion_succ_count, color)
+					# Animation frame setting removed - not supported in 2D canvas shaders
 				minion_succ_count += 1
 			2:
 				if minion_wood_mesh and minion_wood_count < minion_wood_mesh.instance_count:
@@ -945,20 +1042,44 @@ func _flash_enemy_white(enemy_id: int):
 	flash_timers[enemy_id] = FLASH_DURATION
 
 func _drop_xp_orb(enemy_id: int):
+	# 50% chance to drop XP
+	if randf() > 0.5:
+		return
+	
 	# Check if resource exists before trying to load
 	var xp_orb_path = "res://entities/pickups/xp_orb.tscn"
 	if not ResourceLoader.exists(xp_orb_path):
 		print("⚠️ XP orb scene not found at: ", xp_orb_path)
 		return
 	
-	# Spawn XP orb at enemy position
+	# Base XP value (2x increase from 1 to 2)
+	var base_xp = 2
+	
+	# Scale XP based on MXP buffs if this is a chatter entity
+	var max_xp = base_xp
+	var username = chatter_usernames[enemy_id]
+	if username != "" and ChatterEntityManager.instance:
+		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+		var total_mxp_spent = chatter_data.get("total_upgrades", 0)
+		
+		# Each MXP spent adds 2 XP to max potential
+		max_xp += total_mxp_spent * 2
+		
+		if total_mxp_spent > 0:
+			print("DEBUG: Chatter '%s' spent %d MXP, max XP: %d" % [username, total_mxp_spent, max_xp])
+	
+	# Roll between 1 and max value
+	var xp_value = randi_range(1, max_xp)
+	
+	# Spawn single XP orb with rolled value
 	var xp_orb_scene = load(xp_orb_path)
 	if not xp_orb_scene:
 		print("⚠️ Failed to load XP orb scene")
 		return
-		
+	
 	var xp_orb = xp_orb_scene.instantiate()
 	xp_orb.global_position = positions[enemy_id]
+	xp_orb.xp_value = xp_value
 	
 	if GameController.instance:
 		GameController.instance.call_deferred("add_child", xp_orb)
@@ -990,6 +1111,7 @@ func _grow_arrays():
 	speed_jitter.resize(new_size)
 	burst_timer.resize(new_size)
 	burst_cooldown.resize(new_size)
+	_halted.resize(new_size)
 	alive_flags.resize(new_size)
 	entity_types.resize(new_size)
 	chatter_usernames.resize(new_size)

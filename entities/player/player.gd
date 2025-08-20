@@ -166,6 +166,7 @@ func _setup_health_bar_ui():
 	var health_container = Node2D.new()
 	health_container.name = "HealthContainer"
 	health_container.position = Vector2(0, -55)  # Position above the player sprite (moved up 15px)
+	health_container.z_index = 69  # Elevate above other game objects
 	add_child(health_container)
 	
 	# Create the health bar

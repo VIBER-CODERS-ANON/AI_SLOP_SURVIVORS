@@ -13,16 +13,23 @@ func _init():
 	emoji = "💚"
 
 func get_effect_description(stacks: int) -> String:
-	return "+%.0f HP/sec regeneration" % (stacks * REGEN_PER_USE)
+	var total_regen = stacks * REGEN_PER_USE
+	var before_regen = total_regen - REGEN_PER_USE
+	var after_regen = total_regen
+	return "Regen: %.0f → %.0f HP/sec (+%.0f)" % [before_regen, after_regen, REGEN_PER_USE]
 
 func apply_effect(chatter_data: Dictionary, amount: int) -> Dictionary:
 	# Initialize regen bonus if not present
 	if not chatter_data.upgrades.has("regen_flat_bonus"):
 		chatter_data.upgrades["regen_flat_bonus"] = 0.0
 	
+	var before_regen = chatter_data.upgrades["regen_flat_bonus"]
+	
 	# Apply flat regen bonus
 	chatter_data.upgrades["regen_flat_bonus"] += amount * REGEN_PER_USE
 	
 	return {
-		"total_regen": chatter_data.upgrades["regen_flat_bonus"]
+		"total_regen": chatter_data.upgrades["regen_flat_bonus"],
+		"before_value": before_regen,
+		"after_value": chatter_data.upgrades["regen_flat_bonus"]
 	}

@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://BespokeAssetSources/Succubus/succubus_atlas.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://BespokeAssetSources/Succubus/succubusSpritesheet6framesUPDATE2.png" id="2"]
+
+[resource]
+shader = ExtResource("1")
+shader_parameter/frames_h = 6
+shader_parameter/frames_v = 1
+shader_parameter/frame = 0
+shader_parameter/tex = ExtResource("2")

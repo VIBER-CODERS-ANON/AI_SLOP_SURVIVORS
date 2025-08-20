@@ -38,16 +38,62 @@ func _ready():
 	# Set visual properties
 	z_index = 4
 	
-	# Set scale based on XP value
-	var base_scale = 0.8  # Slightly smaller than before
-	if xp_value >= 10:
-		scale = Vector2.ONE * base_scale * 1.5  # Bigger for unique drops
-		modulate = Color(1, 0.9, 0.2)  # Bright gold color
-	else:
-		scale = Vector2.ONE * base_scale
-		modulate = Color(1, 0.6, 0.2)  # Orange color
+	# Set scale and color based on XP value (1-10 scale with distinct colors)
+	var base_scale = 0.8
+	_apply_value_visuals(base_scale)
 	
 	# XP orb spawned
+
+func _apply_value_visuals(base_scale: float):
+	# Color scale based on value (up to 100 XP with tier system)
+	# No size scaling - all orbs are the same size
+	
+	# Determine color based on value ranges
+	if xp_value <= 5:  # 1-5: Gray to Brown
+		var t = (xp_value - 1) / 4.0
+		modulate = Color(0.7, 0.7, 0.7).lerp(Color(0.5, 0.3, 0.1), t)
+	elif xp_value <= 10:  # 6-10: Red to Orange
+		var t = (xp_value - 6) / 4.0
+		modulate = Color(0.8, 0.4, 0.4).lerp(Color(1.0, 0.6, 0.2), t)
+	elif xp_value <= 20:  # 11-20: Orange to Yellow
+		var t = (xp_value - 11) / 9.0
+		modulate = Color(1.0, 0.6, 0.2).lerp(Color(1.0, 1.0, 0.3), t)
+	elif xp_value <= 30:  # 21-30: Yellow to Green
+		var t = (xp_value - 21) / 9.0
+		modulate = Color(1.0, 1.0, 0.3).lerp(Color(0.4, 1.0, 0.4), t)
+	elif xp_value <= 40:  # 31-40: Green to Cyan
+		var t = (xp_value - 31) / 9.0
+		modulate = Color(0.4, 1.0, 0.4).lerp(Color(0.3, 0.8, 1.0), t)
+	elif xp_value <= 50:  # 41-50: Cyan to Blue
+		var t = (xp_value - 41) / 9.0
+		modulate = Color(0.3, 0.8, 1.0).lerp(Color(0.4, 0.4, 1.0), t)
+	elif xp_value <= 60:  # 51-60: Blue to Purple
+		var t = (xp_value - 51) / 9.0
+		modulate = Color(0.4, 0.4, 1.0).lerp(Color(0.8, 0.3, 1.0), t)
+	elif xp_value <= 70:  # 61-70: Purple to Pink
+		var t = (xp_value - 61) / 9.0
+		modulate = Color(0.8, 0.3, 1.0).lerp(Color(1.0, 0.3, 0.7), t)
+	elif xp_value <= 80:  # 71-80: Pink to Gold
+		var t = (xp_value - 71) / 9.0
+		modulate = Color(1.0, 0.3, 0.7).lerp(Color(1.0, 0.9, 0.0), t)
+	elif xp_value <= 90:  # 81-90: Gold to White
+		var t = (xp_value - 81) / 9.0
+		modulate = Color(1.0, 0.9, 0.0).lerp(Color(1.0, 1.0, 1.0), t)
+	else:  # 91-100+: Rainbow/Prismatic effect
+		# Cycle through rainbow colors based on time for epic orbs
+		var hue = fmod(Time.get_ticks_msec() / 1000.0, 1.0)
+		modulate = Color.from_hsv(hue, 0.8, 1.0)
+	
+	# Apply fixed size (no scaling based on value)
+	scale = Vector2.ONE * base_scale
+	
+	# Add glow effect for higher values
+	if xp_value >= 20:
+		modulate *= 1.2  # Slight glow
+	if xp_value >= 50:
+		modulate *= 1.3  # More glow
+	if xp_value >= 80:
+		modulate *= 1.4  # Strong glow
 
 func _physics_process(_delta):
 	time += _delta
