@@ -1030,17 +1030,40 @@ func _drop_xp_orb(enemy_id: int):
 		print("⚠️ XP orb scene not found at: ", xp_orb_path)
 		return
 	
-	# Spawn XP orb at enemy position
+	# Base XP value
+	var xp_to_drop = 1
+	
+	# Scale XP based on MXP buffs if this is a chatter entity
+	var username = chatter_usernames[enemy_id]
+	if username != "" and ChatterEntityManager.instance:
+		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+		var total_mxp_spent = chatter_data.get("total_upgrades", 0)
+		
+		# Each MXP spent increases XP drop by 1
+		xp_to_drop += total_mxp_spent
+		
+		if total_mxp_spent > 0:
+			print("DEBUG: Chatter '%s' spent %d MXP, dropping %d XP orbs" % [username, total_mxp_spent, xp_to_drop])
+	
+	# Spawn XP orb(s)
 	var xp_orb_scene = load(xp_orb_path)
 	if not xp_orb_scene:
 		print("⚠️ Failed to load XP orb scene")
 		return
-		
-	var xp_orb = xp_orb_scene.instantiate()
-	xp_orb.global_position = positions[enemy_id]
 	
-	if GameController.instance:
-		GameController.instance.call_deferred("add_child", xp_orb)
+	var death_position = positions[enemy_id]
+	
+	for i in range(xp_to_drop):
+		var xp_orb = xp_orb_scene.instantiate()
+		
+		# Spread orbs if multiple
+		var spread_radius = 20.0 if xp_to_drop > 1 else 0.0
+		var angle = (TAU / xp_to_drop) * i
+		var offset = Vector2(cos(angle), sin(angle)) * spread_radius
+		xp_orb.global_position = death_position + offset
+		
+		if GameController.instance:
+			GameController.instance.call_deferred("add_child", xp_orb)
 
 func _grow_arrays():
 	var current_size = positions.size()
