@@ -32,6 +32,9 @@ var attack_timer: float = 0.0
 var is_fleeing: bool = false
 var flee_target: Node2D = null
 
+# Regeneration
+var regeneration_rate: float = 0.0  # HP per second
+
 func _entity_ready():
 	super._entity_ready()
 	
@@ -91,6 +94,10 @@ func _entity_physics_process(delta):
 	# Check if AI is disabled
 	if DebugSettings.instance and not DebugSettings.instance.mob_ai_enabled:
 		return
+	
+	# Process regeneration
+	if regeneration_rate > 0 and current_health < max_health:
+		current_health = min(current_health + regeneration_rate * delta, max_health)
 	
 	# Update attack cooldown
 	if not can_attack:
@@ -248,3 +255,7 @@ func is_dying() -> bool:
 ## Get attack name for death attribution
 func get_attack_name() -> String:
 	return "bite"  # Default attack name for basic enemies
+
+## Set regeneration rate
+func set_regeneration(rate: float):
+	regeneration_rate = rate
