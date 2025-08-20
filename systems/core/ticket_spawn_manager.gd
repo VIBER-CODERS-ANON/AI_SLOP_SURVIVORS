@@ -42,6 +42,13 @@ const MONSTER_TYPE_IDS = {
 	"woodland_joe": 2
 }
 
+# Mapping of monster type -> emoji for action feed and other UIs
+const MONSTER_EMOJIS = {
+	"twitch_rat": "🐀",
+	"succubus": "😈",
+	"woodland_joe": "🌲",
+}
+
 # Spawn settings
 var spawn_check_interval: float = 0.5
 var spawn_timer: float = 0.0
@@ -222,7 +229,7 @@ func _spawn_random_monster() -> bool:
 	if GameController.instance:
 		var action_feed = GameController.instance.get_action_feed()
 		if action_feed:
-			var monster_emoji = {"twitch_rat": "🐀", "succubus": "😈", "woodland_joe": "🌲"}.get(monster_type, "👾")
+			var monster_emoji = MONSTER_EMOJIS.get(monster_type, "👾")
 			var concurrent_count = alive_monsters[username].size()
 			var count_text = " (#" + str(concurrent_count) + ")" if concurrent_count > 1 else ""
 			action_feed.add_message(
