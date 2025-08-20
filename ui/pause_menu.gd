@@ -39,6 +39,11 @@ func _ready():
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	
+	# Ensure proper rendering above everything else
+	top_level = true
+	z_as_relative = false
+	z_index = 1000  # High but within valid range
+	
 	# Create dark background
 	var bg = ColorRect.new()
 	bg.color = Color(0, 0, 0, 0.85)
@@ -558,6 +563,7 @@ func _on_debug_pressed():
 
 func show_menu():
 	visible = true
+	# z_index = 8192 already ensures we're on top
 	
 	# Sync with current Twitch channel and update button
 	_sync_with_twitch_bot()

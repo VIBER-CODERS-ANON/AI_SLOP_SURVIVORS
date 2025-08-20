@@ -11,6 +11,8 @@ static var instance: EnemyNameplateManager
 const MAX_VISIBLE_NAMEPLATES: int = 50  # Show nearest 50 rat names
 const NAMEPLATE_DISTANCE: float = 1000.0  # Max distance to show nameplates
 const UPDATE_INTERVAL: float = 0.0  # Update every frame for smooth movement
+# Whitelist for allowed nameplate entity types (rat=0, succubus=1, woodland_joe=2)
+var NAMEPLATE_ALLOWED_TYPES: PackedInt32Array = [0, 1, 2]
 
 # Nameplate pool
 var nameplate_pool: Array[Label] = []
@@ -117,7 +119,8 @@ func _get_nearest_enemies(player_world_pos: Vector2) -> Array:
 	for i in range(array_size):
 		if enemy_manager.alive_flags[i] == 0:
 			continue
-		if int(enemy_manager.entity_types[i]) != 0:
+		var t := int(enemy_manager.entity_types[i])
+		if not NAMEPLATE_ALLOWED_TYPES.has(t):
 			continue
 		var enemy_pos: Vector2 = enemy_manager.positions[i]
 		var d2: float = player_world_pos.distance_squared_to(enemy_pos)
@@ -192,7 +195,13 @@ func _show_nameplates_for_enemies(enemies: Array):
 		var screen_pos = _world_to_screen_position(enemy_pos)
 		# Position slightly above the rat head, accounting for mesh scale (base quad 32px)
 		var base_height := 32.0
-		var target_pos = screen_pos + Vector2(0, - (base_height * enemy_scale * 0.5 + 12.0))
+		var offset_y = - (base_height * enemy_scale * 0.5 + 12.0)
+		
+		# Center the nameplate horizontally by offsetting by half its width
+		var label_width = nameplate.get_theme_default_font().get_string_size(nameplate.text, HORIZONTAL_ALIGNMENT_LEFT, -1, nameplate.get_theme_font_size("font_size")).x
+		var offset_x = -label_width * 0.5
+		
+		var target_pos = screen_pos + Vector2(offset_x, offset_y)
 		
 		# Directly lock position to entity - no interpolation
 		nameplate.position = Vector2(round(target_pos.x), round(target_pos.y))
@@ -214,7 +223,6 @@ func _world_to_screen_position(world_pos: Vector2) -> Vector2:
 func _soft_clamp_nameplate_to_screen(nameplate: Label):
 	# Softer clamping that doesn't cause jumpy behavior
 	var viewport_size = get_viewport().get_visible_rect().size
-	var margin = 10.0  # Keep some margin from screen edges
 	
 	# Only clamp if really necessary to prevent jarring jumps
 	if nameplate.position.x < -50:
@@ -228,6 +236,37 @@ func _soft_clamp_nameplate_to_screen(nameplate: Label):
 		nameplate.position.y = viewport_size.y + 20
 
 # Public API
+func register_entity(_entity_id: int, _entity_type: int, _username: String, _color: Color):
+	# Register a new entity for nameplate tracking
+	# This ensures evolved entities maintain nameplates
+	pass  # Already handled via EnemyManager data arrays
+
+func unregister_entity(entity_id: int):
+	# Remove entity from nameplate tracking
+	if active_nameplates.has(entity_id):
+		var nameplate = active_nameplates[entity_id] as Label
+		nameplate.visible = false
+		nameplate_pool.append(nameplate)
+		active_nameplates.erase(entity_id)
+		nameplate_target_positions.erase(entity_id)
+		nameplate_current_positions.erase(entity_id)
+
+func on_entity_evolved(old_id: int, new_id: int):
+	# Transfer nameplate from old entity to new evolved entity
+	if active_nameplates.has(old_id):
+		var nameplate = active_nameplates[old_id]
+		active_nameplates.erase(old_id)
+		active_nameplates[new_id] = nameplate
+		
+		# Transfer position tracking
+		if nameplate_target_positions.has(old_id):
+			nameplate_target_positions[new_id] = nameplate_target_positions[old_id]
+			nameplate_target_positions.erase(old_id)
+		
+		if nameplate_current_positions.has(old_id):
+			nameplate_current_positions[new_id] = nameplate_current_positions[old_id]
+			nameplate_current_positions.erase(old_id)
+
 func set_max_visible_nameplates(count: int):
 	if count == MAX_VISIBLE_NAMEPLATES:
 		return

@@ -145,13 +145,16 @@ func apply_upgrades_to_entity(entity: Node, username: String):
 			entity.set_meta("base_damage", entity.damage)
 		if not entity.has_meta("base_move_speed"):
 			entity.set_meta("base_move_speed", entity.move_speed)
+		if not entity.has_meta("base_attack_cooldown"):
+			entity.set_meta("base_attack_cooldown", entity.attack_cooldown)
 
 		var base_max_health: float = entity.get_meta("base_max_health")
 		var base_damage: float = entity.get_meta("base_damage")
 		var base_move_speed: float = entity.get_meta("base_move_speed")
+		var base_attack_cooldown: float = entity.get_meta("base_attack_cooldown")
 
 		# Apply HP modifiers
-		var hp_flat = upgrades.get("hp_flat_bonus", 0) * rarity_multiplier
+		var hp_flat = upgrades.get("bonus_health", 0) * rarity_multiplier
 		var hp_increased = upgrades.get("hp_increased_percent", 0.0)
 		var final_health_mult = 1.0 + (hp_increased * rarity_multiplier)
 		
@@ -174,22 +177,17 @@ func apply_upgrades_to_entity(entity: Node, username: String):
 		var final_damage_mult = 1.0 + ((upgrades.get("damage_multiplier", 1.0) - 1.0) * rarity_multiplier)
 		entity.damage = base_damage * final_damage_mult
 		
-		# Apply speed modifiers
-		var speed_increased = upgrades.get("speed_increased_percent", 0.0)
-		var final_speed_mult = 1.0 + (speed_increased * rarity_multiplier)
+		# Apply speed modifiers (flat bonus system)
+		var speed_flat = upgrades.get("bonus_move_speed", 0.0) * rarity_multiplier
+		entity.move_speed = base_move_speed + speed_flat
 		
-		# Legacy speed multiplier support - ONLY from actual speed modifier
-		if upgrades.has("speed_multiplier") and upgrades.has("speed_increased_percent"):
-			# Only use speed_multiplier if it comes from the speed modifier
-			final_speed_mult = 1.0 + ((upgrades.speed_multiplier - 1.0) * rarity_multiplier)
-		
-		entity.move_speed = base_move_speed * final_speed_mult
-		
-		# Apply attack speed
-		if entity.has_method("set_attack_speed_multiplier"):
-			var attack_speed_mult = upgrades.get("attack_speed_multiplier", 1.0)
-			var final_attack_speed = 1.0 + ((attack_speed_mult - 1.0) * rarity_multiplier)
-			entity.set_attack_speed_multiplier(final_attack_speed)
+		# Apply attack speed (flat bonus to attacks per second)
+		var attack_speed_bonus = upgrades.get("bonus_attack_speed", 0.0) * rarity_multiplier
+		# Convert base cooldown to attacks per second, add bonus, then back to cooldown
+		var base_attacks_per_sec = 1.0 / base_attack_cooldown if base_attack_cooldown > 0 else 1.0
+		var new_attacks_per_sec = base_attacks_per_sec + attack_speed_bonus
+		if new_attacks_per_sec > 0:
+			entity.attack_cooldown = 1.0 / new_attacks_per_sec
 		
 		# Apply aggro radius
 		if entity.has_method("set_aggro_multiplier"):
