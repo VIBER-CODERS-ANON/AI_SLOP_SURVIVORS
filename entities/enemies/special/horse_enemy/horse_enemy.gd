@@ -26,6 +26,7 @@ var charge_line: Line2D
 func _entity_ready():
 	super._entity_ready()
 	_setup_horse()
+	_play_spawn_animation()
 
 func _setup_horse():
 	# REQUIRED: Core properties
@@ -264,31 +265,12 @@ func _start_despawn_movement():
 	move_speed = 200.0  # Normal speed for leaving
 
 func _despawn():
-	# No XP or loot drops as per Despawn tag behavior
-	queue_free()
+	# Play despawn animation before removing
+	_play_despawn_animation()
 
 func _create_charge_telegraph():
-	# Red line showing charge path
-	charge_line = Line2D.new()
-	charge_line.add_point(Vector2.ZERO)
-	charge_line.add_point(charge_direction * charge_distance)
-	charge_line.width = 3.0
-	charge_line.default_color = Color(1, 0.3, 0.3, 0.5)
-	charge_line.z_index = 49
-	add_child(charge_line)
-	
-	# Pulse animation
-	var tween = create_tween()
-	tween.set_loops(-1)
-	
-	# Kill tween when line is freed
-	charge_line.tree_exiting.connect(func(): 
-		if tween and tween.is_valid():
-			tween.kill()
-	)
-	
-	tween.tween_property(charge_line, "default_color:a", 0.8, 0.3)
-	tween.tween_property(charge_line, "default_color:a", 0.3, 0.3)
+	# Telegraph line removed for immersion - keeping function for charge mechanics
+	pass
 
 var sfx_player: AudioStreamPlayer2D
 
@@ -349,3 +331,113 @@ func get_action_feed():
 	if game and game.has_method("get_action_feed"):
 		return game.get_action_feed()
 	return null
+
+func _play_spawn_animation():
+	# Create portal effect for spawn
+	_create_portal_effect(true)
+	
+	# Start horse invisible and fade in
+	if sprite:
+		sprite.modulate.a = 0.0
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate:a", 1.0, 0.8)
+	
+	# Scale up from center
+	scale = Vector2(0.1, 0.1)
+	var scale_tween = create_tween()
+	scale_tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.6).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+func _play_despawn_animation():
+	# Stop movement during despawn
+	velocity = Vector2.ZERO
+	move_speed = 0
+	
+	# Create portal effect for despawn
+	_create_portal_effect(false)
+	
+	# Fade out and scale down
+	if sprite:
+		var tween = create_tween()
+		tween.parallel().tween_property(sprite, "modulate:a", 0.0, 0.6)
+		tween.parallel().tween_property(self, "scale", Vector2(0.1, 0.1), 0.6).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+		tween.tween_callback(queue_free)
+	else:
+		# Fallback if no sprite
+		var tween = create_tween()
+		tween.tween_property(self, "scale", Vector2(0.1, 0.1), 0.6)
+		tween.tween_callback(queue_free)
+
+func _create_portal_effect(is_spawn: bool):
+	# Create a swirling void portal effect using particles and visuals
+	
+	# Portal circle backdrop
+	var portal_bg = Node2D.new()
+	add_child(portal_bg)
+	portal_bg.z_index = -1
+	
+	# Create multiple animated circles for portal effect using Line2D
+	for i in range(3):
+		var circle = Line2D.new()
+		portal_bg.add_child(circle)
+		
+		# Create circle points
+		var radius = 40.0 + i * 15.0
+		var point_count = 32
+		for j in range(point_count + 1):
+			var angle = (j / float(point_count)) * TAU
+			var point = Vector2(cos(angle), sin(angle)) * radius
+			circle.add_point(point)
+		
+		# Style the circle
+		circle.width = 3.0
+		circle.default_color = Color(0.5, 0.1, 0.6, 0.6 - i * 0.2)
+		circle.closed = true
+		
+		# Spin animation
+		var spin_tween = create_tween()
+		spin_tween.set_loops(3)
+		spin_tween.tween_property(circle, "rotation", TAU * (1 if i % 2 == 0 else -1), 0.5)
+	
+	# Create particle burst effect
+	var particles = CPUParticles2D.new()
+	add_child(particles)
+	particles.z_index = 50
+	particles.emitting = true
+	particles.amount = 30
+	particles.lifetime = 1.0
+	particles.one_shot = true
+	particles.preprocess = 0.0
+	particles.speed_scale = 1.5
+	
+	# Particle properties
+	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	particles.emission_sphere_radius = 20.0
+	particles.initial_velocity_min = 50.0
+	particles.initial_velocity_max = 150.0
+	particles.angular_velocity_min = -180.0
+	particles.angular_velocity_max = 180.0
+	particles.scale_amount_min = 0.5
+	particles.scale_amount_max = 1.5
+	
+	# Portal colors (purple/red hellish theme)
+	particles.color = Color(0.8, 0.2, 0.9, 1.0)
+	var gradient = Gradient.new()
+	gradient.set_color(0, Color(0.9, 0.1, 0.5, 1.0))
+	gradient.set_color(1, Color(0.3, 0.0, 0.4, 0.0))
+	particles.color_ramp = gradient
+	
+	if is_spawn:
+		particles.direction = Vector2(0, -1)  # Upward burst for spawn
+	else:
+		particles.direction = Vector2(0, 0)  # Inward collapse for despawn
+		particles.initial_velocity_min = -150.0
+		particles.initial_velocity_max = -50.0
+	
+	# Clean up portal effect after animation
+	var cleanup_timer = get_tree().create_timer(1.5)
+	cleanup_timer.timeout.connect(func():
+		if is_instance_valid(portal_bg):
+			portal_bg.queue_free()
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
