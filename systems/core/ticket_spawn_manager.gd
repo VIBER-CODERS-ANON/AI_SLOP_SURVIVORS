@@ -129,14 +129,14 @@ func handle_join_command(username: String) -> bool:
 	_rebuild_ticket_pool()
 	
 	chatter_joined.emit(username)
-	print("🎫 %s joined the session as %s" % [username, monster_type])
+	print("🎫 %s joined the ticket pool" % username)
 	
 	# Notify in action feed
 	if GameController.instance:
 		var action_feed = GameController.instance.get_action_feed()
 		if action_feed:
 			action_feed.add_message(
-				"⚔️ %s joined the battle!" % username,
+				"⚔️ %s joined the fight!" % username,
 				Color.CYAN
 			)
 	
@@ -217,6 +217,18 @@ func _spawn_random_monster() -> bool:
 	# Apply upgrades if needed
 	if ChatterEntityManager.instance:
 		_apply_upgrades_to_entity(enemy_id, username)
+	
+	# Notify action feed of successful spawn
+	if GameController.instance:
+		var action_feed = GameController.instance.get_action_feed()
+		if action_feed:
+			var monster_emoji = {"twitch_rat": "🐀", "succubus": "😈", "woodland_joe": "🌲"}.get(monster_type, "👾")
+			var concurrent_count = alive_monsters[username].size()
+			var count_text = " (#" + str(concurrent_count) + ")" if concurrent_count > 1 else ""
+			action_feed.add_message(
+				"⚔️ %s has been chosen for battle!" % username,
+				Color.LIME_GREEN
+			)
 	
 	entity_spawned.emit(username, enemy_id)
 	
