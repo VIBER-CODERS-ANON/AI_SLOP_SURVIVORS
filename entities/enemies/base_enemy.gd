@@ -16,8 +16,8 @@ enum AttackType {
 
 @export_group("Enemy Stats")
 @export var damage: float = 10.0
-@export var attack_range: float = 50.0
-@export var attack_cooldown: float = 1.0
+@export var attack_range: float = 150.0
+@export var attack_cooldown: float = 0.5
 @export var attack_type: AttackType = AttackType.MELEE
 @export var preferred_attack_distance: float = -1.0  ## If -1, uses attack_range for ranged, attack_range * 0.8 for melee
 
@@ -75,8 +75,8 @@ func _entity_ready():
 	else:
 		match attack_type:
 			AttackType.MELEE:
-				# Melee enemies get close enough to attack
-				ai_controller.arrival_distance = attack_range * 0.8
+				# Melee enemies NEVER stop - they want to be INSIDE the player
+				ai_controller.arrival_distance = 0.0
 			AttackType.RANGED:
 				# Ranged enemies maintain optimal distance (stay at max range)
 				ai_controller.arrival_distance = attack_range * 0.9
@@ -119,7 +119,12 @@ func _entity_physics_process(delta):
 	if target_player and is_instance_valid(target_player):
 		var distance = global_position.distance_to(target_player.global_position)
 		
-		if distance <= attack_range and can_attack:
+		# For melee enemies, use a much larger attack zone
+		if attack_type == AttackType.MELEE and distance <= 100:
+			if can_attack:
+				_perform_attack()
+		# Otherwise use normal attack range
+		elif distance <= attack_range and can_attack:
 			_perform_attack()
 
 ## Find the player in the scene

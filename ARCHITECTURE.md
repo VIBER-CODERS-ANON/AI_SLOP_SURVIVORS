@@ -48,7 +48,23 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **Flow‑Field Navigation**: A lightweight BFS from the player provides a direction field; enemies move toward the player without per‑entity pathfinding.
 - **Obstacle Avoidance**: Configurable margins for arena edges, pits, and pillars; enemies steer away from blocked cells and edges.
 - **Flocking (optional)**: Low‑weight separation/alignment/cohesion computed over array data using the spatial grid.
-- **Variability**: Per‑enemy wander phase, strafe bias, speed jitter, and periodic bursts reduce “jagged/stiff” herd motion at scale.
+- **Variability**: Per‑enemy wander phase, strafe bias, speed jitter, and periodic bursts reduce "jagged/stiff" herd motion at scale.
+- **One‑Way Pushing**: Player doesn't collide with enemies (collision_mask = 1) but pushes them away via _push_nearby_enemies() function
+
+### Attack System
+
+- **Data‑Oriented Minions (V2)**: Use PlayerCollisionDetector for unified attack handling
+  - Detection radius: 20 pixels from player's capsule edge (configurable in player_collision_detector.gd)
+  - Uses edge‑based collision detection for player's capsule hitbox (16px radius, 60px height)
+  - Attack rate: 2 attacks per second (0.5s cooldown between attacks)
+  - Damage calculated from EnemyManager arrays (attack_damages[enemy_id])
+  - No per‑enemy collision bodies ‑ player detects nearby enemies
+  - Consistent attack range from all angles (solves pill‑shaped hitbox issues)
+
+- **Node‑Based Enemies (Bosses)**: Use BaseEnemy attack system
+  - Individual attack ranges and cooldowns per boss type
+  - Traditional collision detection with CharacterBody2D
+  - Custom attack patterns and abilities
 
 ### Evolutions & Rarity
 
