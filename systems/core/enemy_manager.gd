@@ -640,51 +640,25 @@ func _update_enemy_movement(id: int, delta: float):
 	else:
 		target_direction = (player_position - current_pos).normalized()
 	
-	# Add variability: wander/strafe + speed jitter + periodic bursts
+	# Direct pursuit - no strafe/wander for aggressive movement
 	if target_direction == Vector2.ZERO:
 		target_direction = (player_position - current_pos).normalized()
-	var strafe_strength: float = sin(behavior_wander_phase[id]) * 0.5  # side sway up to 0.5x
-	var perpendicular: Vector2 = Vector2(-target_direction.y, target_direction.x) * behavior_strafe_dir[id]
 	# Cheap obstacle avoidance
 	var avoid: Vector2 = _compute_avoidance_vector(current_pos) * avoidance_weight
 	# Optional boids-lite from FlockingSystem (V2 arrays)
 	var flock_force := Vector2.ZERO
 	if FlockingSystem.instance:
 		flock_force = FlockingSystem.instance.get_v2_force(id)
-	var combined_direction: Vector2 = (target_direction + perpendicular * strafe_strength + avoid + flock_force).normalized()
+	var combined_direction: Vector2 = (target_direction * 3.0 + avoid + flock_force).normalized()
 	
-	# Effective speed with jitter and bursts
-	var effective_speed: float = move_speeds[id] * speed_jitter[id]
-	# Apply burst if active, or occasionally trigger one when off cooldown
-	if burst_timer[id] > 0.0:
-		effective_speed *= 1.85
-	elif burst_cooldown[id] <= 0.0:
-		burst_timer[id] = randf_range(0.15, 0.4)
-		burst_cooldown[id] = randf_range(1.0, 2.0)
+	# Effective speed - always full speed, no jitter
+	var effective_speed: float = move_speeds[id]
 	
-	# Decide if this enemy should slow down or stop near the player (arrive + jitter logic)
-	var to_player: Vector2 = player_position - current_pos
-	var dist: float = to_player.length()
-	var halted: bool = _halted[id] == 1
-	if halted:
-		if dist > START_DISTANCE:
-			halted = false
-	else:
-		if dist <= STOP_DISTANCE:
-			halted = true
-	_halted[id] = 1 if halted else 0
-	var speed_scale: float = 0.0 if halted else _arrive_scale(dist)
+	# Apply movement at full speed - no arrive mechanics, no stopping
+	var target_velocity = combined_direction * effective_speed
 	
-	# Apply movement with smoothing (scale by arrive factor near the player)
-	var target_velocity = combined_direction * (effective_speed * speed_scale)
-	
-	# Smooth velocity transitions to reduce jankiness
-	var current_velocity = velocities[id]
-	# Scale smoothing by slice size so infrequently updated entities catch up smoothly
-	var total_count = max(1, min(positions.size(), alive_flags.size()))
-	var slice_factor: float = max(1.0, float(total_count) / float(max(1, update_slice_size)))
-	var lerp_factor = min(delta * 8.0 * slice_factor, 1.0)  # Smooth transitions
-	velocities[id] = current_velocity.lerp(target_velocity, lerp_factor)
+	# Direct velocity assignment - no smoothing for instant response
+	velocities[id] = target_velocity
 	
 	# Position integration moved to _integrate_positions_and_behaviors for smoother motion
 	
