@@ -142,9 +142,11 @@ func _create_boss_option_panel(number: int) -> Control:
 	
 	# Vote count
 	var vote_label = Label.new()
-	vote_label.text = "Votes: 0"
+	vote_label.text = "VOTES: 0"
 	vote_label.add_theme_font_size_override("font_size", 28)
 	vote_label.add_theme_color_override("font_color", Color(0.3, 1, 0.3))
+	vote_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vote_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	vbox.add_child(vote_label)
 	
 	# Store references
@@ -189,11 +191,9 @@ func _on_vote_started(vote_options: Array):
 			var desc_label = vbox.get_child(3)  # Description is fourth child
 			var _buff_title_label = vbox.get_child(4)  # Buff title is fifth child (not used)
 			var buff_label = vbox.get_child(5)  # Buff description is sixth child
-			var vote_label = vbox.get_child(6)  # Vote count is seventh child
 			
 			name_label.text = boss_data.get("display_name", "Unknown")
 			desc_label.text = boss_data.get("description", "")
-			vote_label.text = "Votes: 0"
 			
 			# Get buff information from BossBuffManager
 			if BossBuffManager.instance:
@@ -236,7 +236,7 @@ func _on_vote_updated(votes: Dictionary):
 			var panel = boss_options[i]
 			var vbox = panel.get_meta("vbox")
 			var vote_label = vbox.get_child(6)  # Vote count is seventh child (after buff labels)
-			vote_label.text = "Votes: %d" % vote_count
+			vote_label.text = "VOTES: %d" % vote_count
 			
 			# Highlight leading option
 			var max_votes = 0
