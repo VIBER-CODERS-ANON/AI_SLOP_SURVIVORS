@@ -14,7 +14,7 @@ const MAX_ENEMIES: int = 1000
 
 # Enemy movement and attack constants
 const ATTACK_REACH: float = 36.0 # how close they need to be to hit
-const STOP_DISTANCE: float = ATTACK_REACH - 4.0
+const STOP_DISTANCE: float = 0
 const START_DISTANCE: float = STOP_DISTANCE + 10.0
 const ARRIVE_RADIUS: float = 120.0 # start easing off speed as they get near
 const MIN_SPEED_SCALE: float = 0.05 # never fully stop until inside STOP_DISTANCE
@@ -23,6 +23,8 @@ const MIN_SPEED_SCALE: float = 0.05 # never fully stop until inside STOP_DISTANC
 const SUCCUBUS_FRAMES_H: int = 6
 const SUCCUBUS_FRAMES_V: int = 1
 const SUCCUBUS_ANIM_FPS: float = 8.0
+var succubus_mat: ShaderMaterial = null
+var _succubus_anim_time: float = 0.0
 
 # Entity data storage (Structure of Arrays)
 var positions: PackedVector2Array
@@ -116,7 +118,7 @@ var enemy_to_instance_map: Dictionary = {}  # enemy_id -> instance_index
 var next_instance_index: int = 0
 
 # Succubus animation tracking
-var _succubus_anim_time: float = 0.0
+# (moved to top of file with other animation constants)
 
 func _ready():
 	instance = self
@@ -246,30 +248,40 @@ func _setup_multimesh_rendering():
 	multi_mesh_minion_succubus.multimesh = mm_succ
 	
 	# Use spritesheet texture and shader
-	var succ_tex_path = "res://BespokeAssetSources/Succubus/succubusSpritesheet6framesUPDATE2.png"
+	var succ_tex_path := "res://BespokeAssetSources/Succubus/succubusSpritesheet6framesUPDATE2.png"
 	if ResourceLoader.exists(succ_tex_path):
 		multi_mesh_minion_succubus.texture = load(succ_tex_path)
 	else:
 		# Fallback to temp fix or rat texture
-		var fallback_path = "res://BespokeAssetSources/succubus-tempfix.png"
+		var fallback_path := "res://BespokeAssetSources/succubus-tempfix.png"
 		if ResourceLoader.exists(fallback_path):
 			multi_mesh_minion_succubus.texture = load(fallback_path)
 		else:
 			multi_mesh_minion_succubus.texture = multi_mesh_instance.texture
 	
 	# Apply the shader for spritesheet animation
-	var mat_path = "res://BespokeAssetSources/Succubus/succubus_atlas.tres"
+	var mat_path := "res://BespokeAssetSources/Succubus/succubus_atlas.tres"
 	if ResourceLoader.exists(mat_path):
 		multi_mesh_minion_succubus.material = load(mat_path)
 	else:
 		# Fallback: create material dynamically if .tres doesn't exist
-		var shader_path = "res://BespokeAssetSources/Succubus/succubus_atlas.gdshader"
+		var shader_path := "res://BespokeAssetSources/Succubus/succubus_atlas.gdshader"
 		if ResourceLoader.exists(shader_path):
-			var shader_mat = ShaderMaterial.new()
+			var shader_mat := ShaderMaterial.new()
 			shader_mat.shader = load(shader_path)
 			shader_mat.set_shader_parameter("frames_h", SUCCUBUS_FRAMES_H)
 			shader_mat.set_shader_parameter("frames_v", SUCCUBUS_FRAMES_V)
+			if multi_mesh_minion_succubus.texture:
+				shader_mat.set_shader_parameter("tex", multi_mesh_minion_succubus.texture)
 			multi_mesh_minion_succubus.material = shader_mat
+	
+	# Keep a reference and push params (even if loaded from .tres)
+	succubus_mat = multi_mesh_minion_succubus.material as ShaderMaterial
+	if succubus_mat:
+		succubus_mat.set_shader_parameter("frames_h", SUCCUBUS_FRAMES_H)
+		succubus_mat.set_shader_parameter("frames_v", SUCCUBUS_FRAMES_V)
+		if multi_mesh_minion_succubus.texture:
+			succubus_mat.set_shader_parameter("tex", multi_mesh_minion_succubus.texture)
 
 	multi_mesh_minion_woodland = MultiMeshInstance2D.new()
 	multi_mesh_minion_woodland.name = "MinionMultiMesh_WoodlandJoe"
@@ -396,7 +408,13 @@ func _physics_process(delta: float):
 		return
 	
 	# Tick succubus animation
-	_tick_succubus_anim(delta)
+	_succubus_anim_time += delta
+	if succubus_mat:
+		var total: int = SUCCUBUS_FRAMES_H * SUCCUBUS_FRAMES_V
+		if total <= 0:
+			total = 1
+		var frame_idx: int = int(floor(_succubus_anim_time * SUCCUBUS_ANIM_FPS)) % total
+		succubus_mat.set_shader_parameter("frame", frame_idx)
 	
 	# Update player position for flow-field
 	if GameController.instance and GameController.instance.player:

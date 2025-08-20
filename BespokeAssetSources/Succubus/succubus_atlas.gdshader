@@ -1,16 +1,15 @@
 shader_type canvas_item;
-
-/* Simple shader to display first frame of spritesheet */
-uniform int frames_h : hint_range(1, 64) = 6; // columns
-uniform int frames_v : hint_range(1, 64) = 1; // rows
-
+uniform sampler2D tex : source_color;
+uniform int frames_h = 6;
+uniform int frames_v = 1;
+uniform int frame = 0;
 void fragment() {
-    // Show only the first frame of the spritesheet
-    vec2 cols_rows = vec2(float(frames_h), float(frames_v));
-    vec2 uv_scale = 1.0 / cols_rows;
-    
-    // Map UV to first frame only
-    vec2 uv = UV * uv_scale;
-    vec4 tex = texture(TEXTURE, uv);
-    COLOR = tex * COLOR;
+    int fh = max(frames_h, 1);
+    int fv = max(frames_v, 1);
+    int idx = clamp(frame, 0, fh*fv - 1);
+    int fx = idx % fh;
+    int fy = idx / fh;
+    vec2 cell = vec2(1.0/float(fh), 1.0/float(fv));
+    vec2 uv = UV * cell + vec2(float(fx), float(fy)) * cell;
+    COLOR = texture(tex, uv);
 }
