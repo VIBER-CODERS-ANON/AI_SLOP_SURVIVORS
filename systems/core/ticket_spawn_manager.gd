@@ -226,7 +226,7 @@ func _spawn_random_monster() -> bool:
 			var concurrent_count = alive_monsters[username].size()
 			var count_text = " (#" + str(concurrent_count) + ")" if concurrent_count > 1 else ""
 			action_feed.add_message(
-				"⚔️ %s has been chosen for battle%s!" % [username, count_text],
+				"%s ⚔️ %s has been chosen for battle%s!" % [monster_emoji, username, count_text],
 				Color.LIME_GREEN
 			)
 	

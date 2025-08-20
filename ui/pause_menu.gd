@@ -99,6 +99,7 @@ func _ready():
 	var debug_btn = _create_menu_button("🔧 DEBUG PANEL", Color(1, 0.3, 1))
 	debug_btn.pressed.connect(_on_debug_pressed)
 	button_container.add_child(debug_btn)
+
 	
 	# Spacer
 	main_container.add_child(Control.new())
@@ -560,6 +561,7 @@ func _on_debug_pressed():
 	
 	# Toggle visibility
 	debug_panel_window.visible = !debug_panel_window.visible
+
 
 func show_menu():
 	visible = true
