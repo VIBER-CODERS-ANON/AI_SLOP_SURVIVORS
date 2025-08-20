@@ -1,58 +1,8 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://entities/enemies/succubus.gd" id="1"]
 [ext_resource type="Texture2D" path="res://BespokeAssetSources/succubus-tempfix.png" id="2"]
 [ext_resource type="PackedScene" path="res://entities/enemies/abilities/heart_projectile.tscn" id="3"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_1"]
-atlas = ExtResource("2")
-region = Rect2(0, 0, 112, 112)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_2"]
-atlas = ExtResource("2")
-region = Rect2(112, 0, 112, 112)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_3"]
-atlas = ExtResource("2")
-region = Rect2(224, 0, 112, 112)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_4"]
-atlas = ExtResource("2")
-region = Rect2(336, 0, 112, 112)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_5"]
-atlas = ExtResource("2")
-region = Rect2(448, 0, 112, 112)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_6"]
-atlas = ExtResource("2")
-region = Rect2(560, 0, 112, 112)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_1"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_1")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_2")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_3")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_4")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_5")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_6")
-}],
-"loop": true,
-"name": "idle",
-"speed": 10.0
-}]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 12.0
@@ -65,10 +15,8 @@ collision_mask = 3
 script = ExtResource("1")
 heart_projectile_scene = ExtResource("3")
 
-[node name="Sprite" type="AnimatedSprite2D" parent="."]
-sprite_frames = SubResource("SpriteFrames_1")
-animation = &"idle"
-autoplay = "idle"
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2")
 scale = Vector2(0.75, 0.75)
 offset = Vector2(0, -8)
 
