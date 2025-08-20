@@ -137,8 +137,35 @@ func _create_sword_instance() -> Node2D:
 		var texture = ImageTexture.create_from_image(image)
 		sprite.texture = texture
 		sprite.scale = Vector2(0.5, 0.5)  # Still visible but not too huge
-	sword.add_child(sprite)
 	
+	# Apply the cool sword shader
+	sword.add_child(sprite)
+	var shader_path = "res://ui/shaders/sword_swing.gdshader"
+	if ResourceLoader.exists(shader_path):
+		var sword_shader = ShaderMaterial.new()
+		sword_shader.shader = load(shader_path)  # Use load instead of preload
+
+		# Set initial shader parameters
+		sword_shader.set_shader_parameter("swing_speed", 0.0)
+		sword_shader.set_shader_parameter("trail_length", 0.3)
+		sword_shader.set_shader_parameter("trail_color", Color(0.7, 0.9, 1.0, 0.5))
+		sword_shader.set_shader_parameter("energy_intensity", 1.5)
+		sword_shader.set_shader_parameter("energy_color", Color(0.5, 0.8, 1.0, 1.0))
+		sword_shader.set_shader_parameter("energy_pulse_speed", 3.0)
+		sword_shader.set_shader_parameter("edge_glow", 0.8)
+		sword_shader.set_shader_parameter("edge_color", Color(1.0, 1.0, 1.0, 1.0))
+		sword_shader.set_shader_parameter("slash_intensity", 1.0)
+		sword_shader.set_shader_parameter("slash_color", Color(1.0, 0.5, 0.0, 1.0))
+
+		# Apply shader to sprite
+		sprite.material = sword_shader
+
+		# Store shader reference on sword for dynamic updates
+		sword.set_meta("shader_material", sword_shader)
+	else:
+		push_warning("Sword shader not found at: " + shader_path)
+	
+	# Store shader reference on sword for dynamic updates
 	# Add motion blur trail for that STREAK effect
 	if enable_trail:
 		# Create a container for ghost trails
@@ -346,7 +373,13 @@ func _update_sword_arc(sword: Node2D, t: float):
 
 	# Tip points outward (radially), accounting for weapon rotation
 	sword.rotation = global_rotation + theta + sprite_forward_angle_offset
-	
+	# Update shader based on arc progress (optional)
+	var shader_mat = sword.get_meta("shader_material", null)
+	if shader_mat:
+		# Make the sword glow more during the middle of the swing
+		var glow_intensity = 1.0 + sin(t * PI) * .5  # Peak at middle
+		shader_mat.set_shader_parameter("swing_speed", t * 10.0)
+		shader_mat.set_shader_parameter("slash_intensity", glow_intensity)
 	# Update trail effect
 	if enable_trail:
 		_update_sword_trail(sword)
