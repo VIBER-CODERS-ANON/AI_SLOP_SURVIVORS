@@ -11,10 +11,18 @@ class_name ExplosionEffect
 
 var source_entity: Node = null
 var source_name: String = "Explosion"  # Fallback name if source is freed
-var is_telegraphing: bool = true
+var is_telegraphing: bool = false
 var has_exploded: bool = false
 var telegraph_timer: float = 0.0
 var applied_aoe_scale: float = 1.0  # Track AoE scale for this explosion
+
+# Add a small delay before each explosion so they don't all appear at once
+# This not only effectively reduces the explosion sound volume but also looks cooler
+var rng = RandomNumberGenerator.new()
+var explosion_random_wait = rng.randf_range(0, 0.65) # Time (in seconds) to wait before triggering the telegraph phase
+var is_waiting: bool = true
+var wait_timer: float = 0.0
+
 
 func _ready():
 	# Ensure explosion pauses properly
@@ -32,12 +40,20 @@ func _ready():
 		AudioManager.instance.play_sfx(
 			preload("res://audio/sfx_Retro_20250811_093319.mp3"),
 			global_position,
-			-10,  # Quieter
+			-20,  # Quieter
 			1.5   # Higher pitch for warning
 		)
 
 func _process(_delta):
-	if is_telegraphing:
+	if is_waiting:
+		wait_timer += _delta
+		queue_redraw()
+		
+		if wait_timer >= explosion_random_wait:
+			is_telegraphing = true
+			is_waiting = false
+		
+	elif is_telegraphing:
 		telegraph_timer += _delta
 		queue_redraw()
 		
@@ -108,7 +124,7 @@ func _explode():
 		AudioManager.instance.play_sfx(
 			preload("res://audio/sfx_Retro_20250811_093319.mp3"),
 			global_position,
-			5  # Louder for impact
+			1  # Louder for impact
 		)
 	
 	# Deal damage
