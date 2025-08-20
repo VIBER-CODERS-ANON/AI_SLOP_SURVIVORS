@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://entities/enemies/succubus.gd" id="1"]
-[ext_resource type="Texture2D" path="res://BespokeAssetSources/Succubus/succubusSpritesheet6framesUPDATE2.png" id="2"]
+[ext_resource type="Texture2D" path="res://BespokeAssetSources/succubus-tempfix.png" id="2"]
 [ext_resource type="PackedScene" path="res://entities/enemies/abilities/heart_projectile.tscn" id="3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1"]
