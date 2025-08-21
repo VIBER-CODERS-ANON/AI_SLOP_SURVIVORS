@@ -19,7 +19,6 @@ var ability_cooldowns: Dictionary = {}  # enemy_id -> Dictionary[ability_id -> f
 
 # Active effects and timers
 var active_effects: Dictionary = {}  # enemy_id -> Array[ActiveEffect]
-var boost_timers: Dictionary = {}  # enemy_id -> float (remaining boost time)
 
 # Ability execution tracking
 var last_ability_update: float = 0.0
@@ -158,12 +157,7 @@ func _update_enemy_abilities(_delta: float):
 					ability.last_used = current_time
 
 func _update_active_effects(delta: float):
-	# Update boost timers
-	for enemy_id in boost_timers.keys():
-		if boost_timers[enemy_id] > 0:
-			boost_timers[enemy_id] -= delta
-			if boost_timers[enemy_id] <= 0:
-				_end_boost_effect(enemy_id)
+	# Boost timers are now handled in enemy_manager's _physics_process
 	
 	# Update other timed effects
 	for enemy_id in active_effects.keys():
@@ -222,7 +216,8 @@ func _execute_ability(enemy_id: int, ability: Dictionary):
 		"fart":
 			_trigger_fart_cloud(enemy_id, enemy_pos, ability.config)
 		"boost":
-			_trigger_boost(enemy_id, ability.config)
+			# Boost is now handled via execute_command_for_enemy
+			execute_command_for_enemy(enemy_id, "boost")
 		"heart_projectile":
 			_fire_heart_projectile(enemy_id, enemy_pos, ability.config)
 		"suction":
@@ -271,38 +266,8 @@ func _trigger_fart_cloud(enemy_id: int, pos: Vector2, config: Dictionary):
 	
 	print("💨 Enemy %d created fart cloud at %s" % [enemy_id, pos])
 
-func _trigger_boost(enemy_id: int, config: Dictionary):
-	if not enemy_manager:
-		return
-	
-	var duration = config.get("duration", 3.0)
-	var speed_multiplier = config.get("effects", {}).get("speed_multiplier", 3.0)
-	
-	# Store original speed
-	var original_speed = enemy_manager.move_speeds[enemy_id]
-	
-	# Apply boost
-	enemy_manager.move_speeds[enemy_id] = original_speed * speed_multiplier
-	boost_timers[enemy_id] = duration
-	
-	# Visual effect (yellow tint)
-	_add_effect(enemy_id, "boost_visual", duration)
-	
-	print("⚡ Enemy %d boosted (speed x%.1f for %.1fs)" % [enemy_id, speed_multiplier, duration])
-
-func _end_boost_effect(enemy_id: int):
-	if not enemy_manager or enemy_id >= enemy_manager.move_speeds.size():
-		return
-	
-	# Reset speed to base value
-	var _enemy_type_id = enemy_manager.entity_types[enemy_id]
-	var config = config_manager.get_enemy_config(_get_type_string(_enemy_type_id))
-	var base_speed = config.get("base_stats", {}).get("move_speed", 120.0)
-	
-	enemy_manager.move_speeds[enemy_id] = base_speed
-	boost_timers.erase(enemy_id)
-	
-	print("⚡ Enemy %d boost ended" % enemy_id)
+# Boost is now handled directly in execute_command_for_enemy with flat speed bonus
+# Old multiplier-based boost functions removed
 
 func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
 	if not GameController.instance or not GameController.instance.player:
@@ -509,6 +474,20 @@ func _add_effect(enemy_id: int, effect_id: String, duration: float):
 	}
 	active_effects[enemy_id].append(effect)
 
+func _add_boost_visual_effect(enemy_id: int):
+	if not enemy_manager or enemy_id >= enemy_manager.alive_flags.size():
+		return
+	
+	# Store original color to restore later (not currently used but kept for future enhancements)
+	var _original_color = enemy_manager.chatter_colors[enemy_id]
+	
+	# Create yellow boost effect - modulate the enemy's color
+	# We'll use the flash timer system that already exists
+	enemy_manager.flash_timers[enemy_id] = enemy_manager.BOOST_DURATION
+	
+	# Add the effect tracking
+	_add_effect(enemy_id, "boost_visual", enemy_manager.BOOST_DURATION)
+
 func _end_effect(_enemy_id: int, effect: Dictionary):
 	match effect.id:
 		"boost_visual":
@@ -519,7 +498,6 @@ func _cleanup_enemy_data(enemy_id: int):
 	enemy_abilities.erase(enemy_id)
 	ability_cooldowns.erase(enemy_id)
 	active_effects.erase(enemy_id)
-	boost_timers.erase(enemy_id)
 	
 	# Clean up lights
 	if has_meta("enemy_lights"):
@@ -556,8 +534,28 @@ func execute_command_for_enemy(enemy_id: int, command: String):
 			var config = {"visuals": {"effect_scene": "res://entities/effects/poison_cloud.tscn"}}
 			_trigger_fart_cloud(enemy_id, enemy_manager.positions[enemy_id], config)
 		"boost":
-			var config = {"duration": 3.0, "effects": {"speed_multiplier": 3.0}}
-			_trigger_boost(enemy_id, config)
+			# Check cooldown
+			var current_time = Time.get_ticks_msec() / 1000.0
+			if current_time - enemy_manager.last_boost_times[enemy_id] < enemy_manager.BOOST_COOLDOWN:
+				return  # Still on cooldown
+			
+			# Apply flat boost
+			enemy_manager.temporary_speed_boosts[enemy_id] = enemy_manager.BOOST_FLAT_BONUS
+			enemy_manager.boost_end_times[enemy_id] = current_time + enemy_manager.BOOST_DURATION
+			enemy_manager.last_boost_times[enemy_id] = current_time
+			
+			# Visual effect - make enemy flash yellow
+			_add_boost_visual_effect(enemy_id)
+			
+			# Activity feed message
+			if GameController.instance:
+				var feed = GameController.instance.get_action_feed()
+				if feed:
+					var username = enemy_manager.chatter_usernames[enemy_id]
+					if username != "":
+						feed.add_message("⚡ %s used BOOST! (+500 speed)" % username, Color(1.0, 1.0, 0.3))
+			
+			print("⚡ Enemy %d boosted (+%.0f speed for %.1fs)" % [enemy_id, enemy_manager.BOOST_FLAT_BONUS, enemy_manager.BOOST_DURATION])
 		"grow":
 			# Increase visual scale and collision weight slightly
 			enemy_manager.scales[enemy_id] = enemy_manager.scales[enemy_id] * 1.25

@@ -355,26 +355,11 @@ func _trigger_fart_for_entities(entity_ids: Array[int]):
 			_create_fart_cloud_at_position(pos)
 
 func _trigger_boost_for_entities(entity_ids: Array[int]):
-	# Apply speed boost to entities
+	# Boost is now handled by EnemyBridge with per-entity cooldowns
+	# This function is kept for compatibility but delegates to EnemyBridge
 	for entity_id in entity_ids:
-		if not EnemyManager.instance:
-			continue
-		
-		# Double speed for 5 seconds
-		var original_speed = EnemyManager.instance.move_speeds[entity_id]
-		EnemyManager.instance.move_speeds[entity_id] = original_speed * 2.0
-		
-		# Set up timer to reset speed
-		var timer = Timer.new()
-		timer.wait_time = 5.0
-		timer.one_shot = true
-		timer.timeout.connect(func(): 
-			if entity_id < EnemyManager.instance.MAX_ENEMIES:
-				EnemyManager.instance.move_speeds[entity_id] = original_speed
-			timer.queue_free()
-		)
-		add_child(timer)
-		timer.start()
+		if EnemyBridge.instance:
+			EnemyBridge.instance.execute_command_for_enemy(entity_id, "boost")
 
 func _create_explosion_at_position(pos: Vector2, username: String = ""):
 	var explosion_scene = preload("res://entities/effects/explosion_effect.tscn")

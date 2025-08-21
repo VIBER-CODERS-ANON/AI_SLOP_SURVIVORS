@@ -34,6 +34,16 @@ var attack_cooldowns: PackedFloat32Array
 var aoe_scales: PackedFloat32Array  # AOE multiplier for abilities
 var regen_rates: PackedFloat32Array  # HP regeneration per second
 
+# Command cooldown tracking
+var last_boost_times: PackedFloat32Array  # Last time boost was used per entity
+var temporary_speed_boosts: PackedFloat32Array  # Flat speed bonus amount
+var boost_end_times: PackedFloat32Array  # When boost expires
+
+# Command constants
+const BOOST_COOLDOWN: float = 60.0  # 1 minute cooldown
+const BOOST_FLAT_BONUS: float = 500.0  # +500 flat speed
+const BOOST_DURATION: float = 1.0  # 1 second duration
+
 # Behavior tuning (exported for easy tweaking)
 @export_group("Behavior Tuning")
 @export var avoid_arena_margin: float = 45.0
@@ -167,6 +177,13 @@ func _initialize_arrays():
 	aoe_scales.resize(initial_capacity)
 	regen_rates = PackedFloat32Array()
 	regen_rates.resize(initial_capacity)
+	# Command cooldown arrays
+	last_boost_times = PackedFloat32Array()
+	last_boost_times.resize(initial_capacity)
+	temporary_speed_boosts = PackedFloat32Array()
+	temporary_speed_boosts.resize(initial_capacity)
+	boost_end_times = PackedFloat32Array()
+	boost_end_times.resize(initial_capacity)
 	# Behavior arrays
 	behavior_strafe_dir = PackedFloat32Array()
 	behavior_strafe_dir.resize(initial_capacity)
@@ -450,6 +467,17 @@ func _physics_process(delta: float):
 		else:
 			_update_live_bodies_positions_only()
 	
+	# Check for expired boosts
+	var current_time = Time.get_ticks_msec() / 1000.0
+	for i in range(alive_flags.size()):
+		if alive_flags[i] == 0:
+			continue
+		
+		# Remove expired boost
+		if boost_end_times[i] > 0 and boost_end_times[i] <= current_time:
+			temporary_speed_boosts[i] = 0.0
+			boost_end_times[i] = 0.0
+	
 	# Update rendering
 	_update_multimesh_transforms()
 
@@ -486,6 +514,9 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	flash_timers[id] = 0.0
 	aoe_scales[id] = 1.0  # Default AOE scale
 	regen_rates[id] = 0.0  # Default no regen
+	last_boost_times[id] = -BOOST_COOLDOWN  # Start with boost available
+	temporary_speed_boosts[id] = 0.0
+	boost_end_times[id] = 0.0
 	
 	# Apply stats from configuration system
 	var enemy_type_str = _get_type_name_string(enemy_type)
@@ -684,8 +715,11 @@ func _update_enemy_movement(id: int, delta: float):
 		flock_force = FlockingSystem.instance.get_v2_force(id)
 	var combined_direction: Vector2 = (target_direction * 3.0 + avoid + flock_force).normalized()
 	
-	# Effective speed - always full speed, no jitter
+	# Effective speed - base speed + temporary boost if active
 	var effective_speed: float = move_speeds[id]
+	var current_time = Time.get_ticks_msec() / 1000.0
+	if boost_end_times[id] > current_time:
+		effective_speed += temporary_speed_boosts[id]
 	
 	# Apply movement at full speed - no arrive mechanics, no stopping
 	var target_velocity = combined_direction * effective_speed
@@ -970,12 +1004,18 @@ func _update_multimesh_transforms():
 		transform = transform.scaled(Vector2(flip_x * scales[enemy_id], -scales[enemy_id]))
 		transform.origin = positions[enemy_id]
 		
-		# Apply white flash color if enemy is flashing
+		# Apply flash color if enemy is flashing
 		var color = Color.WHITE
 		if flash_timers[enemy_id] > 0.0:
-			# Interpolate between normal and white based on flash timer
-			var flash_intensity = flash_timers[enemy_id] / FLASH_DURATION
-			color = Color(1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0)
+			# Check if this is a boost effect (longer than damage flash)
+			if flash_timers[enemy_id] > FLASH_DURATION:
+				# Yellow boost effect
+				var boost_intensity = 0.8  # Strong yellow tint
+				color = Color(1.0 + boost_intensity, 1.0 + boost_intensity, 0.5, 1.0)  # Yellow glow
+			else:
+				# White damage flash
+				var flash_intensity = flash_timers[enemy_id] / FLASH_DURATION
+				color = Color(1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0)
 		
 		match int(entity_types[enemy_id]):
 			3:
@@ -1110,6 +1150,9 @@ func _grow_arrays():
 	attack_cooldowns.resize(new_size)
 	aoe_scales.resize(new_size)
 	regen_rates.resize(new_size)
+	last_boost_times.resize(new_size)
+	temporary_speed_boosts.resize(new_size)
+	boost_end_times.resize(new_size)
 	behavior_strafe_dir.resize(new_size)
 	behavior_wander_phase.resize(new_size)
 	behavior_wander_speed.resize(new_size)

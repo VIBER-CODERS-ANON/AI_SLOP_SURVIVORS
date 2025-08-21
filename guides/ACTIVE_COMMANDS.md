@@ -22,7 +22,7 @@ Examples:
   - `!evolve woodlandjoe` or `!evolve woodland_joe` - Become Woodland Joe
 - **!explode** - Make your monsters explode (with AOE scaling!)
 - **!fart** - Create poison clouds
-- **!boost** - Double monster speed for 5 seconds
+- **!boost** - +500 flat movement speed for 1 second (60s cooldown per entity)
 
 ## Boss Voting
 - **!vote [boss]** - Vote for next boss spawn
