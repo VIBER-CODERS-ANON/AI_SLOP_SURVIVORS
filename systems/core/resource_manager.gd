@@ -134,10 +134,6 @@ static func spawn_entity(scene_key: String, parent: Node, position: Vector2) -> 
 		parent.add_child(entity)
 	return entity
 
-
-
-
-
 ## Setup background music
 static func setup_background_music(parent: Node) -> AudioStreamPlayer:
 	if not instance:

@@ -122,6 +122,10 @@ func _start_vote():
 	is_voting = true
 	voting_timer = VOTE_DURATION
 	
+	# Dim background music for voting using new generic system
+	if AudioManager.instance:
+		AudioManager.instance.request_music_dim("boss_vote", 0.25)
+	
 	# Pause the game
 	get_tree().paused = true
 	
@@ -177,6 +181,10 @@ func _end_vote():
 	if action_feed:
 		var boss_data = boss_registry[winner_id]
 		action_feed.add_message("🎉 VOTE ENDED! Winner: %s with %d votes!" % [boss_data.display_name, max_votes], Color(1, 1, 0))
+	
+	# Restore background music volume using new generic system  
+	if AudioManager.instance:
+		AudioManager.instance.remove_music_dim("boss_vote")
 	
 	# Unpause the game first
 	get_tree().paused = false
