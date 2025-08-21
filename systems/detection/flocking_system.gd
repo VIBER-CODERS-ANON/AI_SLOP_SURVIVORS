@@ -33,6 +33,9 @@ static var instance: FlockingSystem
 @export var v2_separation_weight: float = 0.75
 @export var v2_alignment_weight: float = 0.08
 @export var v2_cohesion_weight: float = 0.02
+@export var v2_max_speed: float = 150.0
+@export var v2_max_force: float = 60.0
+@export var v2_bias_scale: float = 0.6
 
 # Spatial optimization
 var spatial_grid: Dictionary = {}  # Grid position -> Array of entities
@@ -44,6 +47,18 @@ var _force_slice: int = 0
 var _v2_elapsed: float = 0.0
 var _v2_force_slice: int = 0
 var v2_forces: PackedVector2Array = PackedVector2Array()
+
+# Helpers for classic boids steering
+func _limit(vec: Vector2, max_len: float) -> Vector2:
+	var max2 := max_len * max_len
+	if vec.length_squared() > max2 and max_len > 0.0:
+		return vec.normalized() * max_len
+	return vec
+
+func _steer_towards(desired: Vector2, current_velocity: Vector2) -> Vector2:
+	# Steering = desired - velocity, limited by max force
+	var steer := desired - current_velocity
+	return _limit(steer, v2_max_force)
 
 # Entity tracking
 var flock_entities: Array = []  # All entities in the flock
@@ -175,8 +190,8 @@ func _calculate_v2_flocking_for_slice(slice_idx: int) -> void:
 		var pos: Vector2 = positions[i]
 		var gp := Vector2i(int(pos.x / grid_size), int(pos.y / grid_size))
 		var neighbors_checked = 0
-		var sep := Vector2.ZERO
-		var ali := Vector2.ZERO
+		var sep_accum := Vector2.ZERO
+		var ali_accum := Vector2.ZERO
 		var com := Vector2.ZERO  # center of mass accumulator
 		var coh_count := 0
 		# Scan 3x3 around the entity's cell
@@ -206,27 +221,42 @@ func _calculate_v2_flocking_for_slice(slice_idx: int) -> void:
 					if dist > 0.0001:
 						var push = d / dist
 						var strength = 1.0 - (dist / r)
-						# emphasize close-range repulsion
-						sep += push * (strength * strength)
-					ali += velocities[other_id]
+						# emphasize close-range repulsion (inverse falloff squared)
+						sep_accum += push * (strength * strength)
+					ali_accum += velocities[other_id]
 					com += op
 					coh_count += 1
 					neighbors_checked += 1
-		# Normalize and weight
-		var sep_force = Vector2.ZERO
-		if sep != Vector2.ZERO:
-			sep_force = sep.normalized() * v2_separation_weight
-		var ali_force = Vector2.ZERO
-		if ali != Vector2.ZERO:
-			ali_force = ali.normalized() * v2_alignment_weight
-		var coh_force = Vector2.ZERO
+		# Classic Boids: compute desired vectors and steer toward them
+		var current_vel: Vector2 = velocities[i]
+		var force := Vector2.ZERO
+		# Separation: move away strongly when too close
+		if sep_accum != Vector2.ZERO:
+			var desired_sep := sep_accum.normalized() * v2_max_speed
+			var steer_sep := _steer_towards(desired_sep, current_vel) * v2_separation_weight
+			force += steer_sep
+		# Alignment: match neighbors' average heading
+		if ali_accum != Vector2.ZERO:
+			var avg_vel := ali_accum
+			var desired_ali := avg_vel.normalized() * v2_max_speed
+			var steer_ali := _steer_towards(desired_ali, current_vel) * v2_alignment_weight
+			force += steer_ali
+		# Cohesion: steer toward center of mass
 		if coh_count > 0:
 			var center = com / float(coh_count)
 			var to_center = center - pos
 			if to_center != Vector2.ZERO:
-				coh_force = to_center.normalized() * v2_cohesion_weight
+				var desired_coh := to_center.normalized() * v2_max_speed
+				var steer_coh := _steer_towards(desired_coh, current_vel) * v2_cohesion_weight
+				force += steer_coh
 		if i < v2_forces.size():
-			v2_forces[i] = sep_force + ali_force + coh_force
+			# Output a small directional bias so enemies still chase the player
+			# Scale by max force to keep magnitude in [0, v2_bias_scale]
+			var limited := _limit(force, v2_max_force)
+			var out := Vector2.ZERO
+			if limited != Vector2.ZERO and v2_max_force > 0.0:
+				out = (limited / v2_max_force) * v2_bias_scale
+			v2_forces[i] = out
 
 # Only update 1/N of entities this tick; store into flock_cache
 func _calculate_flocking_for_slice(slice_idx: int) -> void:
