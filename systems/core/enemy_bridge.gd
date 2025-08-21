@@ -193,7 +193,10 @@ func _should_use_ability(enemy_id: int, ability: Dictionary) -> bool:
 			return distance < 300.0 and distance > 50.0
 		"suction":
 			# Use suction when close
-			return distance < 150.0
+			var in_range = distance < 150.0
+			if in_range:
+				print("🔍 Enemy %d can use suction (distance: %.1f)" % [enemy_id, distance])
+			return in_range
 		"suicide_bomb":
 			# Proximity trigger for ugandan warriors
 			return distance < 120.0 and randf() < 0.15
@@ -334,23 +337,44 @@ func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
 	
 	print("💖 Enemy %d fired heart projectile" % enemy_id)
 
-func _start_suction_ability(enemy_id: int, _pos: Vector2, config: Dictionary):
-	# Succubus channeled drain ability
-	var channel_time = config.get("channel_time", 2.0)
-	var _drain_rate = config.get("drain_rate", 5.0)
+func _start_suction_ability(enemy_id: int, pos: Vector2, config: Dictionary):
+	print("🌪️ Starting suction ability for enemy %d" % enemy_id)
 	
-	# Stop enemy movement during channeling
-	if enemy_manager and enemy_id < enemy_manager.move_speeds.size():
-		var original_speed = enemy_manager.move_speeds[enemy_id]
-		enemy_manager.move_speeds[enemy_id] = 0.0
+	if not GameController.instance or not GameController.instance.player:
+		return
+	
+	# Get username for attribution
+	var username = ""
+	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
+		username = enemy_manager.chatter_usernames[enemy_id]
+	
+	# Use the reusable proxy system
+	var proxy = V2AbilityProxy.new()
+	proxy.name = "SuccubusProxy_%d" % enemy_id
+	proxy.global_position = pos
+	GameController.instance.add_child(proxy)
+	
+	# Setup proxy
+	proxy.setup(enemy_id, enemy_manager, username)
+	
+	# Create target data
+	var target_data = {
+		"target_enemy": GameController.instance.player,
+		"target_position": GameController.instance.player.global_position
+	}
+	
+	# Attach and execute ability
+	if proxy.attach_ability(SuctionAbility, target_data):
+		print("✅ Suction ability started successfully")
 		
-		# Restore speed after channel time
-		get_tree().create_timer(channel_time).timeout.connect(func():
-			if enemy_id < enemy_manager.move_speeds.size() and enemy_manager.alive_flags[enemy_id] == 1:
-				enemy_manager.move_speeds[enemy_id] = original_speed
-		)
-	
-	print("🌪️ Enemy %d started suction ability" % enemy_id)
+		# Clean up when ability ends
+		if proxy.tracked_ability and proxy.tracked_ability.has_signal("succ_ended"):
+			proxy.tracked_ability.succ_ended.connect(func():
+				proxy.queue_free()
+			)
+	else:
+		print("❌ Failed to start suction ability")
+		proxy.queue_free()
 
 func _trigger_suicide_bomb(enemy_id: int, pos: Vector2, config: Dictionary):
 	var telegraph_time = config.get("telegraph_time", 0.4)
