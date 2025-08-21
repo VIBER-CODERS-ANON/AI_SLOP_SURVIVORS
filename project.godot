@@ -23,6 +23,7 @@ driver/max_streams=128
 
 GDAIMCPRuntime="*res://addons/gdai-mcp-plugin-godot/gdai_mcp_runtime.gd"
 LimboConsole="*res://addons/limbo_console/limbo_console.gd"
+WebSocketManager="*res://systems/core/websocket_manager.gd"
 
 [display]
 

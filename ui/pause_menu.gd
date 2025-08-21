@@ -25,6 +25,11 @@ var music_bus_idx: int
 var sfx_bus_idx: int
 var dialog_bus_idx: int
 
+# WebSocket controls
+var websocket_enabled_check: CheckBox
+var websocket_url_input: LineEdit
+var websocket_status_label: Label
+
 func _ready():
 	# This UI should work during pause
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
@@ -231,6 +236,8 @@ func _ready():
 	
 	# Twitch Integration section
 	_setup_twitch_integration_section(main_container)
+	# WebSocket (Twitch Extension) section
+	_setup_websocket_section(main_container)
 	
 	# Instructions
 	var instructions = Label.new()
@@ -343,6 +350,110 @@ func _setup_twitch_integration_section(parent: Node):
 	twitch_config_dialog.set_current_channel(current_twitch_channel)
 	twitch_config_dialog.channel_changed.connect(_on_twitch_channel_changed)
 	add_child(twitch_config_dialog)
+
+func _setup_websocket_section(parent: Node):
+	# Title
+	var ws_title = Label.new()
+	ws_title.text = "TWITCH EXTENSION (WebSocket)"
+	ws_title.add_theme_font_size_override("font_size", 20)
+	ws_title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	ws_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	parent.add_child(ws_title)
+	
+	# Enable toggle
+	var enable_row = HBoxContainer.new()
+	enable_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	enable_row.add_theme_constant_override("separation", 10)
+	parent.add_child(enable_row)
+	
+	var enable_label = Label.new()
+	enable_label.text = "Enable Extension"
+	enable_label.custom_minimum_size = Vector2(120, 25)
+	enable_label.add_theme_font_size_override("font_size", 14)
+	enable_row.add_child(enable_label)
+	
+	websocket_enabled_check = CheckBox.new()
+	var ws_enabled = false
+	if SettingsManager.instance:
+		ws_enabled = SettingsManager.instance.get_websocket_enabled()
+	websocket_enabled_check.button_pressed = ws_enabled
+	websocket_enabled_check.toggled.connect(_on_ws_toggled)
+	enable_row.add_child(websocket_enabled_check)
+	
+	# URL row
+	var url_row = HBoxContainer.new()
+	url_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	url_row.add_theme_constant_override("separation", 10)
+	parent.add_child(url_row)
+	
+	var url_label = Label.new()
+	url_label.text = "URL"
+	url_label.custom_minimum_size = Vector2(120, 25)
+	url_label.add_theme_font_size_override("font_size", 14)
+	url_row.add_child(url_label)
+	
+	websocket_url_input = LineEdit.new()
+	websocket_url_input.custom_minimum_size = Vector2(220, 25)
+	var ws_url = "ws://localhost:8080/ws"
+	if SettingsManager.instance:
+		ws_url = SettingsManager.instance.get_websocket_url()
+	websocket_url_input.text = ws_url
+	websocket_url_input.placeholder_text = "ws://host:port/path"
+	url_row.add_child(websocket_url_input)
+	
+	var apply_btn = Button.new()
+	apply_btn.text = "Apply"
+	apply_btn.custom_minimum_size = Vector2(70, 25)
+	apply_btn.pressed.connect(_on_ws_apply_clicked)
+	url_row.add_child(apply_btn)
+	
+	# Status label
+	websocket_status_label = Label.new()
+	websocket_status_label.add_theme_font_size_override("font_size", 12)
+	parent.add_child(websocket_status_label)
+	_refresh_ws_controls()
+	
+	# React to runtime status changes
+	if WebSocketManager.instance:
+		if not WebSocketManager.instance.is_connected("connection_status_changed", Callable(self, "_on_ws_status_changed")):
+			WebSocketManager.instance.connection_status_changed.connect(_on_ws_status_changed)
+
+func _on_ws_status_changed(connected: bool):
+	if websocket_status_label:
+		websocket_status_label.text = "Status: %s" % ("Connected" if connected else ("Connecting..." if (WebSocketManager.instance and WebSocketManager.instance.enabled) else "Disabled"))
+
+func _refresh_ws_controls():
+	if not SettingsManager.instance:
+		return
+	if websocket_enabled_check:
+		websocket_enabled_check.button_pressed = SettingsManager.instance.get_websocket_enabled()
+	if websocket_url_input:
+		websocket_url_input.text = SettingsManager.instance.get_websocket_url()
+	if websocket_status_label:
+		var status = "Disabled"
+		if WebSocketManager.instance and WebSocketManager.instance._connected:
+			status = "Connected"
+		elif WebSocketManager.instance and WebSocketManager.instance.enabled:
+			status = "Connecting..."
+		websocket_status_label.text = "Status: %s" % status
+
+func _on_ws_toggled(pressed: bool):
+	if WebSocketManager.instance:
+		if pressed:
+			WebSocketManager.instance.enable()
+		else:
+			WebSocketManager.instance.disable()
+	_refresh_ws_controls()
+
+func _on_ws_apply_clicked():
+	var new_url = websocket_url_input.text.strip_edges() if websocket_url_input else ""
+	if new_url.is_empty():
+		new_url = "ws://localhost:8080/ws"
+	if SettingsManager.instance:
+		SettingsManager.instance.set_websocket_url(new_url)
+	if WebSocketManager.instance:
+		WebSocketManager.instance.set_url(new_url)
+	_refresh_ws_controls()
 
 func _create_twitch_config_button() -> Button:
 	var button = Button.new()
@@ -568,6 +679,21 @@ func show_menu():
 	# Sync with current Twitch channel and update button
 	_sync_with_twitch_bot()
 	_update_twitch_button_text()
+	
+	# Update WebSocket controls
+	if websocket_enabled_check:
+		var ws_enabled = SettingsManager.instance.get_websocket_enabled() if SettingsManager.instance else false
+		websocket_enabled_check.button_pressed = ws_enabled
+	if websocket_url_input:
+		var ws_url = SettingsManager.instance.get_websocket_url() if SettingsManager.instance else ""
+		websocket_url_input.text = ws_url
+	if websocket_status_label:
+		var ws_status = "Disabled"
+		if WebSocketManager.instance and WebSocketManager.instance._connected:
+			ws_status = "Connected"
+		elif WebSocketManager.instance and WebSocketManager.instance.enabled:
+			ws_status = "Connecting..."
+		websocket_status_label.text = "Status: %s" % ws_status
 	
 	# Update volume sliders to current values
 	if master_volume_slider:
