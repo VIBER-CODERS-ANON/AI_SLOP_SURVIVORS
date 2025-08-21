@@ -438,7 +438,7 @@ func _get_off_screen_spawn_position() -> Vector2:
 		var distance = randf_range(visible_width * 0.6, visible_width * 1.2)
 		var spawn_pos = camera_pos + Vector2(cos(angle), sin(angle)) * distance
 		
-		if GameController.instance._is_position_safe(spawn_pos):
+		if PositionHelper.is_position_safe(spawn_pos):
 			return spawn_pos
 	
 	# Fallback

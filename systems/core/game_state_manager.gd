@@ -43,12 +43,16 @@ func set_pause(reason: PauseReason, paused: bool):
 	# Update actual pause state
 	get_tree().paused = is_now_paused
 	
-	# Handle music pause/resume using ResourceManager API
+	# Handle music pause/resume - only pause for death screen
 	if was_paused != is_now_paused:
 		if is_now_paused:
-			ResourceManager.pause_music()
+			# Only pause music for death screen, NOT for manual pause or level up selection
+			if pause_flags & PauseReason.DEATH_SCREEN:
+				ResourceManager.pause_music()
 		else:
-			ResourceManager.resume_music()
+			# Only resume if we actually paused it (death screen)
+			if pause_flags == PauseReason.NONE:  # Fully unpaused
+				ResourceManager.resume_music()
 	
 	# Commands are blocked when paused
 	var was_blocked = commands_blocked

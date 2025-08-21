@@ -23,6 +23,9 @@ var original_collision_mask: int = 0
 var original_collision_layer: int = 0
 var entity_node = null  # CharacterBody2D
 
+# Collision behavior
+var stop_on_wall_collision: bool = true
+
 func _init() -> void:
 	# Set base properties
 	ability_id = "dash"
@@ -96,18 +99,28 @@ func _execute_ability(holder, target_data) -> void:
 	dash_velocity = dash_direction.normalized() * (actual_distance / actual_duration) * dash_push_force
 	
 	# Modify collision if needed
-	if remove_collision_during_dash and entity_node:
-		if "collision_mask" in entity_node:
-			original_collision_mask = entity_node.collision_mask
-			# During dash, only keep collision with layer 3 (weapons) and 4 (pickups)
-			# This allows dashing through enemies (layer 2) and walls (layer 1)
-			entity_node.collision_mask = (1 << 2) | (1 << 3)  # Layers 3 and 4 (0-indexed)
-		
-		if "collision_layer" in entity_node:
-			original_collision_layer = entity_node.collision_layer
-			entity_node.collision_layer = 0  # Player can't be hit during dash
-		
-		_shrink_collision_shape()
+	if entity_node:
+		# If we want to stop on walls, keep WORLD collisions during dash
+		if stop_on_wall_collision:
+			if "collision_mask" in entity_node:
+				original_collision_mask = entity_node.collision_mask
+				# Collide with WORLD and PICKUPS during dash (ignore enemies/projectiles)
+				entity_node.collision_mask = GameConfig.CollisionLayer.WORLD | GameConfig.CollisionLayer.PICKUPS
+			if "collision_layer" in entity_node:
+				original_collision_layer = entity_node.collision_layer
+				# Keep our original layer so collisions are detected symmetrically
+				entity_node.collision_layer = original_collision_layer
+			_shrink_collision_shape()
+		# Otherwise preserve old behavior: disable most collisions to slide through
+		elif remove_collision_during_dash:
+			if "collision_mask" in entity_node:
+				original_collision_mask = entity_node.collision_mask
+				# During dash, only keep collision with selected layers (projectiles/pickups)
+				entity_node.collision_mask = (1 << 2) | (1 << 3)
+			if "collision_layer" in entity_node:
+				original_collision_layer = entity_node.collision_layer
+				entity_node.collision_layer = 0
+			_shrink_collision_shape()
 	
 	# Apply i-frames if any
 	if actual_iframes > 0 and entity_node.has_method("set_invulnerable"):
@@ -154,6 +167,14 @@ func update(delta: float, holder) -> void:
 		# Handle wall sliding
 		if entity_node.get_slide_collision_count() > 0:
 			var collision = entity_node.get_slide_collision(0)
+			# If configured, stop dash when colliding with WORLD
+			if stop_on_wall_collision:
+				var collider = collision.get_collider()
+				if collider and "collision_layer" in collider:
+					if int(collider.collision_layer) & GameConfig.CollisionLayer.WORLD != 0:
+						_end_dash()
+						return
+			# Otherwise, slide along the collision normal
 			var normal = collision.get_normal()
 			var slide_velocity = dash_velocity.slide(normal)
 			entity_node.velocity = slide_velocity
