@@ -265,9 +265,6 @@ func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
 		
 		GameController.instance.add_child(explosion)
 	
-	# Apply damage to player if in range (with scaled radius)
-	_apply_area_damage(pos, damage, radius * aoe_scale)
-	
 	print("💥 Enemy %d exploded at %s" % [enemy_id, pos])
 
 func _trigger_fart_cloud(enemy_id: int, pos: Vector2, config: Dictionary):
@@ -426,24 +423,6 @@ func _trigger_telegraph_charge(enemy_id: int, pos: Vector2, config: Dictionary):
 	)
 	
 	print("🐎 Enemy %d charging!" % enemy_id)
-
-func _apply_area_damage(center: Vector2, damage: float, radius: float):
-	if not GameController.instance or not GameController.instance.player:
-		return
-	
-	var player_pos = GameController.instance.player.global_position
-	var distance = center.distance_to(player_pos)
-	
-	if distance <= radius:
-		var player = GameController.instance.player
-		if player.has_method("take_damage"):
-			# Create damage source
-			var damage_source = Node.new()
-			damage_source.name = "EnemyAbility"
-			damage_source.set_meta("attack_name", "explosion")
-			
-			player.take_damage(damage, damage_source)
-			damage_source.queue_free()
 
 func _create_bomb_telegraph(pos: Vector2, duration: float):
 	# Create a warning visual at the bomb position
