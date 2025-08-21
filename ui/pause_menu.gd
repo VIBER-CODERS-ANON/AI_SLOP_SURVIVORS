@@ -14,6 +14,9 @@ var current_twitch_channel: String = "quin69"
 # Responsive layout
 var menu_scroll: ScrollContainer
 
+# Rendering layer for pause menu (ensures above nameplates/UI)
+const PAUSE_LAYER: int = 30
+
 # Debug panel
 var debug_panel: Control
 var debug_panel_window: Control
@@ -28,9 +31,38 @@ var music_bus_idx: int
 var sfx_bus_idx: int
 var dialog_bus_idx: int
 
+func _enter_tree() -> void:
+	_ensure_canvas_layer()
+
+func _ensure_canvas_layer() -> void:
+	var parent = get_parent()
+	while parent and not (parent is CanvasLayer):
+		parent = parent.get_parent()
+	if parent and parent is CanvasLayer:
+		(parent as CanvasLayer).layer = PAUSE_LAYER
+		return
+	var cl := CanvasLayer.new()
+	cl.name = "PauseLayer"
+	cl.layer = PAUSE_LAYER
+	get_tree().root.add_child(cl)
+	call_deferred("_reparent_to_layer", cl)
+
+func _reparent_to_layer(cl: CanvasLayer) -> void:
+	if get_parent():
+		get_parent().remove_child(self)
+	cl.add_child(self)
+	# CanvasLayer handles cross-layer ordering
+	top_level = false
+	z_as_relative = false
+
 func _ready():
 	# This UI should work during pause
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	
+	# Set Pause Canvas Layer if already parented
+	var p = get_parent()
+	if p is CanvasLayer:
+		(p as CanvasLayer).layer = PAUSE_LAYER
 	
 	# Load saved channel from settings
 	_load_saved_channel()
@@ -41,11 +73,6 @@ func _ready():
 	# Set up fullscreen overlay
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	
-	# Ensure proper rendering above everything else
-	top_level = true
-	z_as_relative = false
-	z_index = 1000  # High but within valid range
 	
 	# Create dark background
 	var bg = ColorRect.new()
