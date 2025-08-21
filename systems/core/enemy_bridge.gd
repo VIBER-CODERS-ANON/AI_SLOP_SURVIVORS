@@ -232,10 +232,11 @@ func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
 	var damage = config.get("damage", 20.0)
 	var radius = config.get("radius", 80.0)
 	var aoe_scale = 1.0
+	var username = ""
 	
 	# Apply chatter's AOE bonus if available
 	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
-		var username = enemy_manager.chatter_usernames[enemy_id]
+		username = enemy_manager.chatter_usernames[enemy_id]
 		if username != "" and ChatterEntityManager.instance:
 			var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
 			if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
@@ -249,6 +250,12 @@ func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
 		var explosion = load(explosion_scene_path).instantiate()
 		explosion.global_position = pos
 		explosion.applied_aoe_scale = aoe_scale
+		
+		# Set source name for proper death attribution
+		if username != "":
+			explosion.source_name = username
+			explosion.set_meta("source_name", username)
+		
 		GameController.instance.add_child(explosion)
 	
 	# Apply damage to player if in range (with scaled radius)
@@ -257,11 +264,31 @@ func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
 	print("💥 Enemy %d exploded at %s" % [enemy_id, pos])
 
 func _trigger_fart_cloud(enemy_id: int, pos: Vector2, config: Dictionary):
+	var username = ""
+	var aoe_scale = 1.0
+	
+	# Get username and AOE scale
+	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
+		username = enemy_manager.chatter_usernames[enemy_id]
+		if username != "" and ChatterEntityManager.instance:
+			var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+			if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
+				var bonus_aoe = chatter_data.upgrades.bonus_aoe
+				var rarity_mult = chatter_data.upgrades.get("rarity_multiplier", 1.0)
+				aoe_scale = (1.0 + bonus_aoe) * rarity_mult
+	
 	# Create poison cloud effect
 	var cloud_scene_path = config.get("visuals", {}).get("effect_scene", "res://entities/effects/poison_cloud.tscn")
 	if ResourceLoader.exists(cloud_scene_path):
 		var cloud = load(cloud_scene_path).instantiate()
 		cloud.global_position = pos
+		cloud.applied_aoe_scale = aoe_scale
+		
+		# Set source name for proper death attribution
+		if username != "":
+			cloud.source_name = username
+			cloud.set_meta("source_name", username)
+		
 		GameController.instance.add_child(cloud)
 	
 	print("💨 Enemy %d created fart cloud at %s" % [enemy_id, pos])

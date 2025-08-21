@@ -352,7 +352,14 @@ func _trigger_fart_for_entities(entity_ids: Array[int]):
 		
 		var pos = EnemyManager.instance.get_enemy_position(entity_id)
 		if pos != Vector2.ZERO:
-			_create_fart_cloud_at_position(pos)
+			# Get username for this entity to apply AOE scaling and attribution
+			var username = ""
+			for user in alive_monsters:
+				if entity_id in alive_monsters[user]:
+					username = user
+					break
+			
+			_create_fart_cloud_at_position(pos, username)
 
 func _trigger_boost_for_entities(entity_ids: Array[int]):
 	# Boost is now handled by EnemyBridge with per-entity cooldowns
@@ -366,6 +373,11 @@ func _create_explosion_at_position(pos: Vector2, username: String = ""):
 	var explosion = explosion_scene.instantiate()
 	explosion.global_position = pos
 	
+	# Set the source name for proper death attribution
+	if username != "":
+		explosion.source_name = username
+		explosion.set_meta("source_name", username)
+	
 	# Apply chatter's AOE bonus if username provided
 	if username != "" and ChatterEntityManager.instance:
 		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
@@ -377,10 +389,23 @@ func _create_explosion_at_position(pos: Vector2, username: String = ""):
 	if GameController.instance:
 		GameController.instance.add_child(explosion)
 
-func _create_fart_cloud_at_position(pos: Vector2):
+func _create_fart_cloud_at_position(pos: Vector2, username: String = ""):
 	var fart_scene = preload("res://entities/effects/poison_cloud.tscn")
 	var fart = fart_scene.instantiate()
 	fart.global_position = pos
+	
+	# Set the source name for proper death attribution
+	if username != "":
+		fart.source_name = username
+		fart.set_meta("source_name", username)
+	
+	# Apply chatter's AOE bonus if username provided
+	if username != "" and ChatterEntityManager.instance:
+		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+		if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
+			var bonus_aoe = chatter_data.upgrades.bonus_aoe
+			var rarity_mult = chatter_data.upgrades.get("rarity_multiplier", 1.0)
+			fart.applied_aoe_scale = (1.0 + bonus_aoe) * rarity_mult
 	
 	if GameController.instance:
 		GameController.instance.add_child(fart)
