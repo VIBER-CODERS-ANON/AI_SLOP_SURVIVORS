@@ -100,18 +100,18 @@ func _load_enemy_configurations():
 		"evolution_cost": 0,
 		"base_stats": {
 			"health": 200.0,
-			"damage": 30.0,
+			"damage": 10.0,  # Nerfed from 30.0
 			"move_speed": 50.0,
 			"attack_range": 60.0,
 			"attack_cooldown": 2.0,
 			"attack_type": "melee",
-			"scale": 1.2
+			"scale": 2.4  # Doubled from 1.2
 		},
 		"abilities": [],
 		"tags": ["Enemy", "TwitchMob", "WoodlandJoe", "Melee", "Boss"],
 		"visuals": {
 			"sprite_path": "res://entities/enemies/woodland_joe.png",
-			"scale": 1.2,
+			"scale": 2.4,  # Doubled from 1.2
 			"light_enabled": true
 		},
 		"special_mechanics": {

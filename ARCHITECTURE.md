@@ -27,7 +27,8 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **Bridge/Interop**
 
   - Connects the data arrays to existing gameplay systems (abilities, effects, lighting, UI, action feed) without needing a per‑enemy node.
-  - Rebuilds abilities/effects/lighting when an enemy’s type changes (e.g., on evolution).
+  - Rebuilds abilities/effects/lighting when an enemy's type changes (e.g., on evolution).
+  - Uses V2AbilityProxy for complex abilities that need node-based execution (like channeled abilities)
 
 - **Live Physics Subset (pooled bodies)**
 
@@ -51,6 +52,30 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **Variability**: Per‑enemy wander phase, strafe bias, speed jitter, and periodic bursts reduce "jagged/stiff" herd motion at scale.
 - **One‑Way Pushing**: Player doesn't collide with enemies (collision_mask = 1) but pushes them away via _push_nearby_enemies() function
 - **Stop‑at‑Attack‑Range**: Enemies stop moving when within attack range (20px from player's capsule edge), using shared capsule edge detection from PlayerCollisionDetector
+
+### Ability System for V2 Enemies
+
+- **Simple Effects (Explosions, Clouds)**: 
+  - Direct instantiation like node-based systems
+  - Set properties (damage, radius, source_name) on the effect
+  - Add to scene and let effect handle its lifecycle
+  - Example: Explosion from !explode command
+
+- **Complex Abilities (Channeled, Multi-step)**:
+  - Use V2AbilityProxy as a bridge between data arrays and ability classes
+  - Proxy tracks enemy position, handles movement stopping, manages ability lifecycle
+  - Ability instances work exactly as designed for node-based enemies
+  - Example: Suction ability for Succubus
+
+- **V2AbilityProxy Pattern**:
+  ```gdscript
+  var proxy = V2AbilityProxy.new()
+  proxy.setup(enemy_id, enemy_manager, username)
+  GameController.instance.add_child(proxy)
+  
+  if proxy.attach_ability(SuctionAbility, target_data):
+      # Ability executing successfully
+  ```
 
 ### Attack System
 
@@ -186,10 +211,19 @@ This guide explains the current hybrid architecture after the cleanup and naming
   - Fixed command routing through trigger_ prefix translation layer
   - Fixed boost availability on spawn (set to -BOOST_COOLDOWN)
   - Fixed action feed crash by using get_action_feed() method instead of direct property access
+- **V2 Ability System**: Implemented proper ability execution for data-oriented enemies
+  - Created V2AbilityProxy to bridge between array data and node-based abilities
+  - Fixed Succubus suction ability using reusable proxy pattern
+  - Abilities now work identically for both node-based and data-oriented enemies
+- **Damage Attribution**: Fixed death messages showing wrong killer names
+  - All damage sources now properly set source_name property
+  - Effects (explosions, poison clouds, projectiles) track their creator
+  - Death screen shows chatter username instead of class names
 
 ### Glossary
 
 - **Data‑Oriented Minion**: An enemy represented as a row in arrays (no per‑enemy node), rendered via MultiMesh, updated in slices.
 - **Bridge/Interop**: Code that binds the data arrays to existing node‑based systems (abilities, effects, lights, UI).
+- **V2AbilityProxy**: A temporary node that allows data-oriented enemies to use node-based ability classes, tracking position and handling lifecycle.
 - **Live Physics Subset**: Recycled `CharacterBody2D` nodes assigned to the nearest N minions for collisions and weapon hits.
 - **Flow‑Field**: A grid of directions (from a single BFS) that guides minions toward the player efficiently.

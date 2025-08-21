@@ -223,7 +223,7 @@ func _update_channel(delta: float, holder) -> void:
 	
 	# Check if channel completed
 	if channel_time_remaining <= 0:
-		var total_damage = get_modified_value(damage_total, "spell_power", holder)
+		var _total_damage = get_modified_value(damage_total, "spell_power", holder)
 		# Succ completed
 		_end_channel()
 

@@ -7,6 +7,10 @@ class_name EnemyBridge
 
 static var instance: EnemyBridge
 
+# Preload classes for complex ability execution
+const V2AbilityProxyClass = preload("res://systems/core/v2_ability_proxy.gd")
+const SuctionAbilityClass = preload("res://systems/ability_system/abilities/suction_ability.gd")
+
 # System references
 var enemy_manager: EnemyManager
 var config_manager: EnemyConfigManager
@@ -337,7 +341,7 @@ func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
 	
 	print("💖 Enemy %d fired heart projectile" % enemy_id)
 
-func _start_suction_ability(enemy_id: int, pos: Vector2, config: Dictionary):
+func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
 	print("🌪️ Starting suction ability for enemy %d" % enemy_id)
 	
 	if not GameController.instance or not GameController.instance.player:
@@ -349,7 +353,7 @@ func _start_suction_ability(enemy_id: int, pos: Vector2, config: Dictionary):
 		username = enemy_manager.chatter_usernames[enemy_id]
 	
 	# Use the reusable proxy system
-	var proxy = V2AbilityProxy.new()
+	var proxy = V2AbilityProxyClass.new()
 	proxy.name = "SuccubusProxy_%d" % enemy_id
 	proxy.global_position = pos
 	GameController.instance.add_child(proxy)
@@ -364,7 +368,7 @@ func _start_suction_ability(enemy_id: int, pos: Vector2, config: Dictionary):
 	}
 	
 	# Attach and execute ability
-	if proxy.attach_ability(SuctionAbility, target_data):
+	if proxy.attach_ability(SuctionAbilityClass, target_data):
 		print("✅ Suction ability started successfully")
 		
 		# Clean up when ability ends
