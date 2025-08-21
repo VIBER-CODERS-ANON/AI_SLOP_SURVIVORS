@@ -232,17 +232,11 @@ func _setup_world():
 	# Create arena walls
 	_create_arena_walls(arena_size)
 	
-	# Create highly visible dark pits
-	var pit_outlines = _create_dark_pits()
-	
 	# Create visible pillars
 	var pillar_outlines = _create_visible_pillars()
 	
 	# Add obstacle outlines to navigation mesh
-	for outline in pit_outlines:
-		nav_poly.add_outline(outline)
-	for outline in pillar_outlines:
-		nav_poly.add_outline(outline)
+	
 	
 	# Use new navigation baking method (Godot 4.4+)
 	var source_geometry = NavigationMeshSourceGeometryData2D.new()
@@ -255,7 +249,12 @@ func _setup_world():
 	player = player_scene.instantiate()
 	player.position = Vector2(150, 150)  # Start offset from center to avoid pillar
 	add_child(player)
-	
+	# Create highly visible dark pits
+	var pit_outlines = _create_dark_pits()
+	for outline in pit_outlines:
+		nav_poly.add_outline(outline)
+	for outline in pillar_outlines:
+		nav_poly.add_outline(outline)
 	# Connect player signals
 	player.died.connect(_on_player_died)
 	
@@ -334,10 +333,22 @@ func _create_dark_pits() -> Array:
 	
 	var pit_list = []
 	var nav_outlines = []
-	
+	const PitWorm = preload("res://entities/enemies/PitWorm.gd")
 	for pos in pit_positions:
 		var pit = _create_single_pit(pos, 80.0)  # Smaller pits for smaller map
 		add_child(pit)
+		var worm_count = 1
+		for i in range(worm_count):
+			var worm = PitWorm.new()
+			# Or create directly:
+			# var worm = PitWorm.new()
+
+			# Offset worms slightly around pit
+			
+			add_child(worm)
+			var offset = Vector2(randf_range(-30, 30), randf_range(-30, 30))
+			worm.initialize(pos + offset, player)  # Assuming owner_entity is the player
+
 		pit_list.append({
 			"position": pos,
 			"radius": 80.0

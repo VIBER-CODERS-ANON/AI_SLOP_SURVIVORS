@@ -193,11 +193,11 @@ func _setup_health_bar_ui():
 	# Apply the glow shader using preload
 	var shader_material = ShaderMaterial.new()
 	shader_material.shader = preload("res://ui/shaders/health_bar_glow.gdshader")
-	shader_material.set_shader_parameter("glow_intensity", 1.5)
-	shader_material.set_shader_parameter("glow_color", Color(1.0, 0.1, 0.3, 1.0))
-	shader_material.set_shader_parameter("pulse_speed", 2.0)
-	health_bar.material = shader_material
+	shader_material.set_shader_parameter("glow_intensity", 2.0)  # Reduced for subtler effect
+	shader_material.set_shader_parameter("pulse_speed", 4.0)
+	# Removed glow_color parameter
 
+	health_bar.material = shader_material
 	health_container.add_child(health_bar)
 	set_meta("health_bar", health_bar)
 	_update_health_bar_display()
@@ -465,7 +465,8 @@ func take_damage(amount: float, source: Node = null, damage_tags: Array = []):
 	var final_damage = amount * damage_modifier
 	current_health -= final_damage
 	current_health = max(0, current_health)
-	
+	var health_bar = get_meta("health_bar", null)
+
 	# Track damage source for death reporting
 	if source:
 		set_meta("last_damage_source", source)

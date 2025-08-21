@@ -120,7 +120,7 @@ func _create_sword_instance() -> Node2D:
 	# Create sword directly instead of using packed scene
 	var sword = Node2D.new()
 	sword.name = "SwordProjectile"
-	sword.z_index = 10
+	sword.z_index = 69
 	sword.visible = true
 	sword.modulate = Color(1, 1, 1, 1)  # Full opacity
 	
@@ -152,7 +152,7 @@ func _create_sword_instance() -> Node2D:
 		sword_shader.set_shader_parameter("energy_intensity", 1.5)
 		sword_shader.set_shader_parameter("energy_color", Color(0.5, 0.8, 1.0, 1.0))
 		sword_shader.set_shader_parameter("energy_pulse_speed", 3.0)
-		sword_shader.set_shader_parameter("edge_glow", 0.8)
+		sword_shader.set_shader_parameter("edge_glow", 0.01)
 		sword_shader.set_shader_parameter("edge_color", Color(1.0, 1.0, 1.0, 1.0))
 		sword_shader.set_shader_parameter("slash_intensity", 1.0)
 		sword_shader.set_shader_parameter("slash_color", Color(1.0, 0.5, 0.0, 1.0))
