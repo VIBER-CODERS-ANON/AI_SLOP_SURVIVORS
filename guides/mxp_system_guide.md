@@ -14,7 +14,7 @@ The MXP (Monster Experience Points) system allows Twitch chat viewers to upgrade
 ### Available Commands
 - `!hp` / `!hp5` / `!hpmax`: Increase entity health (+5 HP per MXP)
 - `!speed` / `!speed5` / `!speedmax`: Increase movement speed (+5 speed per MXP)
-- `!attackspeed`: Increase attack rate (+0.1 attacks/sec per MXP)
+- `!attackspeed`: Increase attack rate (+1% attack speed per MXP)
 - `!aoe`: Increase area of effect (+5% per MXP)
 - `!regen`: Add health regeneration (+1 HP/sec per MXP)
 - `!ticket`: Increase spawn chance (+10% tickets per 3 MXP)
@@ -48,11 +48,17 @@ The MXP (Monster Experience Points) system allows Twitch chat viewers to upgrade
 **Issue**: MXP upgrades not applying to V2 enemies
 **Solution**: Ensure upgrade is applied in both spawn and update functions
 
+**Issue**: Attack speed not working
+**Solution**: PlayerCollisionDetector must read `attack_cooldowns[id]` per enemy, not use global cooldown
+
 **Issue**: Regeneration not working
 **Solution**: Check that `regen_rates` array is initialized and `_update_enemy_regeneration()` is called
 
 **Issue**: AOE upgrades not affecting abilities  
 **Solution**: Abilities must read `aoe_scales[enemy_id]` from EnemyManager
+
+**Issue**: Attack speed too OP or weak for different enemy types
+**Solution**: Use percentage-based increases (+1% per MXP) instead of flat bonuses
 
 ## Data Flow
 
@@ -68,14 +74,27 @@ The MXP (Monster Experience Points) system allows Twitch chat viewers to upgrade
 Upgrades stored in `ChatterEntityManager.chatter_data[username].upgrades`:
 ```gdscript
 {
-  "bonus_health": 15,          # Flat HP bonus
-  "bonus_move_speed": 10,      # Flat speed bonus
-  "bonus_attack_speed": 0.3,   # Attacks/sec bonus
-  "bonus_aoe": 0.25,           # AOE multiplier (25% increase)
-  "regen_flat_bonus": 2.0,     # HP/sec regeneration
+  "bonus_health": 15,          # Flat HP bonus (+5 per MXP)
+  "bonus_move_speed": 10,      # Flat speed bonus (+5 per MXP)
+  "attack_speed_percent": 0.1, # Attack speed multiplier (10% = +10% attack speed)
+  "bonus_aoe": 0.25,           # AOE multiplier (25% increase = +5% per MXP)
+  "regen_flat_bonus": 2.0,     # HP/sec regeneration (+1 per MXP)
   "ticket_multiplier": 1.3     # Spawn chance multiplier
 }
 ```
+
+## Attack Speed Calculation
+
+The new attack speed system uses percentage-based increases:
+1. Base attack speed defined per enemy type (e.g., 2 APS for melee, 0.4 APS for ranged)
+2. Calculate multiplier: `(1 + attack_speed_percent)`
+3. Final APS = Base APS × multiplier
+4. Convert to cooldown: `cooldown = 1.0 / final_APS`
+
+Example for Rat (melee):
+- Base: 2.0 attacks/sec (0.5s cooldown)
+- With 20 MXP: 2.0 × 1.2 = 2.4 attacks/sec (0.42s cooldown)
+- With 50 MXP: 2.0 × 1.5 = 3.0 attacks/sec (0.33s cooldown)
 
 ## Testing Checklist
 

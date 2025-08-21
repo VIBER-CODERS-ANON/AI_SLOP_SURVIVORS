@@ -505,19 +505,19 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 				healths[id] = 10.0
 				move_speeds[id] = 80.0
 				attack_damages[id] = 1.0
-				attack_cooldowns[id] = 1.0
+				attack_cooldowns[id] = 0.5  # 2 attacks per second
 			1: # Succubus
 				max_healths[id] = 25.0
 				healths[id] = 25.0
 				move_speeds[id] = 100.0
 				attack_damages[id] = 3.0
-				attack_cooldowns[id] = 1.5
+				attack_cooldowns[id] = 2.5  # Ranged attacker - slower attack speed
 			2: # Woodland Joe
 				max_healths[id] = 40.0
 				healths[id] = 40.0
 				move_speeds[id] = 80.0
 				attack_damages[id] = 5.0
-				attack_cooldowns[id] = 2.0
+				attack_cooldowns[id] = 0.5  # 2 attacks per second
 			3: # Thor Enemy - matches thor.tres
 				max_healths[id] = 150.0
 				healths[id] = 150.0
@@ -560,13 +560,12 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 			var speed_bonus = chatter_data.upgrades["bonus_move_speed"]
 			move_speeds[id] += speed_bonus
 		
-		# Apply attack speed bonus (converts to cooldown)
-		if chatter_data.upgrades.has("bonus_attack_speed"):
-			var attack_speed_bonus = chatter_data.upgrades["bonus_attack_speed"]
+		# Apply attack speed percentage bonus
+		if chatter_data.upgrades.has("attack_speed_percent"):
+			var percent_bonus = chatter_data.upgrades["attack_speed_percent"]
 			var base_attacks_per_sec = 1.0 / attack_cooldowns[id] if attack_cooldowns[id] > 0 else 1.0
-			var new_attacks_per_sec = base_attacks_per_sec + attack_speed_bonus
-			if new_attacks_per_sec > 0:
-				attack_cooldowns[id] = 1.0 / new_attacks_per_sec
+			var new_attacks_per_sec = base_attacks_per_sec * (1.0 + percent_bonus)
+			attack_cooldowns[id] = 1.0 / new_attacks_per_sec
 		
 		# Apply AOE bonus (stored for later use in abilities)
 		if chatter_data.upgrades.has("bonus_aoe"):

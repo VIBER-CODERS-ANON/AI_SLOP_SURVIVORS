@@ -56,7 +56,10 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **Data‑Oriented Minions (V2)**: Use PlayerCollisionDetector for unified attack handling
   - Detection radius: 20 pixels from player's capsule edge (configurable in player_collision_detector.gd)
   - Uses edge‑based collision detection for player's capsule hitbox (16px radius, 60px height)
-  - Attack rate: 2 attacks per second (0.5s cooldown between attacks)
+  - Base attack rates:
+    - Melee (Rat, Woodland Joe): 2 attacks/sec (0.5s cooldown)
+    - Ranged (Succubus): 0.4 attacks/sec (2.5s cooldown)
+  - Attack cooldowns read from per‑enemy `attack_cooldowns[]` array (not global)
   - Damage calculated from EnemyManager arrays (attack_damages[enemy_id])
   - No per‑enemy collision bodies ‑ player detects nearby enemies
   - Consistent attack range from all angles (solves pill‑shaped hitbox issues)
@@ -77,11 +80,11 @@ This guide explains the current hybrid architecture after the cleanup and naming
   - MXP upgrades applied on spawn in `enemy_manager.spawn_enemy()`
   - Live enemies updated via `ChatterEntityManager._update_active_entity()`
   - Supported upgrades:
-    - `bonus_health`: Flat HP increase (from !hp command)
-    - `bonus_move_speed`: Flat speed increase (from !speed command)
-    - `bonus_attack_speed`: Attack rate increase (from !attackspeed command)
-    - `bonus_aoe`: AOE multiplier for abilities (from !aoe command)
-    - `regen_flat_bonus`: HP regeneration per second (from !regen command)
+    - `bonus_health`: Flat HP increase (+5 HP per MXP from !hp command)
+    - `bonus_move_speed`: Flat speed increase (+5 speed per MXP from !speed command)
+    - `attack_speed_percent`: Percentage attack speed increase (+1% per MXP from !attackspeed command)
+    - `bonus_aoe`: AOE multiplier for abilities (+5% per MXP from !aoe command)
+    - `regen_flat_bonus`: HP regeneration per second (+1 HP/sec per MXP from !regen command)
   - Arrays in EnemyManager:
     - `aoe_scales[]`: Stores AOE multipliers for each enemy
     - `regen_rates[]`: Stores regeneration rates for each enemy
@@ -145,6 +148,15 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - Cheats can spawn minions near the player to test scale/perf.
 - Use ramping to push monster power over time.
 - Flocking weights and avoidance margins can be increased slightly if minions clip pits/pillars.
+
+### Recent Fixes & Updates
+
+- **Attack Speed System**: Changed from flat bonus to percentage‑based (+1% per MXP) to balance melee vs ranged
+- **Per‑Enemy Attack Cooldowns**: PlayerCollisionDetector now reads individual `attack_cooldowns[id]` instead of global cooldown
+- **Edge‑Based Collision**: Player's capsule hitbox uses edge distance calculation for consistent melee range
+- **MXP Integration**: All modifiers now properly apply to V2 enemies both on spawn and live updates
+- **Aggressive AI**: Removed smoothing, strafe, and reduced flocking for zombie swarm behavior
+- **Regeneration System**: Added `regen_rates[]` array and per‑frame healing in update loop
 
 ### Glossary
 

@@ -223,17 +223,21 @@ func _update_active_entity(username: String):
 			var enemy_type = enemy_manager.entity_types[id]
 			var base_hp = 10.0
 			var base_speed = 80.0
+			var base_cooldown = 2.0
 			
 			match enemy_type:
 				0: # Rat
 					base_hp = 10.0
 					base_speed = 80.0
+					base_cooldown = 0.5  # 2 attacks per second
 				1: # Succubus
 					base_hp = 25.0
 					base_speed = 100.0
+					base_cooldown = 2.5  # Ranged attacker - slower attack speed
 				2: # Woodland Joe
 					base_hp = 40.0
 					base_speed = 80.0
+					base_cooldown = 0.5  # 2 attacks per second
 			
 			# Apply HP bonus
 			if chatter_data_local.upgrades.has("bonus_health"):
@@ -248,14 +252,15 @@ func _update_active_entity(username: String):
 				var speed_bonus = chatter_data_local.upgrades["bonus_move_speed"]
 				enemy_manager.move_speeds[id] = base_speed + speed_bonus
 			
-			# Apply attack speed bonus (converts to cooldown)
-			if chatter_data_local.upgrades.has("bonus_attack_speed"):
-				var attack_speed_bonus = chatter_data_local.upgrades["bonus_attack_speed"]
-				var base_cooldown = 2.0  # Default attack cooldown for most enemies
+			# Apply attack speed percentage bonus
+			if chatter_data_local.upgrades.has("attack_speed_percent"):
+				var percent_bonus = chatter_data_local.upgrades["attack_speed_percent"]
 				var base_attacks_per_sec = 1.0 / base_cooldown
-				var new_attacks_per_sec = base_attacks_per_sec + attack_speed_bonus
-				if new_attacks_per_sec > 0:
-					enemy_manager.attack_cooldowns[id] = 1.0 / new_attacks_per_sec
+				var new_attacks_per_sec = base_attacks_per_sec * (1.0 + percent_bonus)
+				enemy_manager.attack_cooldowns[id] = 1.0 / new_attacks_per_sec
+			else:
+				# Reset to base cooldown if no bonus
+				enemy_manager.attack_cooldowns[id] = base_cooldown
 			
 			# Apply AOE bonus (stored for later use in abilities)
 			if chatter_data_local.upgrades.has("bonus_aoe"):

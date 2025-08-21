@@ -6,14 +6,13 @@ class_name PlayerCollisionDetector
 ## Node-based enemies (bosses) use their own BaseEnemy attack system
 ##
 ## CONFIGURATION:
-## - detection_radius: How close enemies need to be to attack (default: 100 pixels)
-## - damage_cooldown: Time between attacks from same enemy (default: 0.5s = 2 APS)
+## - detection_radius: How close enemies need to be to attack (default: 20 pixels)
+## - Attack cooldowns are per-enemy, stored in EnemyManager.attack_cooldowns[]
 
 signal enemy_overlap_detected(enemy_id: int)
 
 # Attack configuration
 var detection_radius: float = 20.0  # Attack range for V2 enemies (tight melee range)
-var damage_cooldown: float = 0.5  # 0.5s = 2 attacks per second per enemy
 var last_damage_times: Dictionary = {}  # enemy_id -> last_damage_time
 
 # Player capsule hitbox dimensions (from player.tscn)
@@ -96,9 +95,10 @@ func _check_single_enemy_collision(enemy_id: int, player_pos: Vector2, current_t
 	if distance > detection_radius:
 		return
 	
-	# Check damage cooldown
+	# Check damage cooldown using per-enemy attack cooldown
+	var enemy_cooldown = enemy_manager.attack_cooldowns[enemy_id]
 	if last_damage_times.has(enemy_id):
-		if current_time - last_damage_times[enemy_id] < damage_cooldown:
+		if current_time - last_damage_times[enemy_id] < enemy_cooldown:
 			return
 	
 	# Apply damage to player
