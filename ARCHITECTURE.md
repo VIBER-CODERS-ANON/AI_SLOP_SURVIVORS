@@ -50,6 +50,7 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **Flocking (optional)**: Low‑weight separation/alignment/cohesion computed over array data using the spatial grid.
 - **Variability**: Per‑enemy wander phase, strafe bias, speed jitter, and periodic bursts reduce "jagged/stiff" herd motion at scale.
 - **One‑Way Pushing**: Player doesn't collide with enemies (collision_mask = 1) but pushes them away via _push_nearby_enemies() function
+- **Stop‑at‑Attack‑Range**: Enemies stop moving when within attack range (20px from player's capsule edge), using shared capsule edge detection from PlayerCollisionDetector
 
 ### Attack System
 
@@ -157,6 +158,8 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **MXP Integration**: All modifiers now properly apply to V2 enemies both on spawn and live updates
 - **Aggressive AI**: Removed smoothing, strafe, and reduced flocking for zombie swarm behavior
 - **Regeneration System**: Added `regen_rates[]` array and per‑frame healing in update loop
+- **Stop‑at‑Attack‑Range**: Enemies now stop exactly at attack range using capsule edge detection, preventing overlap
+- **Code Cleanup**: Removed unused arrive mechanics, duplicate attack logic, and dead code from enemy_manager
 
 ### Glossary
 

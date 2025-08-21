@@ -13,11 +13,6 @@ static var instance: EnemyManager
 const MAX_ENEMIES: int = 1000
 
 # Enemy movement and attack constants
-const ATTACK_REACH: float = 20.0 # how close they need to be to hit (tight melee range)
-const STOP_DISTANCE: float = 0
-const START_DISTANCE: float = STOP_DISTANCE + 10.0
-const ARRIVE_RADIUS: float = 120.0 # start easing off speed as they get near
-const MIN_SPEED_SCALE: float = 0.05 # never fully stop until inside STOP_DISTANCE
 
 # Succubus animation constants
 const SUCCUBUS_FRAMES_H: int = 6
@@ -36,7 +31,6 @@ var rotations: PackedFloat32Array
 var move_speeds: PackedFloat32Array
 var attack_damages: PackedFloat32Array
 var attack_cooldowns: PackedFloat32Array
-var last_attack_times: PackedFloat32Array
 var aoe_scales: PackedFloat32Array  # AOE multiplier for abilities
 var regen_rates: PackedFloat32Array  # HP regeneration per second
 
@@ -109,6 +103,9 @@ const MAX_LIVE_ENEMIES: int = 50
 var live_enemy_ids: Array[int] = []
 var live_enemy_bodies: Array[CharacterBody2D] = []  # Pooled collision bodies
 
+# Attack range constant (matching PlayerCollisionDetector)
+const ATTACK_DETECTION_RADIUS: float = 20.0
+
 # Performance settings
 var enable_flow_field: bool = true
 var enable_spatial_grid: bool = true
@@ -166,8 +163,6 @@ func _initialize_arrays():
 	attack_damages.resize(initial_capacity)
 	attack_cooldowns = PackedFloat32Array()
 	attack_cooldowns.resize(initial_capacity)
-	last_attack_times = PackedFloat32Array()
-	last_attack_times.resize(initial_capacity)
 	aoe_scales = PackedFloat32Array()
 	aoe_scales.resize(initial_capacity)
 	regen_rates = PackedFloat32Array()
@@ -481,7 +476,6 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	rarity_types[id] = 0  # Default COMMON
 	scales[id] = 1.0
 	rotations[id] = 0.0
-	last_attack_times[id] = 0.0
 	# Initialize behavior variability
 	speed_jitter[id] = randf_range(0.9, 1.2)
 	behavior_strafe_dir[id] = -1.0 if randf() < 0.5 else 1.0
@@ -592,6 +586,7 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	
 	return id
 
+
 func despawn_enemy(id: int):
 	if id < 0 or id >= alive_flags.size() or alive_flags[id] == 0:
 		return
@@ -657,17 +652,14 @@ func _process_enemy_slice(delta: float):
 	if current_slice_offset >= array_size:
 		current_slice_offset = 0
 
-func _arrive_scale(dist: float) -> float:
-	if dist <= STOP_DISTANCE:
-		return 0.0
-	if dist >= ARRIVE_RADIUS:
-		return 1.0
-	var t: float = (dist - STOP_DISTANCE) / max(ARRIVE_RADIUS - STOP_DISTANCE, 1.0)
-	t = t * t * (3.0 - 2.0 * t) # smoothstep
-	return MIN_SPEED_SCALE + (1.0 - MIN_SPEED_SCALE) * t
-
 func _update_enemy_movement(id: int, delta: float):
 	var current_pos = positions[id]
+	
+	# Check if enemy is within attack range - stop if so
+	var distance_to_edge = PlayerCollisionDetector.get_distance_to_player_capsule_edge(player_position, current_pos)
+	if distance_to_edge <= ATTACK_DETECTION_RADIUS:
+		velocities[id] = Vector2.ZERO
+		return  # Skip all other movement logic
 	
 	# Get flow-field direction
 	var target_direction = Vector2.ZERO
@@ -711,20 +703,9 @@ func _update_enemy_movement(id: int, delta: float):
 		if d > 0.08:
 			rotations[id] = lerp_angle(rotations[id], target_rotation, delta * 4.0)
 
-func _update_enemy_attack(id: int, _delta: float):
-	var time_seconds = Time.get_ticks_msec() / 1000.0
-	
-	# Check if can attack
-	if time_seconds - last_attack_times[id] < attack_cooldowns[id]:
-		return
-	
-	# Check if close enough to player to attack
-	var distance_to_player = positions[id].distance_to(player_position)
-	if distance_to_player > ATTACK_REACH:  # Attack range
-		return
-	
-	# Perform attack (damage will be handled by player collision detection)
-	last_attack_times[id] = time_seconds
+# Attack logic removed - handled by PlayerCollisionDetector
+func _update_enemy_attack(_id: int, _delta: float):
+	pass  # All attack logic is in PlayerCollisionDetector
 
 func _update_enemy_regeneration(id: int, delta: float):
 	# Apply regeneration if enemy has any
@@ -1127,7 +1108,6 @@ func _grow_arrays():
 	move_speeds.resize(new_size)
 	attack_damages.resize(new_size)
 	attack_cooldowns.resize(new_size)
-	last_attack_times.resize(new_size)
 	aoe_scales.resize(new_size)
 	regen_rates.resize(new_size)
 	behavior_strafe_dir.resize(new_size)
