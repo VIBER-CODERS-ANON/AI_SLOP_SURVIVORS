@@ -55,9 +55,7 @@ func _ready():
 	
 	# Create main container
 	var main_container = VBoxContainer.new()
-	main_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	main_container.position = Vector2(-500, -200)
-	main_container.custom_minimum_size = Vector2(1000, 400)
+	main_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	main_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_container.add_theme_constant_override("separation", 30)
 	# Let underlying pause menu receive input by default
@@ -79,6 +77,7 @@ func _ready():
 	var boon_container = HBoxContainer.new()
 	boon_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	boon_container.add_theme_constant_override("separation", 40)
+	boon_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	main_container.add_child(boon_container)
 	
 	# Create boon cards
@@ -99,11 +98,11 @@ func _unhandled_input(event):
 
 func _create_boon_card() -> Control:
 	var card_container = Control.new()
-	card_container.custom_minimum_size = Vector2(280, 200)
+	card_container.custom_minimum_size = Vector2(280, 260)
 	
-	# Background panel
-	var panel = Panel.new()
-	panel.custom_minimum_size = Vector2(280, 200)
+	# Background panel with padding
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(280, 260)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_container.add_child(panel)
 	
@@ -113,30 +112,45 @@ func _create_boon_card() -> Control:
 	content.add_theme_constant_override("separation", 10)
 	panel.add_child(content)
 	
+	# Vertically center the entire text group inside the card
+	var spacer_top_flex = Control.new()
+	spacer_top_flex.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(spacer_top_flex)
+
+	# Group: [RARITY], small gap, [TITLE], [DESCRIPTION]
+	var text_group = VBoxContainer.new()
+	text_group.alignment = BoxContainer.ALIGNMENT_CENTER
+	text_group.add_theme_constant_override("separation", 6)
+	content.add_child(text_group)
+
 	# Rarity label
 	var rarity_label = Label.new()
 	rarity_label.add_theme_font_size_override("font_size", 14)
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	content.add_child(rarity_label)
-	
-	# Name label
+	text_group.add_child(rarity_label)
+
+	# Small gap between rarity and title
+	var rarity_to_title_gap = Control.new()
+	rarity_to_title_gap.custom_minimum_size = Vector2(0, 8)
+	text_group.add_child(rarity_to_title_gap)
+
+	# Name label (Title)
 	var name_label = Label.new()
 	name_label.add_theme_font_size_override("font_size", 20)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content.add_child(name_label)
-	
-	# Spacer
-	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 20)
-	content.add_child(spacer)
-	
+	text_group.add_child(name_label)
+
 	# Description label
 	var desc_label = Label.new()
 	desc_label.add_theme_font_size_override("font_size", 16)
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content.add_child(desc_label)
+	text_group.add_child(desc_label)
+
+	var spacer_bottom_flex = Control.new()
+	spacer_bottom_flex.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(spacer_bottom_flex)
 	
 	# Button (invisible, covers entire card)
 	var button = Button.new()
@@ -175,7 +189,7 @@ func _update_card(card: Control, boon_data: Dictionary, index: int):
 	var boon = boon_data["boon"] as BaseBoon
 	var rarity = boon_data["rarity"] as BoonRarity
 	
-	var panel = card.get_meta("panel") as Panel
+	var panel = card.get_meta("panel") as PanelContainer
 	var rarity_label = card.get_meta("rarity_label") as Label
 	var name_label = card.get_meta("name_label") as Label
 	var desc_label = card.get_meta("desc_label") as Label
@@ -197,10 +211,10 @@ func _update_card(card: Control, boon_data: Dictionary, index: int):
 	style.border_width_top = rarity.border_width
 	style.border_width_bottom = rarity.border_width
 	style.border_color = rarity.color
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_left = 8
-	style.corner_radius_bottom_right = 8
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_left = 12
+	style.corner_radius_bottom_right = 12
 	
 	# Add glow for higher rarities
 	if rarity.glow_intensity > 0:
@@ -208,6 +222,11 @@ func _update_card(card: Control, boon_data: Dictionary, index: int):
 		style.shadow_color.a = rarity.glow_intensity
 		style.shadow_size = 10
 	
+	# Add inner padding via style content margins
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 12
+	style.content_margin_bottom = 12
 	panel.add_theme_stylebox_override("panel", style)
 	
 	# Add visual effects based on rarity
@@ -347,7 +366,7 @@ func _on_boon_selected(index: int):
 	
 	# Flash selection
 	var card = boon_cards[index]
-	var panel = card.get_meta("panel") as Panel
+	var panel = card.get_meta("panel") as PanelContainer
 	var tween = create_tween()
 	tween.tween_property(panel, "modulate", Color.WHITE, 0.1)
 	tween.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.1)
@@ -371,36 +390,40 @@ func _complete_selection(boon: BaseBoon):
 			button.mouse_exited.disconnect(_on_card_unhover)
 
 func _on_card_hover(card: Control, rarity: BoonRarity):
-	var panel = card.get_meta("panel") as Panel
-	var style = panel.get_theme_stylebox("panel") as StyleBoxFlat
-	if style:
-		style = style.duplicate()
-		style.border_color = rarity.color * 1.5
-		style.border_width_left = rarity.border_width + 2
-		style.border_width_right = rarity.border_width + 2
-		style.border_width_top = rarity.border_width + 2
-		style.border_width_bottom = rarity.border_width + 2
-		if rarity.glow_intensity > 0:
-			style.shadow_size = 20
-		panel.add_theme_stylebox_override("panel", style)
+	var panel = card.get_meta("panel") as PanelContainer
+	if panel == null or not is_instance_valid(panel):
+		return
+	var base_style: StyleBox = panel.get_theme_stylebox("panel")
+	var flat: StyleBoxFlat = (base_style as StyleBoxFlat) if base_style else StyleBoxFlat.new()
+	flat = flat.duplicate()
+	flat.border_color = rarity.color * 1.5
+	flat.border_width_left = rarity.border_width + 2
+	flat.border_width_right = rarity.border_width + 2
+	flat.border_width_top = rarity.border_width + 2
+	flat.border_width_bottom = rarity.border_width + 2
+	if rarity.glow_intensity > 0:
+		flat.shadow_size = 20
+	panel.add_theme_stylebox_override("panel", flat)
 	
 	# Scale up slightly
 	var tween = create_tween()
 	tween.tween_property(card, "scale", Vector2(1.05, 1.05), 0.1)
 
 func _on_card_unhover(card: Control, rarity: BoonRarity):
-	var panel = card.get_meta("panel") as Panel
-	var style = panel.get_theme_stylebox("panel") as StyleBoxFlat
-	if style:
-		style = style.duplicate()
-		style.border_color = rarity.color
-		style.border_width_left = rarity.border_width
-		style.border_width_right = rarity.border_width
-		style.border_width_top = rarity.border_width
-		style.border_width_bottom = rarity.border_width
-		if rarity.glow_intensity > 0:
-			style.shadow_size = 10
-		panel.add_theme_stylebox_override("panel", style)
+	var panel = card.get_meta("panel") as PanelContainer
+	if panel == null or not is_instance_valid(panel):
+		return
+	var base_style: StyleBox = panel.get_theme_stylebox("panel")
+	var flat: StyleBoxFlat = (base_style as StyleBoxFlat) if base_style else StyleBoxFlat.new()
+	flat = flat.duplicate()
+	flat.border_color = rarity.color
+	flat.border_width_left = rarity.border_width
+	flat.border_width_right = rarity.border_width
+	flat.border_width_top = rarity.border_width
+	flat.border_width_bottom = rarity.border_width
+	if rarity.glow_intensity > 0:
+		flat.shadow_size = 10
+	panel.add_theme_stylebox_override("panel", flat)
 	
 	# Scale back
 	var tween = create_tween()
