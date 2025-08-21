@@ -53,8 +53,10 @@ func _ready():
 	# Create main container with scroll
 	var scroll_container = ScrollContainer.new()
 	scroll_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	scroll_container.position = Vector2(-180, -280)  # Center the container
-	scroll_container.custom_minimum_size = Vector2(360, 560)
+	scroll_container.position = Vector2(-260, -320)  # Center the wider container
+	scroll_container.custom_minimum_size = Vector2(520, 640)
+	scroll_container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	scroll_container.follow_focus = true
 	add_child(scroll_container)
 	
