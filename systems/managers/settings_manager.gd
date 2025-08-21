@@ -23,7 +23,7 @@ const DEFAULT_SETTINGS = {
 		"dialog_volume": 1.0
 	},
 	"display": {
-		"fullscreen": false,
+		"fullscreen": true,
 		"vsync": true,
 		"resolution_width": 1920,
 		"resolution_height": 1080
@@ -257,6 +257,7 @@ func set_resolution(width: int, height: int):
 	settings_config.set_value("display", "resolution_height", height)
 	save_settings()
 	
+	
 	# Check current window mode
 	var current_mode = DisplayServer.window_get_mode()
 	
@@ -293,6 +294,7 @@ func set_resolution(width: int, height: int):
 func set_vsync(enabled: bool):
 	settings_config.set_value("display", "vsync", enabled)
 	save_settings()
+	
 	
 	if enabled:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)

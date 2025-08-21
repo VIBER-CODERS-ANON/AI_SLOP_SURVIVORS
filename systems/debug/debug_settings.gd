@@ -273,3 +273,28 @@ func load_settings():
 	
 	# Apply loaded settings
 	apply_settings()
+
+## Get all debug property names dynamically
+func get_all_property_names() -> Array[String]:
+	# Use reflection to get all boolean properties instead of hardcoding
+	var properties: Array[String] = []
+	var property_list = get_property_list()
+	
+	for property in property_list:
+		var property_name = property["name"]
+		var property_type = property["type"]
+		
+		# Only include boolean properties that end with "_enabled" 
+		if property_type == TYPE_BOOL and property_name.ends_with("_enabled"):
+			properties.append(property_name)
+	
+	return properties
+
+## Refresh all debug panel UI elements to match current settings
+func refresh_ui():
+	# Update all checkboxes in the debug_toggles group
+	var checkboxes = get_tree().get_nodes_in_group("debug_toggles")
+	for cb in checkboxes:
+		if cb is CheckBox and cb.has_meta("property_name"):
+			var property_name = cb.get_meta("property_name")
+			cb.set_pressed_no_signal(get(property_name))

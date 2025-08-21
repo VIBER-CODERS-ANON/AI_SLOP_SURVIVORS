@@ -159,6 +159,8 @@ func _add_toggle(parent: Node, label_text: String, property: String, tooltip: St
 	parent.add_child(hbox)
 	
 	var check = CheckBox.new()
+	check.add_to_group("debug_toggles") 
+	check.set_meta("property_name", property) 
 	check.set_pressed_no_signal(debug_settings.get(property))
 	check.tooltip_text = tooltip
 	check.toggled.connect(func(pressed): _on_toggle_changed(property, pressed))
@@ -196,15 +198,12 @@ func _on_reset_preset():
 	_update_status()
 
 func _refresh_all_toggles():
-	# Update all checkboxes to match current settings
+	# Update all checkboxes to match current settings without destroying UI
 	var checkboxes = get_tree().get_nodes_in_group("debug_toggles")
 	for cb in checkboxes:
-		if cb is CheckBox:
-			cb.queue_free()
-	# Recreate UI
-	for child in get_children():
-		child.queue_free()
-	_setup_ui()
+		if cb is CheckBox and cb.has_meta("property_name"):
+			var property_name = cb.get_meta("property_name")
+			cb.set_pressed_no_signal(debug_settings.get(property_name))
 
 func _update_status():
 	var status_label = get_node_or_null("StatusLabel")

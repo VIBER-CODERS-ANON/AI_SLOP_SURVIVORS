@@ -85,6 +85,9 @@ func _process(_delta):
 		if voting_timer <= 0:
 			_end_vote()
 
+func start_boss_vote():
+	_start_vote()
+
 func _start_vote():
 	# Get available bosses (not yet spawned)
 	var available_bosses = []

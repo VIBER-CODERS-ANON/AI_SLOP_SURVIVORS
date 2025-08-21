@@ -12,6 +12,9 @@ var _texture_cache: Dictionary = {}
 var _audio_cache: Dictionary = {}
 var _shader_cache: Dictionary = {}
 
+# Background music player
+var background_music_player: AudioStreamPlayer
+
 # Common resource paths
 const SCENES = {
 	"xp_orb": "res://entities/pickups/xp_orb.tscn",
@@ -20,7 +23,7 @@ const SCENES = {
 	# Legacy rat scene kept for tools only; spawning is handled by EnemyManager
 	# "twitch_rat": "res://entities/enemies/twitch_rat.tscn",
 	"succubus": "res://entities/enemies/succubus.tscn",
-	"thor": "res://entities/enemies/thor.tscn",
+	"thor": "res://entities/enemies/bosses/thor/thor_enemy.tscn",
 	"explosion_effect": "res://entities/effects/explosion.tscn",
 	"poison_cloud": "res://entities/effects/poison_cloud.tscn",
 	"projectile": "res://entities/projectiles/projectile.tscn"
@@ -131,69 +134,56 @@ static func spawn_entity(scene_key: String, parent: Node, position: Vector2) -> 
 		parent.add_child(entity)
 	return entity
 
-## Spawn multiple entities efficiently
-static func spawn_entities_batch(scene_key: String, parent: Node, positions: Array) -> Array:
-	var entities = []
-	var scene = load_scene(SCENES.get(scene_key, scene_key))
-	
-	if not scene:
-		return entities
-	
-	for pos in positions:
-		var entity = scene.instantiate()
-		entity.global_position = pos
-		parent.add_child(entity)
-		entities.append(entity)
-	
-	return entities
 
-## Clear specific cache
-static func clear_cache(cache_type: String = "all") -> void:
-	if not instance:
-		return
-	
-	match cache_type:
-		"scenes":
-			instance._scene_cache.clear()
-		"textures":
-			instance._texture_cache.clear()
-		"audio":
-			instance._audio_cache.clear()
-		"shaders":
-			instance._shader_cache.clear()
-		"all":
-			instance._scene_cache.clear()
-			instance._texture_cache.clear()
-			instance._audio_cache.clear()
-			instance._shader_cache.clear()
 
-## Get cache size info
-static func get_cache_info() -> Dictionary:
-	if not instance:
-		return {}
-	
-	return {
-		"scenes": instance._scene_cache.size(),
-		"textures": instance._texture_cache.size(),
-		"audio": instance._audio_cache.size(),
-		"shaders": instance._shader_cache.size()
-	}
 
-## Preload resources for a specific game state
-static func preload_for_state(state: String) -> void:
+
+## Setup background music
+static func setup_background_music(parent: Node) -> AudioStreamPlayer:
 	if not instance:
-		return
+		push_error("ResourceManager: Instance not initialized")
+		return null
 	
-	match state:
-		"combat":
-			# Preload combat resources
-			load_scene(SCENES["damage_number"])
-			load_scene(SCENES["explosion_effect"])
-		"boss_fight":
-			# Preload boss resources
-			load_scene(SCENES["thor"])
-			load_scene(SCENES["succubus"])
-		"wave":
-			# Preload wave resources
-			load_scene(SCENES["twitch_rat"])
-			load_scene(SCENES["xp_orb"])
+	if instance.background_music_player:
+		push_warning("ResourceManager: Background music already setup")
+		return instance.background_music_player
+	
+	instance.background_music_player = AudioStreamPlayer.new()
+	instance.background_music_player.name = "BackgroundMusic"
+	instance.background_music_player.volume_db = -6.0
+	instance.background_music_player.bus = "Music"
+	instance.background_music_player.process_mode = Node.PROCESS_MODE_ALWAYS
+	parent.add_child(instance.background_music_player)
+	
+	var music_stream = preload("res://music/Rats_in_the_Rain_Deaux.mp3")
+	instance.background_music_player.stream = music_stream
+	
+	if music_stream is AudioStreamMP3:
+		music_stream.loop = true
+	
+	instance.background_music_player.play()
+	print("🎵 Background music started")
+	return instance.background_music_player
+
+## Get background music player
+static func get_background_music_player() -> AudioStreamPlayer:
+	if not instance:
+		return null
+	return instance.background_music_player
+
+## Control background music
+static func set_music_volume(volume_db: float):
+	if instance and instance.background_music_player:
+		instance.background_music_player.volume_db = volume_db
+
+static func pause_music():
+	if instance and instance.background_music_player:
+		instance.background_music_player.stream_paused = true
+
+static func resume_music():
+	if instance and instance.background_music_player:
+		instance.background_music_player.stream_paused = false
+
+static func stop_music():
+	if instance and instance.background_music_player:
+		instance.background_music_player.stop()
