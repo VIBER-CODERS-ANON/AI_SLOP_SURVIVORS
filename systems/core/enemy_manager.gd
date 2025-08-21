@@ -63,7 +63,7 @@ var _halted: PackedByteArray                    # 0 = moving, 1 = halted near pl
 
 # Entity metadata
 var alive_flags: PackedByteArray  # 0 = dead, 1 = alive
-var entity_types: PackedByteArray  # 0 = rat, 1 = succubus, 2 = woodland_joe, 3 = thor_enemy, 4 = mika_boss, 5 = forsen_boss
+var entity_types: PackedByteArray  # 0 = rat, 1 = succubus, 2 = woodland_joe (bosses use node-based system)
 var chatter_usernames: Array[String]  # Username for each entity
 var chatter_colors: PackedColorArray  # Color for each entity
 var rarity_types: PackedByteArray  # NPCRarity.Type per entity (COMMON/MAGIC/RARE/UNIQUE)
@@ -80,10 +80,6 @@ var active_count: int = 0  # Number of alive entities
 var multi_mesh_instance: MultiMeshInstance2D
 var multi_mesh_minion_succubus: MultiMeshInstance2D
 var multi_mesh_minion_woodland: MultiMeshInstance2D
-var multi_mesh_boss_thor: MultiMeshInstance2D
-var multi_mesh_boss_mika: MultiMeshInstance2D
-var multi_mesh_boss_forsen: MultiMeshInstance2D
-var multi_mesh_boss_zzran: MultiMeshInstance2D
 var rat_mesh: QuadMesh
 var succubus_mesh: QuadMesh
 var woodland_joe_mesh: QuadMesh
@@ -248,8 +244,6 @@ func _setup_multimesh_rendering():
 	else:
 		print("⚠️ Rat texture not found at: ", texture_path)
 
-	# Create per-boss-type MultiMeshes using BespokeAssetSources
-
 	# Create per-minion-type MultiMeshes for unique visuals
 	multi_mesh_minion_succubus = MultiMeshInstance2D.new()
 	multi_mesh_minion_succubus.name = "MinionMultiMesh_Succubus"
@@ -317,68 +311,7 @@ func _setup_multimesh_rendering():
 		multi_mesh_minion_woodland.texture = load(wjoe_tex_path)
 	else:
 		multi_mesh_minion_woodland.texture = multi_mesh_instance.texture
-	# Thor
-	multi_mesh_boss_thor = MultiMeshInstance2D.new()
-	multi_mesh_boss_thor.name = "BossMultiMesh_Thor"
-	add_child(multi_mesh_boss_thor)
-	var boss_mesh_thor = MultiMesh.new()
-	boss_mesh_thor.transform_format = MultiMesh.TRANSFORM_2D
-	boss_mesh_thor.use_colors = true
-	boss_mesh_thor.instance_count = MAX_ENEMIES
-	boss_mesh_thor.mesh = rat_mesh
-	multi_mesh_boss_thor.multimesh = boss_mesh_thor
-	var thor_tex_path = "res://BespokeAssetSources/asmon1.png"  # fallback visual for Thor
-	if not ResourceLoader.exists(thor_tex_path):
-		thor_tex_path = "res://entities/enemies/bosses/thor/pirate_skull.png"
-	if ResourceLoader.exists(thor_tex_path):
-		multi_mesh_boss_thor.texture = load(thor_tex_path)
-	else:
-		print("⚠️ Thor texture not found at:", thor_tex_path)
-	# Mika
-	multi_mesh_boss_mika = MultiMeshInstance2D.new()
-	multi_mesh_boss_mika.name = "BossMultiMesh_Mika"
-	add_child(multi_mesh_boss_mika)
-	var boss_mesh_mika = MultiMesh.new()
-	boss_mesh_mika.transform_format = MultiMesh.TRANSFORM_2D
-	boss_mesh_mika.use_colors = true
-	boss_mesh_mika.instance_count = MAX_ENEMIES
-	boss_mesh_mika.mesh = rat_mesh
-	multi_mesh_boss_mika.multimesh = boss_mesh_mika
-	var mika_tex_path = "res://BespokeAssetSources/mika.png"
-	if ResourceLoader.exists(mika_tex_path):
-		multi_mesh_boss_mika.texture = load(mika_tex_path)
-	else:
-		print("⚠️ Mika texture not found at:", mika_tex_path)
-	# Forsen
-	multi_mesh_boss_forsen = MultiMeshInstance2D.new()
-	multi_mesh_boss_forsen.name = "BossMultiMesh_Forsen"
-	add_child(multi_mesh_boss_forsen)
-	var boss_mesh_forsen = MultiMesh.new()
-	boss_mesh_forsen.transform_format = MultiMesh.TRANSFORM_2D
-	boss_mesh_forsen.use_colors = true
-	boss_mesh_forsen.instance_count = MAX_ENEMIES
-	boss_mesh_forsen.mesh = rat_mesh
-	multi_mesh_boss_forsen.multimesh = boss_mesh_forsen
-	var forsen_tex_path = "res://BespokeAssetSources/forsen/forsen.png"
-	if ResourceLoader.exists(forsen_tex_path):
-		multi_mesh_boss_forsen.texture = load(forsen_tex_path)
-	else:
-		print("⚠️ Forsen texture not found at:", forsen_tex_path)
-	# ZZran
-	multi_mesh_boss_zzran = MultiMeshInstance2D.new()
-	multi_mesh_boss_zzran.name = "BossMultiMesh_ZZran"
-	add_child(multi_mesh_boss_zzran)
-	var boss_mesh_zzran = MultiMesh.new()
-	boss_mesh_zzran.transform_format = MultiMesh.TRANSFORM_2D
-	boss_mesh_zzran.use_colors = true
-	boss_mesh_zzran.instance_count = MAX_ENEMIES
-	boss_mesh_zzran.mesh = rat_mesh
-	multi_mesh_boss_zzran.multimesh = boss_mesh_zzran
-	var zzran_tex_path = "res://BespokeAssetSources/ziz/zizidle.png"
-	if ResourceLoader.exists(zzran_tex_path):
-		multi_mesh_boss_zzran.texture = load(zzran_tex_path)
-	else:
-		print("⚠️ ZZran texture not found at:", zzran_tex_path)
+	# Note: Bosses use node-based spawning system, not multimesh
 
 func _setup_collision_body_pool():
 	print("🔧 Setting up collision body pool...")
@@ -523,7 +456,7 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	if EnemyConfigManager.instance:
 		EnemyConfigManager.instance.apply_config_to_enemy(id, enemy_type_str, self)
 	else:
-		# Fallback to hardcoded stats
+		# Fallback to hardcoded stats - only minion types
 		match enemy_type:
 			0: # Rat
 				max_healths[id] = 10.0
@@ -543,30 +476,9 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 				move_speeds[id] = 80.0
 				attack_damages[id] = 5.0
 				attack_cooldowns[id] = 0.5  # 2 attacks per second
-			3: # Thor Enemy - matches thor.tres
-				max_healths[id] = 150.0
-				healths[id] = 150.0
-				move_speeds[id] = 60.0
-				attack_damages[id] = 12.0
-				attack_cooldowns[id] = 2.5
-			4: # Mika Boss - matches mika.tres
-				max_healths[id] = 120.0
-				healths[id] = 120.0
-				move_speeds[id] = 80.0
-				attack_damages[id] = 10.0
-				attack_cooldowns[id] = 1.5
-			5: # Forsen Boss - matches forsen.tres
-				max_healths[id] = 180.0
-				healths[id] = 180.0
-				move_speeds[id] = 55.0
-				attack_damages[id] = 14.0
-				attack_cooldowns[id] = 2.8
-			6: # ZZran Boss - matches zzran.tres
-				max_healths[id] = 200.0
-				healths[id] = 200.0
-				move_speeds[id] = 40.0
-				attack_damages[id] = 15.0
-				attack_cooldowns[id] = 3.0
+			_: # Boss types should not be spawned through EnemyManager
+				push_error("Boss type %d should be spawned through BossFactory, not EnemyManager" % enemy_type)
+				return -1
 	
 	active_count += 1
 	
@@ -958,26 +870,18 @@ func _update_live_bodies_positions_only():
 			live_enemy_bodies[i].visible = false
 
 func _update_multimesh_transforms():
-	if multi_mesh_instance == null or multi_mesh_boss_thor == null or multi_mesh_boss_mika == null or multi_mesh_boss_forsen == null or multi_mesh_boss_zzran == null:
+	if multi_mesh_instance == null:
 		return
 	var minion_mesh = multi_mesh_instance.multimesh
 	var minion_succ_mesh = multi_mesh_minion_succubus.multimesh if multi_mesh_minion_succubus else null
 	var minion_wood_mesh = multi_mesh_minion_woodland.multimesh if multi_mesh_minion_woodland else null
-	var boss_mesh_thor = multi_mesh_boss_thor.multimesh
-	var boss_mesh_mika = multi_mesh_boss_mika.multimesh
-	var boss_mesh_forsen = multi_mesh_boss_forsen.multimesh
-	var boss_mesh_zzran = multi_mesh_boss_zzran.multimesh
-	if not minion_mesh or not boss_mesh_thor or not boss_mesh_mika or not boss_mesh_forsen or not boss_mesh_zzran:
+	if not minion_mesh:
 		return
 	
-	# Dense packing per category: minions (0-2), thor(3), mika(4), forsen(5), zzran(6)
+	# Dense packing per category: only minions (0-2) - bosses use node-based system
 	var minion_count = 0
 	var minion_succ_count = 0
 	var minion_wood_count = 0
-	var thor_count = 0
-	var mika_count = 0
-	var forsen_count = 0
-	var zzran_count = 0
 	var array_size = min(positions.size(), alive_flags.size())
 	
 	# Get viewport bounds in world space for simple culling
@@ -995,6 +899,11 @@ func _update_multimesh_transforms():
 	for enemy_id in range(array_size):
 		if alive_flags[enemy_id] == 0:
 			continue
+		
+		# Skip boss types - they use node-based system
+		if int(entity_types[enemy_id]) > 2:
+			continue
+			
 		if do_cull and not cull_rect.has_point(positions[enemy_id]):
 			continue
 		
@@ -1018,31 +927,10 @@ func _update_multimesh_transforms():
 				color = Color(1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0)
 		
 		match int(entity_types[enemy_id]):
-			3:
-				if thor_count < boss_mesh_thor.instance_count:
-					boss_mesh_thor.set_instance_transform_2d(thor_count, transform)
-					boss_mesh_thor.set_instance_color(thor_count, color)
-				thor_count += 1
-			4:
-				if mika_count < boss_mesh_mika.instance_count:
-					boss_mesh_mika.set_instance_transform_2d(mika_count, transform)
-					boss_mesh_mika.set_instance_color(mika_count, color)
-				mika_count += 1
-			5:
-				if forsen_count < boss_mesh_forsen.instance_count:
-					boss_mesh_forsen.set_instance_transform_2d(forsen_count, transform)
-					boss_mesh_forsen.set_instance_color(forsen_count, color)
-				forsen_count += 1
-			6:
-				if zzran_count < boss_mesh_zzran.instance_count:
-					boss_mesh_zzran.set_instance_transform_2d(zzran_count, transform)
-					boss_mesh_zzran.set_instance_color(zzran_count, color)
-				zzran_count += 1
 			1:
 				if minion_succ_mesh and minion_succ_count < minion_succ_mesh.instance_count:
 					minion_succ_mesh.set_instance_transform_2d(minion_succ_count, transform)
 					minion_succ_mesh.set_instance_color(minion_succ_count, color)
-					# Animation frame setting removed - not supported in 2D canvas shaders
 				minion_succ_count += 1
 			2:
 				if minion_wood_mesh and minion_wood_count < minion_wood_mesh.instance_count:
@@ -1050,21 +938,18 @@ func _update_multimesh_transforms():
 					minion_wood_mesh.set_instance_color(minion_wood_count, color)
 				minion_wood_count += 1
 			_:
+				# Default case (type 0 - rats)
 				if minion_count < minion_mesh.instance_count:
 					minion_mesh.set_instance_transform_2d(minion_count, transform)
 					minion_mesh.set_instance_color(minion_count, color)
 				minion_count += 1
 	
-	# Update visible counts per mesh
+	# Update visible counts per mesh - only minions
 	minion_mesh.visible_instance_count = minion_count
 	if minion_succ_mesh:
 		minion_succ_mesh.visible_instance_count = minion_succ_count
 	if minion_wood_mesh:
 		minion_wood_mesh.visible_instance_count = minion_wood_count
-	boss_mesh_thor.visible_instance_count = thor_count
-	boss_mesh_mika.visible_instance_count = mika_count
-	boss_mesh_forsen.visible_instance_count = forsen_count
-	boss_mesh_zzran.visible_instance_count = zzran_count
 
 func evolve_enemy(enemy_id: int, new_type_id: int):
 	if enemy_id < 0 or enemy_id >= alive_flags.size():
@@ -1177,11 +1062,7 @@ func _get_type_name(type: int) -> String:
 		0: return "Rat"
 		1: return "Succubus" 
 		2: return "Woodland Joe"
-		3: return "Thor Enemy"
-		4: return "Mika Boss"
-		5: return "Forsen Boss"
-		6: return "ZZran Boss"
-		_: return "Unknown"
+		_: return "Unknown Minion"
 
 func _apply_rarity_modifiers_v2(enemy_id: int, rarity: NPCRarity):
 	if enemy_id < 0 or enemy_id >= alive_flags.size() or alive_flags[enemy_id] == 0:
@@ -1206,22 +1087,14 @@ func _get_type_name_string(type: int) -> String:
 		0: return "twitch_rat"
 		1: return "succubus"
 		2: return "woodland_joe"
-		3: return "thor_enemy"
-		4: return "mika_boss"
-		5: return "forsen_boss"
-		6: return "zzran_boss"
-		_: return "unknown"
+		_: return "unknown_minion"
 
 func get_enemy_type_from_string(type_str: String) -> int:
 	match type_str.to_lower():
 		"twitch_rat": return 0
 		"succubus": return 1
 		"woodland_joe", "woodlandjoe": return 2
-		"thor_enemy": return 3
-		"mika_boss": return 4
-		"forsen_boss": return 5
-		"zzran_boss": return 6
-		_: return 0  # Default to rat
+		_: return 0  # Default to rat - boss types not handled by EnemyManager
 
 func get_enemy_position(id: int) -> Vector2:
 	if id < 0 or id >= positions.size() or id >= alive_flags.size() or alive_flags[id] == 0:
@@ -1253,3 +1126,17 @@ func get_stats() -> Dictionary:
 		"spatial_grid_cells": spatial_grid.size(),
 		"flow_field_cells": flow_field.size()
 	}
+
+func clear_all_enemies():
+	# Despawn all active enemies
+	var array_size = min(positions.size(), alive_flags.size())
+	for i in range(array_size):
+		if alive_flags[i] == 1:
+			despawn_enemy(i)
+
+func reset_all_evolutions():
+	# Reset all enemies to their base type (rat)
+	var array_size = min(positions.size(), alive_flags.size())
+	for i in range(array_size):
+		if alive_flags[i] == 1:
+			evolve_enemy(i, 0)  # Reset to rat (type 0)

@@ -191,23 +191,4 @@ func update_attached_positions():
 func _physics_process(_delta):
 	update_attached_positions()
 
-## Get current pool usage stats
-func get_pool_stats() -> Dictionary:
-	var sfx_used = 0
-	var dialog_used = 0
 	
-	for player in sfx_pool:
-		if player.playing:
-			sfx_used += 1
-	
-	for player in dialog_pool:
-		if player.playing:
-			dialog_used += 1
-	
-	return {
-		"sfx_used": sfx_used,
-		"sfx_total": SFX_POOL_SIZE,
-		"dialog_used": dialog_used,
-		"dialog_total": DIALOG_POOL_SIZE,
-		"music_count": music_players.size()
-	}

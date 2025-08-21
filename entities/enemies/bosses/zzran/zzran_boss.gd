@@ -60,6 +60,86 @@ func _setup_zzran_abilities():
 	# TODO: Implement oxygen thief aura here
 	pass
 
+func on_spawn_complete():
+	print("🎭 ZZran spawn effect complete - showing fullscreen attack!")
+	_show_fullscreen_attack()
+	await get_tree().create_timer(0.3).timeout
+
+func _show_fullscreen_attack():
+	var game_scene = get_tree().current_scene
+	if not game_scene:
+		return
+	
+	# Create fullscreen container
+	var fullscreen = Control.new()
+	fullscreen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fullscreen.z_index = 200  # Above everything
+	fullscreen.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fullscreen.process_mode = Node.PROCESS_MODE_ALWAYS  # Show even during pause
+	
+	# Add the epic Ziz attack image
+	var attack_image = TextureRect.new()
+	var texture_path = "res://BespokeAssetSources/ZizFullscreenAttack.jpg"
+	if not ResourceLoader.exists(texture_path):
+		push_error("ZizFullscreenAttack.jpg not found at: " + texture_path)
+		return
+	attack_image.texture = load(texture_path)
+	attack_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	attack_image.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fullscreen.add_child(attack_image)
+	
+	# Add flash overlay for extra impact
+	var flash = ColorRect.new()
+	flash.color = Color(1, 1, 1, 0)
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fullscreen.add_child(flash)
+	
+	# Add to UI layer
+	var ui_layer = game_scene.get_node_or_null("UILayer")
+	if ui_layer:
+		ui_layer.add_child(fullscreen)
+	else:
+		push_warning("UILayer not found, adding fullscreen effect to viewport")
+		var viewport = game_scene.get_viewport()
+		if viewport:
+			viewport.add_child(fullscreen)
+		else:
+			push_error("Cannot add fullscreen effect - no viewport found!")
+			fullscreen.queue_free()
+			return
+	
+	# Epic animation sequence (all happens in < 1 second)
+	fullscreen.scale = Vector2(1.5, 1.5)
+	fullscreen.pivot_offset = game_scene.get_viewport().size / 2.0
+	fullscreen.modulate = Color(2, 2, 2, 0)  # Start bright and invisible
+	
+	var tween = fullscreen.create_tween()
+	tween.set_parallel(true)
+	
+	# Zoom in + fade in (0.2s)
+	tween.tween_property(fullscreen, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUART)
+	tween.tween_property(fullscreen, "modulate:a", 1.0, 0.15)
+	
+	# Sequential effects
+	tween.set_parallel(false)
+	
+	# White flash at peak (0.1s)
+	tween.tween_property(flash, "color:a", 0.8, 0.05)
+	tween.tween_property(flash, "color:a", 0.0, 0.05)
+	
+	# Hold for dramatic effect (0.3s)
+	tween.tween_interval(0.3)
+	
+	# Zoom out + fade (0.2s)
+	tween.set_parallel(true)
+	tween.tween_property(fullscreen, "scale", Vector2(0.8, 0.8), 0.2).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(fullscreen, "modulate:a", 0.0, 0.2)
+	
+	# Cleanup
+	tween.set_parallel(false)
+	tween.tween_callback(fullscreen.queue_free)
+	
+
 func _entity_physics_process(delta: float):
 	super._entity_physics_process(delta)
 	
