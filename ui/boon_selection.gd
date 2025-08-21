@@ -9,10 +9,28 @@ var boon_cards: Array[Control] = []
 var selected_boons: Array[Dictionary] = []
 var boon_manager: BoonManager
 
+# Whether this UI should accept clicks on cards
+var input_enabled: bool = true
+
+func set_input_enabled(enabled: bool):
+	input_enabled = enabled
+	# Toggle mouse filtering on interactive children
+	for card in boon_cards:
+		if not card:
+			continue
+		var button = card.get_meta("button") if card.has_meta("button") else null
+		var panel = card.get_meta("panel") if card.has_meta("panel") else null
+		if button and button is Control:
+			button.mouse_filter = Control.MOUSE_FILTER_IGNORE if not input_enabled else Control.MOUSE_FILTER_PASS
+			(button as Control).focus_mode = Control.FOCUS_NONE if not input_enabled else Control.FOCUS_ALL
+		if panel and panel is Control:
+			panel.mouse_filter = Control.MOUSE_FILTER_IGNORE if not input_enabled else Control.MOUSE_FILTER_PASS
+
 func _ready():
 	# Set up fullscreen overlay
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	mouse_filter = Control.MOUSE_FILTER_IGNORE  # Ignore all input to allow ESC/menu through
+	focus_mode = Control.FOCUS_NONE
 	
 	# Ensure proper rendering above nameplates
 	top_level = true
@@ -28,10 +46,11 @@ func _ready():
 	add_child(boon_manager)
 	boon_manager.add_to_group("boon_manager")
 	
-	# Create dark background
+	# Create dark background (ignore mouse so ESC can work)
 	var bg = ColorRect.new()
 	bg.color = Color(0, 0, 0, 0.85)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 	
 	# Create main container
@@ -41,6 +60,8 @@ func _ready():
 	main_container.custom_minimum_size = Vector2(1000, 400)
 	main_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_container.add_theme_constant_override("separation", 30)
+	# Let underlying pause menu receive input by default
+	main_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(main_container)
 	
 	# Title
@@ -69,6 +90,13 @@ func _ready():
 	# Start hidden
 	visible = false
 
+func _unhandled_input(event):
+	if not visible:
+		return
+	
+	# Don't consume input events - let them pass through to pause menu
+	pass
+
 func _create_boon_card() -> Control:
 	var card_container = Control.new()
 	card_container.custom_minimum_size = Vector2(280, 200)
@@ -76,7 +104,7 @@ func _create_boon_card() -> Control:
 	# Background panel
 	var panel = Panel.new()
 	panel.custom_minimum_size = Vector2(280, 200)
-	panel.mouse_filter = Control.MOUSE_FILTER_PASS
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_container.add_child(panel)
 	
 	# Content container
@@ -114,7 +142,7 @@ func _create_boon_card() -> Control:
 	var button = Button.new()
 	button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	button.flat = true
-	button.mouse_filter = Control.MOUSE_FILTER_PASS
+	button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_container.add_child(button)
 	
 	# Store references
@@ -135,6 +163,9 @@ func show_selection():
 		var boon_data = selected_boons[i]
 		var card = boon_cards[i]
 		_update_card(card, boon_data, i)
+	
+	# Ensure cards are clickable when not paused
+	set_input_enabled(true)
 	
 	# Show (pause is handled by game controller)
 	visible = true

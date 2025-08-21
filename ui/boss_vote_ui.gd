@@ -17,14 +17,19 @@ func _ready():
 	# Connect to boss vote manager
 	_connect_vote_manager()
 
+
 func _create_ui():
 	# Set to full screen
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE  # Fully ignore input so underlying UI (pause menu) can receive it
+	focus_mode = Control.FOCUS_NONE
+	z_index = 500  # Below pause menu (which is 1000)
 	
 	# Dark overlay
 	var overlay = ColorRect.new()
 	overlay.color = Color(0, 0, 0, 0.8)
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(overlay)
 	
 	# Main container
@@ -69,6 +74,20 @@ func _create_ui():
 	instructions.add_theme_font_size_override("font_size", 24)
 	instructions.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	vote_container.add_child(instructions)
+
+	# Ensure nothing in this UI captures mouse or focus
+	_disable_all_input_capture()
+
+func _disable_all_input_capture():
+	_set_controls_recursive(self)
+
+func _set_controls_recursive(node: Node):
+	if node is Control:
+		var ctrl := node as Control
+		ctrl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ctrl.focus_mode = Control.FOCUS_NONE
+	for child in node.get_children():
+		_set_controls_recursive(child)
 
 func _create_boss_option_panel(number: int) -> Control:
 	var panel = PanelContainer.new()
