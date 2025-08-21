@@ -33,6 +33,9 @@ static var instance: FlockingSystem
 @export var v2_separation_weight: float = 0.75
 @export var v2_alignment_weight: float = 0.02
 @export var v2_cohesion_weight: float = 0.005
+@export var v2_max_speed: float = 150.0
+@export var v2_max_force: float = 60.0
+@export var v2_bias_scale: float = 0.6
 
 # Spatial optimization
 var spatial_grid: Dictionary = {}  # Grid position -> Array of entities
