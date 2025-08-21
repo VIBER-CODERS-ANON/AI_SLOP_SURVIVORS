@@ -49,7 +49,7 @@ func _handle_ctrl_cheats(event: InputEvent):
 			_show_cheat_message("✨ Spawned 100 XP! (10 orbs × 10 XP)", Color(1, 0.8, 0.2))
 		KEY_3:  # Skip level
 			if player:
-				player.level_up.emit(player.level + 1)
+				player._perform_level_up()
 				_show_cheat_message("📈 Forced level up!", Color.GOLD)
 		KEY_4:  # Boss vote
 			boss_vote_requested.emit()

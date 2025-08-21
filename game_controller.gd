@@ -241,7 +241,8 @@ func _on_player_died(killer_name: String, death_cause: String):
 # ===== Pause Handling =====
 
 func _handle_pause_toggle():
-	if state_manager.pause_flags & ~GameStateManager.PauseReason.MANUAL_PAUSE != 0:
+	# Allow manual pause even if other pause reasons are active, except during death screen
+	if state_manager.pause_flags & GameStateManager.PauseReason.DEATH_SCREEN != 0:
 		return
 	
 	state_manager.toggle_manual_pause()

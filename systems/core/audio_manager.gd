@@ -11,6 +11,10 @@ var sfx_pool: Array[AudioStreamPlayer2D] = []
 var dialog_pool: Array[AudioStreamPlayer2D] = []
 var music_players: Dictionary = {}  # Track music players separately
 
+# Music dimming state
+var _dimming_requests: Dictionary = {}  # reason -> dimming_factor
+var _original_music_volumes: Dictionary = {}  # player -> original_volume
+
 # Pool settings
 const SFX_POOL_SIZE = 32  # Maximum concurrent SFX
 const DIALOG_POOL_SIZE = 8  # Maximum concurrent dialog
@@ -190,5 +194,73 @@ func update_attached_positions():
 
 func _physics_process(_delta):
 	update_attached_positions()
+
+## Request music dimming with a specific reason and factor
+## factor: 0.5 = half volume, 0.0 = mute, 1.0 = no change
+func request_music_dim(reason: String, factor: float = 0.5):
+	if factor < 0.0 or factor > 1.0:
+		push_warning("AudioManager: Dimming factor should be between 0.0 and 1.0")
+		factor = clamp(factor, 0.0, 1.0)
+	
+	_dimming_requests[reason] = factor
+	_apply_current_dimming()
+	
+	print("🔉 Music dimming requested: %s (factor: %.2f)" % [reason, factor])
+
+## Remove music dimming request for a specific reason  
+func remove_music_dim(reason: String):
+	if _dimming_requests.has(reason):
+		_dimming_requests.erase(reason)
+		_apply_current_dimming()
+		
+		print("🔊 Music dimming removed: %s" % reason)
+
+## Apply the current dimming based on all active requests
+func _apply_current_dimming():
+	# Calculate the final dimming factor (multiply all active factors)
+	var final_factor = 1.0
+	for factor in _dimming_requests.values():
+		final_factor *= factor
+	
+	# Apply to all music players (both AudioManager music and ResourceManager background music)
+	_apply_dimming_to_music_players(final_factor)
+	
+	# Also apply to ResourceManager background music if it exists
+	if ResourceManager.instance and ResourceManager.instance.background_music_player:
+		var bg_player = ResourceManager.instance.background_music_player
+		
+		# Store original volume if not already stored
+		if not _original_music_volumes.has(bg_player):
+			_original_music_volumes[bg_player] = bg_player.volume_db
+		
+		var original_volume = _original_music_volumes[bg_player]
+		var target_volume = original_volume + (20.0 * log(final_factor) / log(10.0)) if final_factor > 0 else -80.0
+		bg_player.volume_db = target_volume
+
+func _apply_dimming_to_music_players(factor: float):
+	for player in music_players.values():
+		if not is_instance_valid(player):
+			continue
+			
+		# Store original volume if not already stored
+		if not _original_music_volumes.has(player):
+			_original_music_volumes[player] = player.volume_db
+		
+		var original_volume = _original_music_volumes[player]
+		# Convert factor to dB: 20 * log10(factor)
+		var target_volume = original_volume + (20.0 * log(factor) / log(10.0)) if factor > 0 else -80.0
+		player.volume_db = target_volume
+
+## Clear all dimming and restore original volumes
+func clear_all_music_dimming():
+	_dimming_requests.clear()
+	
+	# Restore all players to original volumes
+	for player in _original_music_volumes.keys():
+		if is_instance_valid(player):
+			player.volume_db = _original_music_volumes[player]
+	
+	_original_music_volumes.clear()
+	print("🔊 All music dimming cleared")
 
 	
