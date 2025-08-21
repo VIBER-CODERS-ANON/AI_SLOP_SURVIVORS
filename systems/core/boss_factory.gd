@@ -187,8 +187,6 @@ func spawn_random_boss(spawn_position: Vector2) -> Node:
 	var random_type = boss_types[randi() % boss_types.size()]
 	return spawn_boss(random_type, spawn_position)
 
-# Removed _add_camera_shake - now using global CameraShake utility
-
 func _get_boss_type_from_name(boss_name: String) -> String:
 	# Extract boss type from name (e.g., "ZzranBoss" -> "zzran")
 	var type_name = boss_name.to_lower()
