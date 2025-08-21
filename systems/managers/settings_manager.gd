@@ -1,5 +1,5 @@
 extends Node
-class_name SettingsManager
+## class_name SettingsManager
 
 ## Manages persistent game settings that save between sessions
 ## Currently handles audio volume settings
@@ -30,6 +30,10 @@ const DEFAULT_SETTINGS = {
 	},
 	"twitch": {
 		"channel_name": "quin69"
+	},
+	"websocket": {
+		"enabled": false,
+		"url": "ws://localhost:8080/ws"
 	}
 }
 

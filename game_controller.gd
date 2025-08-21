@@ -927,9 +927,6 @@ func _on_player_died(killer_name: String, death_cause: String):
 			death_message += " killed the player!"
 		feed.add_message(death_message, Color.RED)
 	
-	# Report to WebSocket (Twitch Extension)
-	if WebSocketManager.instance:
-		WebSocketManager.instance.notify_player_death(killer_name, death_cause)
 
 
 
