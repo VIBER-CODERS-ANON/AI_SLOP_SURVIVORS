@@ -66,6 +66,31 @@ This guide explains the current hybrid architecture after the cleanup and naming
   - Traditional collision detection with CharacterBody2D
   - Custom attack patterns and abilities
 
+### MXP (Chat Currency) System Integration
+
+- **MXP Modifiers**: Chat commands that upgrade entity stats using MXP currency
+  - Modifiers stored in `systems/mxp_modifiers/modifiers/`
+  - Base class: `BaseMXPModifier` handles validation and cost management
+  - Processed via `MXPModifierManager` which handles command parsing
+
+- **V2 Enemy Integration**:
+  - MXP upgrades applied on spawn in `enemy_manager.spawn_enemy()`
+  - Live enemies updated via `ChatterEntityManager._update_active_entity()`
+  - Supported upgrades:
+    - `bonus_health`: Flat HP increase (from !hp command)
+    - `bonus_move_speed`: Flat speed increase (from !speed command)
+    - `bonus_attack_speed`: Attack rate increase (from !attackspeed command)
+    - `bonus_aoe`: AOE multiplier for abilities (from !aoe command)
+    - `regen_flat_bonus`: HP regeneration per second (from !regen command)
+  - Arrays in EnemyManager:
+    - `aoe_scales[]`: Stores AOE multipliers for each enemy
+    - `regen_rates[]`: Stores regeneration rates for each enemy
+  - Regeneration processed in `_update_enemy_regeneration()` each frame
+
+- **Ticket System**: `!ticket` command increases spawn chance
+  - Multiplies tickets in spawn pool via `TicketSpawnManager`
+  - Rebuilds pool immediately on upgrade
+
 ### Evolutions & Rarity
 
 - **Evolutions (data‑oriented)**

@@ -247,6 +247,24 @@ func _update_active_entity(username: String):
 			if chatter_data_local.upgrades.has("bonus_move_speed"):
 				var speed_bonus = chatter_data_local.upgrades["bonus_move_speed"]
 				enemy_manager.move_speeds[id] = base_speed + speed_bonus
+			
+			# Apply attack speed bonus (converts to cooldown)
+			if chatter_data_local.upgrades.has("bonus_attack_speed"):
+				var attack_speed_bonus = chatter_data_local.upgrades["bonus_attack_speed"]
+				var base_cooldown = 2.0  # Default attack cooldown for most enemies
+				var base_attacks_per_sec = 1.0 / base_cooldown
+				var new_attacks_per_sec = base_attacks_per_sec + attack_speed_bonus
+				if new_attacks_per_sec > 0:
+					enemy_manager.attack_cooldowns[id] = 1.0 / new_attacks_per_sec
+			
+			# Apply AOE bonus (stored for later use in abilities)
+			if chatter_data_local.upgrades.has("bonus_aoe"):
+				enemy_manager.aoe_scales[id] = 1.0 + chatter_data_local.upgrades["bonus_aoe"]
+			
+			# Apply regen bonus
+			if chatter_data_local.upgrades.has("regen_flat_bonus"):
+				var regen = chatter_data_local.upgrades["regen_flat_bonus"]
+				enemy_manager.regen_rates[id] = regen
 	
 	# Find the active entities for this chatter using old system (if any remain)
 	if TicketSpawnManager.instance:

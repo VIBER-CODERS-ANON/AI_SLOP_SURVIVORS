@@ -37,6 +37,8 @@ var move_speeds: PackedFloat32Array
 var attack_damages: PackedFloat32Array
 var attack_cooldowns: PackedFloat32Array
 var last_attack_times: PackedFloat32Array
+var aoe_scales: PackedFloat32Array  # AOE multiplier for abilities
+var regen_rates: PackedFloat32Array  # HP regeneration per second
 
 # Behavior tuning (exported for easy tweaking)
 @export_group("Behavior Tuning")
@@ -166,6 +168,10 @@ func _initialize_arrays():
 	attack_cooldowns.resize(initial_capacity)
 	last_attack_times = PackedFloat32Array()
 	last_attack_times.resize(initial_capacity)
+	aoe_scales = PackedFloat32Array()
+	aoe_scales.resize(initial_capacity)
+	regen_rates = PackedFloat32Array()
+	regen_rates.resize(initial_capacity)
 	# Behavior arrays
 	behavior_strafe_dir = PackedFloat32Array()
 	behavior_strafe_dir.resize(initial_capacity)
@@ -484,6 +490,8 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	burst_timer[id] = 0.0
 	burst_cooldown[id] = randf_range(0.8, 2.0)
 	flash_timers[id] = 0.0
+	aoe_scales[id] = 1.0  # Default AOE scale
+	regen_rates[id] = 0.0  # Default no regen
 	
 	# Apply stats from configuration system
 	var enemy_type_str = _get_type_name_string(enemy_type)
@@ -551,6 +559,24 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 		if chatter_data.upgrades.has("bonus_move_speed"):
 			var speed_bonus = chatter_data.upgrades["bonus_move_speed"]
 			move_speeds[id] += speed_bonus
+		
+		# Apply attack speed bonus (converts to cooldown)
+		if chatter_data.upgrades.has("bonus_attack_speed"):
+			var attack_speed_bonus = chatter_data.upgrades["bonus_attack_speed"]
+			var base_attacks_per_sec = 1.0 / attack_cooldowns[id] if attack_cooldowns[id] > 0 else 1.0
+			var new_attacks_per_sec = base_attacks_per_sec + attack_speed_bonus
+			if new_attacks_per_sec > 0:
+				attack_cooldowns[id] = 1.0 / new_attacks_per_sec
+		
+		# Apply AOE bonus (stored for later use in abilities)
+		if chatter_data.upgrades.has("bonus_aoe"):
+			# AOE is handled by abilities system, just store it
+			aoe_scales[id] = 1.0 + chatter_data.upgrades["bonus_aoe"]
+		
+		# Apply regen bonus
+		if chatter_data.upgrades.has("regen_flat_bonus"):
+			var regen = chatter_data.upgrades["regen_flat_bonus"]
+			regen_rates[id] = regen
 
 	# Assign rarity for V2 minions via NPCRarityManager (no visuals, stat/tint only)
 	if NPCRarityManager.get_instance():
@@ -625,6 +651,7 @@ func _process_enemy_slice(delta: float):
 		
 		_update_enemy_movement(i, delta)
 		_update_enemy_attack(i, delta)
+		_update_enemy_regeneration(i, delta)
 	
 	# Advance to next slice
 	current_slice_offset = slice_end
@@ -699,6 +726,14 @@ func _update_enemy_attack(id: int, _delta: float):
 	
 	# Perform attack (damage will be handled by player collision detection)
 	last_attack_times[id] = time_seconds
+
+func _update_enemy_regeneration(id: int, delta: float):
+	# Apply regeneration if enemy has any
+	if regen_rates[id] > 0:
+		var current_health = healths[id]
+		var max_health = max_healths[id]
+		if current_health < max_health:
+			healths[id] = min(current_health + regen_rates[id] * delta, max_health)
 
 func _integrate_positions_and_behaviors(delta: float):
 	# Lightweight per-frame integration for smooth motion
@@ -1094,6 +1129,8 @@ func _grow_arrays():
 	attack_damages.resize(new_size)
 	attack_cooldowns.resize(new_size)
 	last_attack_times.resize(new_size)
+	aoe_scales.resize(new_size)
+	regen_rates.resize(new_size)
 	behavior_strafe_dir.resize(new_size)
 	behavior_wander_phase.resize(new_size)
 	behavior_wander_speed.resize(new_size)
