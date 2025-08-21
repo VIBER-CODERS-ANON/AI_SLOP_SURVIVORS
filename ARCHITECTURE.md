@@ -95,6 +95,28 @@ This guide explains the current hybrid architecture after the cleanup and naming
   - Multiplies tickets in spawn pool via `TicketSpawnManager`
   - Rebuilds pool immediately on upgrade
 
+### Buff System (Temporary Effects)
+
+- **First Buff Implementation**: `!boost` command
+  - **Type**: Temporary flat speed buff (not MXP-based)
+  - **Effect**: +500 flat movement speed for 1 second
+  - **Cooldown**: 60 seconds per entity (tracked individually)
+  - **Cost**: Free (no MXP required)
+  - **Visual**: Yellow flash effect on entity
+  - **Activity Feed**: Reports when used with ⚡ icon
+  
+- **Technical Implementation**:
+  - Arrays in EnemyManager for buff tracking:
+    - `last_boost_times[]`: Tracks when boost was last used (initialized to -BOOST_COOLDOWN for immediate availability)
+    - `temporary_speed_boosts[]`: Current active boost amount
+    - `boost_end_times[]`: When boost expires
+  - Boost applied in movement calculation: `effective_speed = move_speeds[id] + temporary_speed_boosts[id]`
+  - Expiry checked each physics frame, boost removed when `current_time >= boost_end_times[id]`
+  - Command flow: TwitchManager → GameController → TicketSpawnManager → EnemyBridge → EnemyManager
+  
+- **Buff Tags**: First ability with ["Buff", "Duration", "Movement", "Speed", "Temporary", "Command"] tags
+  - Defined in `systems/ability_system/abilities/boost_buff_ability.gd`
+
 ### Evolutions & Rarity
 
 - **Evolutions (data‑oriented)**
@@ -160,6 +182,10 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **Regeneration System**: Added `regen_rates[]` array and per‑frame healing in update loop
 - **Stop‑at‑Attack‑Range**: Enemies now stop exactly at attack range using capsule edge detection, preventing overlap
 - **Code Cleanup**: Removed unused arrive mechanics, duplicate attack logic, and dead code from enemy_manager
+- **First Buff System**: Implemented !boost command as temporary flat speed buff with per-entity cooldowns
+  - Fixed command routing through trigger_ prefix translation layer
+  - Fixed boost availability on spawn (set to -BOOST_COOLDOWN)
+  - Fixed action feed crash by using get_action_feed() method instead of direct property access
 
 ### Glossary
 
