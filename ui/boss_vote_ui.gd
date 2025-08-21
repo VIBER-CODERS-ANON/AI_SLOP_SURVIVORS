@@ -2,7 +2,8 @@ extends Control
 class_name BossVoteUI
 
 var vote_container: Control
-var timer_label: Label
+var heading_text_label: Label
+var heading_timer_label: Label
 var boss_options: Array[Control] = []
 
 var boss_vote_manager: BossVoteManager
@@ -34,32 +35,42 @@ func _create_ui():
 	
 	# Main container
 	vote_container = VBoxContainer.new()
-	vote_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	vote_container.position = Vector2(-400, -300)
-	vote_container.custom_minimum_size = Vector2(800, 600)
+	vote_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vote_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	vote_container.add_theme_constant_override("separation", 20)
 	add_child(vote_container)
 	
-	# Title
-	var title = Label.new()
-	title.text = "🗳️ VOTE FOR THE NEXT BOSS! 🗳️"
-	title.add_theme_font_size_override("font_size", 48)
-	title.add_theme_color_override("font_color", Color(1, 0.8, 0))
-	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0))
-	title.add_theme_constant_override("shadow_offset_x", 2)
-	title.add_theme_constant_override("shadow_offset_y", 2)
-	vote_container.add_child(title)
+	# Title row with inline countdown (heading in yellow, seconds in white)
+	var heading_row = HBoxContainer.new()
+	heading_row.add_theme_constant_override("separation", 8)
+	heading_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vote_container.add_child(heading_row)
+
+	heading_text_label = Label.new()
+	heading_text_label.text = "VOTE FOR THE NEXT BOSS!"
+	heading_text_label.add_theme_font_size_override("font_size", 48)
+	heading_text_label.add_theme_color_override("font_color", Color(1, 0.8, 0))
+	heading_text_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0))
+	heading_text_label.add_theme_constant_override("shadow_offset_x", 2)
+	heading_text_label.add_theme_constant_override("shadow_offset_y", 2)
+	heading_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading_row.add_child(heading_text_label)
+
+	heading_timer_label = Label.new()
+	heading_timer_label.text = ""
+	heading_timer_label.add_theme_font_size_override("font_size", 48)
+	heading_timer_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	heading_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading_row.add_child(heading_timer_label)
 	
-	# Timer
-	timer_label = Label.new()
-	timer_label.text = "20"
-	timer_label.add_theme_font_size_override("font_size", 64)
-	timer_label.add_theme_color_override("font_color", Color(1, 1, 1))
-	vote_container.add_child(timer_label)
+	# Combined heading includes countdown; no separate timer label
 	
 	# Boss options container
 	var options_container = HBoxContainer.new()
 	options_container.add_theme_constant_override("separation", 30)
+	options_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	options_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	vote_container.add_child(options_container)
 	
 	# Create 3 boss option panels
@@ -73,6 +84,8 @@ func _create_ui():
 	instructions.text = "Type !vote1, !vote2, or !vote3 in chat to vote!"
 	instructions.add_theme_font_size_override("font_size", 24)
 	instructions.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	instructions.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	instructions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vote_container.add_child(instructions)
 
 	# Ensure nothing in this UI captures mouse or focus
@@ -105,6 +118,11 @@ func _create_boss_option_panel(number: int) -> Control:
 	style.corner_radius_top_right = 10
 	style.corner_radius_bottom_left = 10
 	style.corner_radius_bottom_right = 10
+	# Add inner padding
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 12
+	style.content_margin_bottom = 12
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var vbox = VBoxContainer.new()
@@ -119,6 +137,7 @@ func _create_boss_option_panel(number: int) -> Control:
 	command_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0))
 	command_label.add_theme_constant_override("shadow_offset_x", 2)
 	command_label.add_theme_constant_override("shadow_offset_y", 2)
+	command_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(command_label)
 	
 	# Boss image placeholder
@@ -133,6 +152,7 @@ func _create_boss_option_panel(number: int) -> Control:
 	name_label.text = "???"
 	name_label.add_theme_font_size_override("font_size", 24)
 	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(name_label)
 	
 	# Description
@@ -141,6 +161,7 @@ func _create_boss_option_panel(number: int) -> Control:
 	desc_label.add_theme_font_size_override("font_size", 14)
 	desc_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(desc_label)
 	
 	# Boss Buff Label
@@ -148,6 +169,7 @@ func _create_boss_option_panel(number: int) -> Control:
 	buff_title_label.text = "💪 CHATTER BUFF:"
 	buff_title_label.add_theme_font_size_override("font_size", 16)
 	buff_title_label.add_theme_color_override("font_color", Color(1, 0.8, 0))
+	buff_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(buff_title_label)
 	
 	# Boss Buff Description
@@ -157,13 +179,17 @@ func _create_boss_option_panel(number: int) -> Control:
 	buff_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.2))
 	buff_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	buff_label.custom_minimum_size = Vector2(240, 40)
+	buff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(buff_label)
 	
 	# Vote count
 	var vote_label = Label.new()
-	vote_label.text = "Votes: 0"
+	vote_label.text = "VOTES: 0"
 	vote_label.add_theme_font_size_override("font_size", 28)
 	vote_label.add_theme_color_override("font_color", Color(0.3, 1, 0.3))
+	vote_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vote_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	vote_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(vote_label)
 	
 	# Store references
@@ -212,7 +238,6 @@ func _on_vote_started(vote_options: Array):
 			
 			name_label.text = boss_data.get("display_name", "Unknown")
 			desc_label.text = boss_data.get("description", "")
-			vote_label.text = "Votes: 0"
 			
 			# Get buff information from BossBuffManager
 			if BossBuffManager.instance:
@@ -255,7 +280,7 @@ func _on_vote_updated(votes: Dictionary):
 			var panel = boss_options[i]
 			var vbox = panel.get_meta("vbox")
 			var vote_label = vbox.get_child(6)  # Vote count is seventh child (after buff labels)
-			vote_label.text = "Votes: %d" % vote_count
+			vote_label.text = "VOTES: %d" % vote_count
 			
 			# Highlight leading option
 			var max_votes = 0
@@ -277,12 +302,4 @@ func _on_vote_ended(winner_boss_id: String):
 func _process(_delta):
 	if visible and boss_vote_manager:
 		var time_remaining = boss_vote_manager.get_voting_time_remaining()
-		timer_label.text = "%d" % int(ceil(time_remaining))
-		
-		# Color code timer
-		if time_remaining <= 5:
-			timer_label.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
-		elif time_remaining <= 10:
-			timer_label.add_theme_color_override("font_color", Color(1, 1, 0.3))
-		else:
-			timer_label.add_theme_color_override("font_color", Color(1, 1, 1))
+		heading_timer_label.text = " %ds" % int(ceil(time_remaining))

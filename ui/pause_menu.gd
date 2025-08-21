@@ -11,6 +11,9 @@ signal quit_requested
 var twitch_config_dialog: TwitchConfigDialog
 var current_twitch_channel: String = "quin69"
 
+# Responsive layout
+var menu_scroll: ScrollContainer
+
 # Debug panel
 var debug_panel: Control
 var debug_panel_window: Control
@@ -53,15 +56,26 @@ func _ready():
 	# Create main container with scroll
 	var scroll_container = ScrollContainer.new()
 	scroll_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	scroll_container.position = Vector2(-180, -280)  # Center the container
-	scroll_container.custom_minimum_size = Vector2(360, 560)
+	scroll_container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	scroll_container.follow_focus = true
 	add_child(scroll_container)
+	menu_scroll = scroll_container
+
+	# Initialize responsive sizing and recentering
+	_update_layout_for_viewport()
+	resized.connect(_update_layout_for_viewport)
 	
 	var main_container = VBoxContainer.new()
 	main_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_container.add_theme_constant_override("separation", 20)
-	scroll_container.add_child(main_container)
+
+	# Horizontally center the whole content stack without stretching children
+	var h_center = HBoxContainer.new()
+	h_center.alignment = BoxContainer.ALIGNMENT_CENTER
+	h_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_container.add_child(h_center)
+	h_center.add_child(main_container)
 	
 	# Title
 	var title = Label.new()
@@ -242,6 +256,24 @@ func _ready():
 	
 	# Start hidden
 	visible = false
+
+func _update_layout_for_viewport():
+	# Dynamically size and center the scroll container with sensible bounds
+	if not menu_scroll:
+		return
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var target_width: float = clamp(viewport_size.x * 0.35, 480.0, 640.0)
+	var target_height: float = clamp(viewport_size.y * 0.8, 520.0, 880.0)
+
+	menu_scroll.anchor_left = 0.5
+	menu_scroll.anchor_top = 0.5
+	menu_scroll.anchor_right = 0.5
+	menu_scroll.anchor_bottom = 0.5
+	menu_scroll.offset_left = -target_width / 2.0
+	menu_scroll.offset_right = target_width / 2.0
+	menu_scroll.offset_top = -target_height / 2.0
+	menu_scroll.offset_bottom = target_height / 2.0
+	menu_scroll.custom_minimum_size = Vector2(target_width, target_height)
 
 func _create_menu_button(text: String, color: Color) -> Button:
 	var button = Button.new()
