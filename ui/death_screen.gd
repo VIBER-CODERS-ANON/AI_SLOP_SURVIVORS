@@ -129,11 +129,8 @@ func hide_death():
 	tween.tween_callback(func(): visible = false)
 
 func _switch_to_death_music():
-	# Find and stop background music
-	if GameController.instance:
-		var bg_music = GameController.instance.get_node_or_null("BackgroundMusic")
-		if bg_music and bg_music is AudioStreamPlayer:
-			bg_music.stop()
+	# Stop background music using ResourceManager API
+	ResourceManager.stop_music()
 	
 	# Play death music through AudioManager
 	if AudioManager.instance:

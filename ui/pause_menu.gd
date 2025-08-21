@@ -576,7 +576,6 @@ func _on_resolution_selected(index: int):
 		var res = resolutions[index]
 		if SettingsManager.instance:
 			SettingsManager.instance.set_resolution(res.x, res.y)
-		print("📺 Resolution changed to: %dx%d" % [res.x, res.y])
 
 func _on_fullscreen_toggled(pressed: bool):
 	if SettingsManager.instance:
@@ -656,9 +655,16 @@ func _on_debug_pressed():
 		
 		# Close button
 		var close_btn = Button.new()
-		close_btn.text = " X "
+		close_btn.text = " ✕ "
 		close_btn.add_theme_font_size_override("font_size", 20)
-		close_btn.pressed.connect(func(): debug_panel_window.visible = false)
+		close_btn.add_theme_color_override("font_color", Color.WHITE)
+		close_btn.add_theme_color_override("font_hover_color", Color.RED)
+		close_btn.custom_minimum_size = Vector2(40, 30)
+		close_btn.tooltip_text = "Close debug panel"
+		close_btn.pressed.connect(func(): 
+			print("🔧 Closing debug panel...")
+			debug_panel_window.visible = false
+		)
 		header.add_child(close_btn)
 		
 		# Create debug panel

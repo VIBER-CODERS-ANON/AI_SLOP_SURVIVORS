@@ -43,6 +43,13 @@ func set_pause(reason: PauseReason, paused: bool):
 	# Update actual pause state
 	get_tree().paused = is_now_paused
 	
+	# Handle music pause/resume using ResourceManager API
+	if was_paused != is_now_paused:
+		if is_now_paused:
+			ResourceManager.pause_music()
+		else:
+			ResourceManager.resume_music()
+	
 	# Commands are blocked when paused
 	var was_blocked = commands_blocked
 	commands_blocked = is_now_paused

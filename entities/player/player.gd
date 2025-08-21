@@ -728,10 +728,8 @@ func _on_damaged(_amount: float, _source: Node):
 	# Spawn blood particles
 	_spawn_blood_effect()
 	
-	# Micro camera shake
-	var cam = get_viewport().get_camera_2d()
-	if cam:
-		_apply_camera_shake(cam, 0.1, 4.0)
+	# Micro camera shake when damaged
+	CameraShake.shake_preset("damage")
 
 ## Spawn blood particle effect
 func _spawn_blood_effect():
@@ -905,35 +903,7 @@ func _on_dash_cooldown_ended():
 func set_invulnerable(value: bool):
 	invulnerable = value
 
-func _apply_camera_shake(camera: Camera2D, duration: float, strength: float):
-	# Simple camera shake effect
-	var original_offset = camera.offset
-	
-	# Create an object to hold the shake state
-	var shake_data = { "elapsed": 0.0 }
-	
-	# Create a timer for the shake duration
-	var timer = Timer.new()
-	timer.wait_time = 0.016  # 60 FPS
-	timer.one_shot = false  # Repeating timer
-	
-	timer.timeout.connect(func():
-		shake_data.elapsed += timer.wait_time
-		if shake_data.elapsed >= duration:
-			camera.offset = original_offset
-			timer.stop()
-			timer.queue_free()
-		else:
-			# Random shake with decay
-			var shake_percent = 1.0 - (shake_data.elapsed / duration)
-			camera.offset = original_offset + Vector2(
-				randf_range(-strength, strength) * shake_percent,
-				randf_range(-strength, strength) * shake_percent
-			)
-	)
-	
-	add_child(timer)
-	timer.start()
+# Removed _apply_camera_shake - now using global CameraShake utility
 
 ## SOUND TEST FUNCTIONS - REMOVE AFTER TESTING
 func _setup_modular_audio_tester():
