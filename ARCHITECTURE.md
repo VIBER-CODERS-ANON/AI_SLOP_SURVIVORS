@@ -27,7 +27,8 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **Bridge/Interop**
 
   - Connects the data arrays to existing gameplay systems (abilities, effects, lighting, UI, action feed) without needing a per‑enemy node.
-  - Rebuilds abilities/effects/lighting when an enemy’s type changes (e.g., on evolution).
+  - Rebuilds abilities/effects/lighting when an enemy's type changes (e.g., on evolution).
+  - Uses V2AbilityProxy for complex abilities that need node-based execution (like channeled abilities)
 
 - **Live Physics Subset (pooled bodies)**
 
@@ -50,13 +51,41 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - **Flocking (optional)**: Low‑weight separation/alignment/cohesion computed over array data using the spatial grid.
 - **Variability**: Per‑enemy wander phase, strafe bias, speed jitter, and periodic bursts reduce "jagged/stiff" herd motion at scale.
 - **One‑Way Pushing**: Player doesn't collide with enemies (collision_mask = 1) but pushes them away via _push_nearby_enemies() function
+- **Stop‑at‑Attack‑Range**: Enemies stop moving when within attack range (20px from player's capsule edge), using shared capsule edge detection from PlayerCollisionDetector
+
+### Ability System for V2 Enemies
+
+- **Simple Effects (Explosions, Clouds)**: 
+  - Direct instantiation like node-based systems
+  - Set properties (damage, radius, source_name) on the effect
+  - Add to scene and let effect handle its lifecycle
+  - Example: Explosion from !explode command
+
+- **Complex Abilities (Channeled, Multi-step)**:
+  - Use V2AbilityProxy as a bridge between data arrays and ability classes
+  - Proxy tracks enemy position, handles movement stopping, manages ability lifecycle
+  - Ability instances work exactly as designed for node-based enemies
+  - Example: Suction ability for Succubus
+
+- **V2AbilityProxy Pattern**:
+  ```gdscript
+  var proxy = V2AbilityProxy.new()
+  proxy.setup(enemy_id, enemy_manager, username)
+  GameController.instance.add_child(proxy)
+  
+  if proxy.attach_ability(SuctionAbility, target_data):
+      # Ability executing successfully
+  ```
 
 ### Attack System
 
 - **Data‑Oriented Minions (V2)**: Use PlayerCollisionDetector for unified attack handling
   - Detection radius: 20 pixels from player's capsule edge (configurable in player_collision_detector.gd)
   - Uses edge‑based collision detection for player's capsule hitbox (16px radius, 60px height)
-  - Attack rate: 2 attacks per second (0.5s cooldown between attacks)
+  - Base attack rates:
+    - Melee (Rat, Woodland Joe): 2 attacks/sec (0.5s cooldown)
+    - Ranged (Succubus): 0.4 attacks/sec (2.5s cooldown)
+  - Attack cooldowns read from per‑enemy `attack_cooldowns[]` array (not global)
   - Damage calculated from EnemyManager arrays (attack_damages[enemy_id])
   - No per‑enemy collision bodies ‑ player detects nearby enemies
   - Consistent attack range from all angles (solves pill‑shaped hitbox issues)
@@ -65,6 +94,53 @@ This guide explains the current hybrid architecture after the cleanup and naming
   - Individual attack ranges and cooldowns per boss type
   - Traditional collision detection with CharacterBody2D
   - Custom attack patterns and abilities
+
+### MXP (Chat Currency) System Integration
+
+- **MXP Modifiers**: Chat commands that upgrade entity stats using MXP currency
+  - Modifiers stored in `systems/mxp_modifiers/modifiers/`
+  - Base class: `BaseMXPModifier` handles validation and cost management
+  - Processed via `MXPModifierManager` which handles command parsing
+
+- **V2 Enemy Integration**:
+  - MXP upgrades applied on spawn in `enemy_manager.spawn_enemy()`
+  - Live enemies updated via `ChatterEntityManager._update_active_entity()`
+  - Supported upgrades:
+    - `bonus_health`: Flat HP increase (+5 HP per MXP from !hp command)
+    - `bonus_move_speed`: Flat speed increase (+5 speed per MXP from !speed command)
+    - `attack_speed_percent`: Percentage attack speed increase (+1% per MXP from !attackspeed command)
+    - `bonus_aoe`: AOE multiplier for abilities (+5% per MXP from !aoe command)
+    - `regen_flat_bonus`: HP regeneration per second (+1 HP/sec per MXP from !regen command)
+  - Arrays in EnemyManager:
+    - `aoe_scales[]`: Stores AOE multipliers for each enemy
+    - `regen_rates[]`: Stores regeneration rates for each enemy
+  - Regeneration processed in `_update_enemy_regeneration()` each frame
+
+- **Ticket System**: `!ticket` command increases spawn chance
+  - Multiplies tickets in spawn pool via `TicketSpawnManager`
+  - Rebuilds pool immediately on upgrade
+
+### Buff System (Temporary Effects)
+
+- **First Buff Implementation**: `!boost` command
+  - **Type**: Temporary flat speed buff (not MXP-based)
+  - **Effect**: +500 flat movement speed for 1 second
+  - **Cooldown**: 60 seconds per entity (tracked individually)
+  - **Cost**: Free (no MXP required)
+  - **Visual**: Yellow flash effect on entity
+  - **Activity Feed**: Reports when used with ⚡ icon
+  
+- **Technical Implementation**:
+  - Arrays in EnemyManager for buff tracking:
+    - `last_boost_times[]`: Tracks when boost was last used (initialized to -BOOST_COOLDOWN for immediate availability)
+    - `temporary_speed_boosts[]`: Current active boost amount
+    - `boost_end_times[]`: When boost expires
+  - Boost applied in movement calculation: `effective_speed = move_speeds[id] + temporary_speed_boosts[id]`
+  - Expiry checked each physics frame, boost removed when `current_time >= boost_end_times[id]`
+  - Command flow: TwitchManager → GameController → TicketSpawnManager → EnemyBridge → EnemyManager
+  
+- **Buff Tags**: First ability with ["Buff", "Duration", "Movement", "Speed", "Temporary", "Command"] tags
+  - Defined in `systems/ability_system/abilities/boost_buff_ability.gd`
 
 ### Evolutions & Rarity
 
@@ -121,9 +197,33 @@ This guide explains the current hybrid architecture after the cleanup and naming
 - Use ramping to push monster power over time.
 - Flocking weights and avoidance margins can be increased slightly if minions clip pits/pillars.
 
+### Recent Fixes & Updates
+
+- **Attack Speed System**: Changed from flat bonus to percentage‑based (+1% per MXP) to balance melee vs ranged
+- **Per‑Enemy Attack Cooldowns**: PlayerCollisionDetector now reads individual `attack_cooldowns[id]` instead of global cooldown
+- **Edge‑Based Collision**: Player's capsule hitbox uses edge distance calculation for consistent melee range
+- **MXP Integration**: All modifiers now properly apply to V2 enemies both on spawn and live updates
+- **Aggressive AI**: Removed smoothing, strafe, and reduced flocking for zombie swarm behavior
+- **Regeneration System**: Added `regen_rates[]` array and per‑frame healing in update loop
+- **Stop‑at‑Attack‑Range**: Enemies now stop exactly at attack range using capsule edge detection, preventing overlap
+- **Code Cleanup**: Removed unused arrive mechanics, duplicate attack logic, and dead code from enemy_manager
+- **First Buff System**: Implemented !boost command as temporary flat speed buff with per-entity cooldowns
+  - Fixed command routing through trigger_ prefix translation layer
+  - Fixed boost availability on spawn (set to -BOOST_COOLDOWN)
+  - Fixed action feed crash by using get_action_feed() method instead of direct property access
+- **V2 Ability System**: Implemented proper ability execution for data-oriented enemies
+  - Created V2AbilityProxy to bridge between array data and node-based abilities
+  - Fixed Succubus suction ability using reusable proxy pattern
+  - Abilities now work identically for both node-based and data-oriented enemies
+- **Damage Attribution**: Fixed death messages showing wrong killer names
+  - All damage sources now properly set source_name property
+  - Effects (explosions, poison clouds, projectiles) track their creator
+  - Death screen shows chatter username instead of class names
+
 ### Glossary
 
 - **Data‑Oriented Minion**: An enemy represented as a row in arrays (no per‑enemy node), rendered via MultiMesh, updated in slices.
 - **Bridge/Interop**: Code that binds the data arrays to existing node‑based systems (abilities, effects, lights, UI).
+- **V2AbilityProxy**: A temporary node that allows data-oriented enemies to use node-based ability classes, tracking position and handling lifecycle.
 - **Live Physics Subset**: Recycled `CharacterBody2D` nodes assigned to the nearest N minions for collisions and weapon hits.
 - **Flow‑Field**: A grid of directions (from a single BFS) that guides minions toward the player efficiently.

@@ -13,6 +13,7 @@ var players_inside: Dictionary = {}  # Track players and their damage timers
 var cloud_particles: CPUParticles2D
 var is_fading: bool = false
 var applied_aoe_scale: float = 1.0  # Track AoE scale for this cloud
+var source_name: String = "Unknown"  # Who created this cloud
 
 func _ready():
 	# Ensure poison cloud pauses properly

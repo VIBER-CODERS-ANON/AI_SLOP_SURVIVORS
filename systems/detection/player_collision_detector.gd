@@ -6,14 +6,13 @@ class_name PlayerCollisionDetector
 ## Node-based enemies (bosses) use their own BaseEnemy attack system
 ##
 ## CONFIGURATION:
-## - detection_radius: How close enemies need to be to attack (default: 100 pixels)
-## - damage_cooldown: Time between attacks from same enemy (default: 0.5s = 2 APS)
+## - detection_radius: How close enemies need to be to attack (default: 20 pixels)
+## - Attack cooldowns are per-enemy, stored in EnemyManager.attack_cooldowns[]
 
 signal enemy_overlap_detected(enemy_id: int)
 
 # Attack configuration
 var detection_radius: float = 20.0  # Attack range for V2 enemies (tight melee range)
-var damage_cooldown: float = 0.5  # 0.5s = 2 attacks per second per enemy
 var last_damage_times: Dictionary = {}  # enemy_id -> last_damage_time
 
 # Player capsule hitbox dimensions (from player.tscn)
@@ -92,13 +91,14 @@ func _check_single_enemy_collision(enemy_id: int, player_pos: Vector2, current_t
 	var enemy_pos = enemy_manager.positions[enemy_id]
 	
 	# Calculate distance from enemy to edge of player's capsule hitbox
-	var distance = _get_distance_to_capsule_edge(player_pos, enemy_pos)
+	var distance = get_distance_to_player_capsule_edge(player_pos, enemy_pos)
 	if distance > detection_radius:
 		return
 	
-	# Check damage cooldown
+	# Check damage cooldown using per-enemy attack cooldown
+	var enemy_cooldown = enemy_manager.attack_cooldowns[enemy_id]
 	if last_damage_times.has(enemy_id):
-		if current_time - last_damage_times[enemy_id] < damage_cooldown:
+		if current_time - last_damage_times[enemy_id] < enemy_cooldown:
 			return
 	
 	# Apply damage to player
@@ -147,13 +147,15 @@ func _get_attack_name(enemy_type: int) -> String:
 		2: return "woodland strike"
 		_: return "unknown attack"
 
-## Calculate distance from a point to the edge of a capsule shape
-func _get_distance_to_capsule_edge(capsule_center: Vector2, point: Vector2) -> float:
+## Calculate distance from a point to the edge of a capsule shape (STATIC UTILITY)
+static func get_distance_to_player_capsule_edge(capsule_center: Vector2, point: Vector2) -> float:
 	# Capsule is vertical (taller than wide)
 	# It consists of a rectangle with semicircles on top and bottom
+	const CAPSULE_RADIUS = 16.0
+	const CAPSULE_HEIGHT = 60.0
 	
 	# Half-height of the rectangular part (excluding the radius caps)
-	var half_rect_height = (capsule_height - capsule_radius * 2) / 2.0
+	var half_rect_height = (CAPSULE_HEIGHT - CAPSULE_RADIUS * 2) / 2.0
 	
 	# Get point relative to capsule center
 	var relative_point = point - capsule_center
@@ -169,7 +171,11 @@ func _get_distance_to_capsule_edge(capsule_center: Vector2, point: Vector2) -> f
 	
 	# Subtract the capsule radius to get distance to edge
 	# If negative, the point is inside the capsule
-	return max(0, dist_to_centerline - capsule_radius)
+	return max(0, dist_to_centerline - CAPSULE_RADIUS)
+
+## Instance method wrapper for compatibility
+func _get_distance_to_capsule_edge(capsule_center: Vector2, point: Vector2) -> float:
+	return get_distance_to_player_capsule_edge(capsule_center, point)
 
 func set_detection_radius(new_radius: float):
 	detection_radius = new_radius

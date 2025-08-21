@@ -7,6 +7,10 @@ class_name EnemyBridge
 
 static var instance: EnemyBridge
 
+# Preload classes for complex ability execution
+const V2AbilityProxyClass = preload("res://systems/core/v2_ability_proxy.gd")
+const SuctionAbilityClass = preload("res://systems/ability_system/abilities/suction_ability.gd")
+
 # System references
 var enemy_manager: EnemyManager
 var config_manager: EnemyConfigManager
@@ -19,7 +23,6 @@ var ability_cooldowns: Dictionary = {}  # enemy_id -> Dictionary[ability_id -> f
 
 # Active effects and timers
 var active_effects: Dictionary = {}  # enemy_id -> Array[ActiveEffect]
-var boost_timers: Dictionary = {}  # enemy_id -> float (remaining boost time)
 
 # Ability execution tracking
 var last_ability_update: float = 0.0
@@ -158,12 +161,7 @@ func _update_enemy_abilities(_delta: float):
 					ability.last_used = current_time
 
 func _update_active_effects(delta: float):
-	# Update boost timers
-	for enemy_id in boost_timers.keys():
-		if boost_timers[enemy_id] > 0:
-			boost_timers[enemy_id] -= delta
-			if boost_timers[enemy_id] <= 0:
-				_end_boost_effect(enemy_id)
+	# Boost timers are now handled in enemy_manager's _physics_process
 	
 	# Update other timed effects
 	for enemy_id in active_effects.keys():
@@ -199,7 +197,10 @@ func _should_use_ability(enemy_id: int, ability: Dictionary) -> bool:
 			return distance < 300.0 and distance > 50.0
 		"suction":
 			# Use suction when close
-			return distance < 150.0
+			var in_range = distance < 150.0
+			if in_range:
+				print("🔍 Enemy %d can use suction (distance: %.1f)" % [enemy_id, distance])
+			return in_range
 		"suicide_bomb":
 			# Proximity trigger for ugandan warriors
 			return distance < 120.0 and randf() < 0.15
@@ -222,7 +223,8 @@ func _execute_ability(enemy_id: int, ability: Dictionary):
 		"fart":
 			_trigger_fart_cloud(enemy_id, enemy_pos, ability.config)
 		"boost":
-			_trigger_boost(enemy_id, ability.config)
+			# Boost is now handled via execute_command_for_enemy
+			execute_command_for_enemy(enemy_id, "boost")
 		"heart_projectile":
 			_fire_heart_projectile(enemy_id, enemy_pos, ability.config)
 		"suction":
@@ -237,10 +239,11 @@ func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
 	var damage = config.get("damage", 20.0)
 	var radius = config.get("radius", 80.0)
 	var aoe_scale = 1.0
+	var username = ""
 	
 	# Apply chatter's AOE bonus if available
 	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
-		var username = enemy_manager.chatter_usernames[enemy_id]
+		username = enemy_manager.chatter_usernames[enemy_id]
 		if username != "" and ChatterEntityManager.instance:
 			var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
 			if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
@@ -254,55 +257,48 @@ func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
 		var explosion = load(explosion_scene_path).instantiate()
 		explosion.global_position = pos
 		explosion.applied_aoe_scale = aoe_scale
+		
+		# Set source name for proper death attribution
+		if username != "":
+			explosion.source_name = username
+			explosion.set_meta("source_name", username)
+		
 		GameController.instance.add_child(explosion)
-	
-	# Apply damage to player if in range (with scaled radius)
-	_apply_area_damage(pos, damage, radius * aoe_scale)
 	
 	print("💥 Enemy %d exploded at %s" % [enemy_id, pos])
 
 func _trigger_fart_cloud(enemy_id: int, pos: Vector2, config: Dictionary):
+	var username = ""
+	var aoe_scale = 1.0
+	
+	# Get username and AOE scale
+	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
+		username = enemy_manager.chatter_usernames[enemy_id]
+		if username != "" and ChatterEntityManager.instance:
+			var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+			if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
+				var bonus_aoe = chatter_data.upgrades.bonus_aoe
+				var rarity_mult = chatter_data.upgrades.get("rarity_multiplier", 1.0)
+				aoe_scale = (1.0 + bonus_aoe) * rarity_mult
+	
 	# Create poison cloud effect
 	var cloud_scene_path = config.get("visuals", {}).get("effect_scene", "res://entities/effects/poison_cloud.tscn")
 	if ResourceLoader.exists(cloud_scene_path):
 		var cloud = load(cloud_scene_path).instantiate()
 		cloud.global_position = pos
+		cloud.applied_aoe_scale = aoe_scale
+		
+		# Set source name for proper death attribution
+		if username != "":
+			cloud.source_name = username
+			cloud.set_meta("source_name", username)
+		
 		GameController.instance.add_child(cloud)
 	
 	print("💨 Enemy %d created fart cloud at %s" % [enemy_id, pos])
 
-func _trigger_boost(enemy_id: int, config: Dictionary):
-	if not enemy_manager:
-		return
-	
-	var duration = config.get("duration", 3.0)
-	var speed_multiplier = config.get("effects", {}).get("speed_multiplier", 3.0)
-	
-	# Store original speed
-	var original_speed = enemy_manager.move_speeds[enemy_id]
-	
-	# Apply boost
-	enemy_manager.move_speeds[enemy_id] = original_speed * speed_multiplier
-	boost_timers[enemy_id] = duration
-	
-	# Visual effect (yellow tint)
-	_add_effect(enemy_id, "boost_visual", duration)
-	
-	print("⚡ Enemy %d boosted (speed x%.1f for %.1fs)" % [enemy_id, speed_multiplier, duration])
-
-func _end_boost_effect(enemy_id: int):
-	if not enemy_manager or enemy_id >= enemy_manager.move_speeds.size():
-		return
-	
-	# Reset speed to base value
-	var _enemy_type_id = enemy_manager.entity_types[enemy_id]
-	var config = config_manager.get_enemy_config(_get_type_string(_enemy_type_id))
-	var base_speed = config.get("base_stats", {}).get("move_speed", 120.0)
-	
-	enemy_manager.move_speeds[enemy_id] = base_speed
-	boost_timers.erase(enemy_id)
-	
-	print("⚡ Enemy %d boost ended" % enemy_id)
+# Boost is now handled directly in execute_command_for_enemy with flat speed bonus
+# Old multiplier-based boost functions removed
 
 func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
 	if not GameController.instance or not GameController.instance.player:
@@ -342,23 +338,44 @@ func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
 	
 	print("💖 Enemy %d fired heart projectile" % enemy_id)
 
-func _start_suction_ability(enemy_id: int, _pos: Vector2, config: Dictionary):
-	# Succubus channeled drain ability
-	var channel_time = config.get("channel_time", 2.0)
-	var _drain_rate = config.get("drain_rate", 5.0)
+func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
+	print("🌪️ Starting suction ability for enemy %d" % enemy_id)
 	
-	# Stop enemy movement during channeling
-	if enemy_manager and enemy_id < enemy_manager.move_speeds.size():
-		var original_speed = enemy_manager.move_speeds[enemy_id]
-		enemy_manager.move_speeds[enemy_id] = 0.0
+	if not GameController.instance or not GameController.instance.player:
+		return
+	
+	# Get username for attribution
+	var username = ""
+	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
+		username = enemy_manager.chatter_usernames[enemy_id]
+	
+	# Use the reusable proxy system
+	var proxy = V2AbilityProxyClass.new()
+	proxy.name = "SuccubusProxy_%d" % enemy_id
+	proxy.global_position = pos
+	GameController.instance.add_child(proxy)
+	
+	# Setup proxy
+	proxy.setup(enemy_id, enemy_manager, username)
+	
+	# Create target data
+	var target_data = {
+		"target_enemy": GameController.instance.player,
+		"target_position": GameController.instance.player.global_position
+	}
+	
+	# Attach and execute ability
+	if proxy.attach_ability(SuctionAbilityClass, target_data):
+		print("✅ Suction ability started successfully")
 		
-		# Restore speed after channel time
-		get_tree().create_timer(channel_time).timeout.connect(func():
-			if enemy_id < enemy_manager.move_speeds.size() and enemy_manager.alive_flags[enemy_id] == 1:
-				enemy_manager.move_speeds[enemy_id] = original_speed
-		)
-	
-	print("🌪️ Enemy %d started suction ability" % enemy_id)
+		# Clean up when ability ends
+		if proxy.tracked_ability and proxy.tracked_ability.has_signal("succ_ended"):
+			proxy.tracked_ability.succ_ended.connect(func():
+				proxy.queue_free()
+			)
+	else:
+		print("❌ Failed to start suction ability")
+		proxy.queue_free()
 
 func _trigger_suicide_bomb(enemy_id: int, pos: Vector2, config: Dictionary):
 	var telegraph_time = config.get("telegraph_time", 0.4)
@@ -406,24 +423,6 @@ func _trigger_telegraph_charge(enemy_id: int, pos: Vector2, config: Dictionary):
 	)
 	
 	print("🐎 Enemy %d charging!" % enemy_id)
-
-func _apply_area_damage(center: Vector2, damage: float, radius: float):
-	if not GameController.instance or not GameController.instance.player:
-		return
-	
-	var player_pos = GameController.instance.player.global_position
-	var distance = center.distance_to(player_pos)
-	
-	if distance <= radius:
-		var player = GameController.instance.player
-		if player.has_method("take_damage"):
-			# Create damage source
-			var damage_source = Node.new()
-			damage_source.name = "EnemyAbility"
-			damage_source.set_meta("attack_name", "explosion")
-			
-			player.take_damage(damage, damage_source)
-			damage_source.queue_free()
 
 func _create_bomb_telegraph(pos: Vector2, duration: float):
 	# Create a warning visual at the bomb position
@@ -509,6 +508,20 @@ func _add_effect(enemy_id: int, effect_id: String, duration: float):
 	}
 	active_effects[enemy_id].append(effect)
 
+func _add_boost_visual_effect(enemy_id: int):
+	if not enemy_manager or enemy_id >= enemy_manager.alive_flags.size():
+		return
+	
+	# Store original color to restore later (not currently used but kept for future enhancements)
+	var _original_color = enemy_manager.chatter_colors[enemy_id]
+	
+	# Create yellow boost effect - modulate the enemy's color
+	# We'll use the flash timer system that already exists
+	enemy_manager.flash_timers[enemy_id] = enemy_manager.BOOST_DURATION
+	
+	# Add the effect tracking
+	_add_effect(enemy_id, "boost_visual", enemy_manager.BOOST_DURATION)
+
 func _end_effect(_enemy_id: int, effect: Dictionary):
 	match effect.id:
 		"boost_visual":
@@ -519,7 +532,6 @@ func _cleanup_enemy_data(enemy_id: int):
 	enemy_abilities.erase(enemy_id)
 	ability_cooldowns.erase(enemy_id)
 	active_effects.erase(enemy_id)
-	boost_timers.erase(enemy_id)
 	
 	# Clean up lights
 	if has_meta("enemy_lights"):
@@ -556,8 +568,28 @@ func execute_command_for_enemy(enemy_id: int, command: String):
 			var config = {"visuals": {"effect_scene": "res://entities/effects/poison_cloud.tscn"}}
 			_trigger_fart_cloud(enemy_id, enemy_manager.positions[enemy_id], config)
 		"boost":
-			var config = {"duration": 3.0, "effects": {"speed_multiplier": 3.0}}
-			_trigger_boost(enemy_id, config)
+			# Check cooldown
+			var current_time = Time.get_ticks_msec() / 1000.0
+			if current_time - enemy_manager.last_boost_times[enemy_id] < enemy_manager.BOOST_COOLDOWN:
+				return  # Still on cooldown
+			
+			# Apply flat boost
+			enemy_manager.temporary_speed_boosts[enemy_id] = enemy_manager.BOOST_FLAT_BONUS
+			enemy_manager.boost_end_times[enemy_id] = current_time + enemy_manager.BOOST_DURATION
+			enemy_manager.last_boost_times[enemy_id] = current_time
+			
+			# Visual effect - make enemy flash yellow
+			_add_boost_visual_effect(enemy_id)
+			
+			# Activity feed message
+			if GameController.instance:
+				var feed = GameController.instance.get_action_feed()
+				if feed:
+					var username = enemy_manager.chatter_usernames[enemy_id]
+					if username != "":
+						feed.add_message("⚡ %s used BOOST! (+500 speed)" % username, Color(1.0, 1.0, 0.3))
+			
+			print("⚡ Enemy %d boosted (+%.0f speed for %.1fs)" % [enemy_id, enemy_manager.BOOST_FLAT_BONUS, enemy_manager.BOOST_DURATION])
 		"grow":
 			# Increase visual scale and collision weight slightly
 			enemy_manager.scales[enemy_id] = enemy_manager.scales[enemy_id] * 1.25

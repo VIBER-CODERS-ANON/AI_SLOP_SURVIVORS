@@ -7,6 +7,7 @@ var velocity: Vector2 = Vector2.ZERO
 var damage: float = 10.0
 var lifetime: float = 3.0
 var owner_entity: Node = null
+var source_name: String = "Unknown"  # For death attribution
 
 # Visual
 var sprite: Sprite2D
@@ -39,6 +40,16 @@ func setup(direction: Vector2, speed: float, damage_amount: float, proj_owner: N
 	# Store reference to original owner for proper attribution
 	if proj_owner:
 		set_meta("original_owner", proj_owner)
+		# Try to get the owner's name for death messages
+		if proj_owner.has_method("get_chatter_username"):
+			source_name = proj_owner.get_chatter_username()
+		elif proj_owner.has_method("get_display_name"):
+			source_name = proj_owner.get_display_name()
+		elif proj_owner.has_meta("chatter_username"):
+			source_name = proj_owner.get_meta("chatter_username")
+		else:
+			source_name = proj_owner.name
+		set_meta("source_name", source_name)
 	
 	# Rotate to face direction
 	rotation = direction.angle()

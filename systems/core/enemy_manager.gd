@@ -13,11 +13,6 @@ static var instance: EnemyManager
 const MAX_ENEMIES: int = 1000
 
 # Enemy movement and attack constants
-const ATTACK_REACH: float = 20.0 # how close they need to be to hit (tight melee range)
-const STOP_DISTANCE: float = 0
-const START_DISTANCE: float = STOP_DISTANCE + 10.0
-const ARRIVE_RADIUS: float = 120.0 # start easing off speed as they get near
-const MIN_SPEED_SCALE: float = 0.05 # never fully stop until inside STOP_DISTANCE
 
 # Succubus animation constants
 const SUCCUBUS_FRAMES_H: int = 6
@@ -36,7 +31,18 @@ var rotations: PackedFloat32Array
 var move_speeds: PackedFloat32Array
 var attack_damages: PackedFloat32Array
 var attack_cooldowns: PackedFloat32Array
-var last_attack_times: PackedFloat32Array
+var aoe_scales: PackedFloat32Array  # AOE multiplier for abilities
+var regen_rates: PackedFloat32Array  # HP regeneration per second
+
+# Command cooldown tracking
+var last_boost_times: PackedFloat32Array  # Last time boost was used per entity
+var temporary_speed_boosts: PackedFloat32Array  # Flat speed bonus amount
+var boost_end_times: PackedFloat32Array  # When boost expires
+
+# Command constants
+const BOOST_COOLDOWN: float = 60.0  # 1 minute cooldown
+const BOOST_FLAT_BONUS: float = 500.0  # +500 flat speed
+const BOOST_DURATION: float = 1.0  # 1 second duration
 
 # Behavior tuning (exported for easy tweaking)
 @export_group("Behavior Tuning")
@@ -107,6 +113,9 @@ const MAX_LIVE_ENEMIES: int = 50
 var live_enemy_ids: Array[int] = []
 var live_enemy_bodies: Array[CharacterBody2D] = []  # Pooled collision bodies
 
+# Attack range constant (matching PlayerCollisionDetector)
+const ATTACK_DETECTION_RADIUS: float = 20.0
+
 # Performance settings
 var enable_flow_field: bool = true
 var enable_spatial_grid: bool = true
@@ -164,8 +173,17 @@ func _initialize_arrays():
 	attack_damages.resize(initial_capacity)
 	attack_cooldowns = PackedFloat32Array()
 	attack_cooldowns.resize(initial_capacity)
-	last_attack_times = PackedFloat32Array()
-	last_attack_times.resize(initial_capacity)
+	aoe_scales = PackedFloat32Array()
+	aoe_scales.resize(initial_capacity)
+	regen_rates = PackedFloat32Array()
+	regen_rates.resize(initial_capacity)
+	# Command cooldown arrays
+	last_boost_times = PackedFloat32Array()
+	last_boost_times.resize(initial_capacity)
+	temporary_speed_boosts = PackedFloat32Array()
+	temporary_speed_boosts.resize(initial_capacity)
+	boost_end_times = PackedFloat32Array()
+	boost_end_times.resize(initial_capacity)
 	# Behavior arrays
 	behavior_strafe_dir = PackedFloat32Array()
 	behavior_strafe_dir.resize(initial_capacity)
@@ -449,6 +467,17 @@ func _physics_process(delta: float):
 		else:
 			_update_live_bodies_positions_only()
 	
+	# Check for expired boosts
+	var current_time = Time.get_ticks_msec() / 1000.0
+	for i in range(alive_flags.size()):
+		if alive_flags[i] == 0:
+			continue
+		
+		# Remove expired boost
+		if boost_end_times[i] > 0 and boost_end_times[i] <= current_time:
+			temporary_speed_boosts[i] = 0.0
+			boost_end_times[i] = 0.0
+	
 	# Update rendering
 	_update_multimesh_transforms()
 
@@ -475,7 +504,6 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	rarity_types[id] = 0  # Default COMMON
 	scales[id] = 1.0
 	rotations[id] = 0.0
-	last_attack_times[id] = 0.0
 	# Initialize behavior variability
 	speed_jitter[id] = randf_range(0.9, 1.2)
 	behavior_strafe_dir[id] = -1.0 if randf() < 0.5 else 1.0
@@ -484,6 +512,11 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	burst_timer[id] = 0.0
 	burst_cooldown[id] = randf_range(0.8, 2.0)
 	flash_timers[id] = 0.0
+	aoe_scales[id] = 1.0  # Default AOE scale
+	regen_rates[id] = 0.0  # Default no regen
+	last_boost_times[id] = -BOOST_COOLDOWN  # Start with boost available
+	temporary_speed_boosts[id] = 0.0
+	boost_end_times[id] = 0.0
 	
 	# Apply stats from configuration system
 	var enemy_type_str = _get_type_name_string(enemy_type)
@@ -497,19 +530,19 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 				healths[id] = 10.0
 				move_speeds[id] = 80.0
 				attack_damages[id] = 1.0
-				attack_cooldowns[id] = 1.0
+				attack_cooldowns[id] = 0.5  # 2 attacks per second
 			1: # Succubus
 				max_healths[id] = 25.0
 				healths[id] = 25.0
 				move_speeds[id] = 100.0
 				attack_damages[id] = 3.0
-				attack_cooldowns[id] = 1.5
+				attack_cooldowns[id] = 2.5  # Ranged attacker - slower attack speed
 			2: # Woodland Joe
 				max_healths[id] = 40.0
 				healths[id] = 40.0
 				move_speeds[id] = 80.0
 				attack_damages[id] = 5.0
-				attack_cooldowns[id] = 2.0
+				attack_cooldowns[id] = 0.5  # 2 attacks per second
 			3: # Thor Enemy - matches thor.tres
 				max_healths[id] = 150.0
 				healths[id] = 150.0
@@ -536,6 +569,38 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 				attack_cooldowns[id] = 3.0
 	
 	active_count += 1
+	
+	# Apply MXP upgrades if this is a chatter entity
+	if username != "" and ChatterEntityManager.instance:
+		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+		
+		# Apply HP bonus
+		if chatter_data.upgrades.has("bonus_health"):
+			var hp_bonus = chatter_data.upgrades["bonus_health"]
+			max_healths[id] += hp_bonus
+			healths[id] += hp_bonus
+		
+		# Apply speed bonus
+		if chatter_data.upgrades.has("bonus_move_speed"):
+			var speed_bonus = chatter_data.upgrades["bonus_move_speed"]
+			move_speeds[id] += speed_bonus
+		
+		# Apply attack speed percentage bonus
+		if chatter_data.upgrades.has("attack_speed_percent"):
+			var percent_bonus = chatter_data.upgrades["attack_speed_percent"]
+			var base_attacks_per_sec = 1.0 / attack_cooldowns[id] if attack_cooldowns[id] > 0 else 1.0
+			var new_attacks_per_sec = base_attacks_per_sec * (1.0 + percent_bonus)
+			attack_cooldowns[id] = 1.0 / new_attacks_per_sec
+		
+		# Apply AOE bonus (stored for later use in abilities)
+		if chatter_data.upgrades.has("bonus_aoe"):
+			# AOE is handled by abilities system, just store it
+			aoe_scales[id] = 1.0 + chatter_data.upgrades["bonus_aoe"]
+		
+		# Apply regen bonus
+		if chatter_data.upgrades.has("regen_flat_bonus"):
+			var regen = chatter_data.upgrades["regen_flat_bonus"]
+			regen_rates[id] = regen
 
 	# Assign rarity for V2 minions via NPCRarityManager (no visuals, stat/tint only)
 	if NPCRarityManager.get_instance():
@@ -551,6 +616,7 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 		EnemyBridge.instance.on_enemy_spawned(id, enemy_type_str)
 	
 	return id
+
 
 func despawn_enemy(id: int):
 	if id < 0 or id >= alive_flags.size() or alive_flags[id] == 0:
@@ -610,23 +676,21 @@ func _process_enemy_slice(delta: float):
 		
 		_update_enemy_movement(i, delta)
 		_update_enemy_attack(i, delta)
+		_update_enemy_regeneration(i, delta)
 	
 	# Advance to next slice
 	current_slice_offset = slice_end
 	if current_slice_offset >= array_size:
 		current_slice_offset = 0
 
-func _arrive_scale(dist: float) -> float:
-	if dist <= STOP_DISTANCE:
-		return 0.0
-	if dist >= ARRIVE_RADIUS:
-		return 1.0
-	var t: float = (dist - STOP_DISTANCE) / max(ARRIVE_RADIUS - STOP_DISTANCE, 1.0)
-	t = t * t * (3.0 - 2.0 * t) # smoothstep
-	return MIN_SPEED_SCALE + (1.0 - MIN_SPEED_SCALE) * t
-
 func _update_enemy_movement(id: int, delta: float):
 	var current_pos = positions[id]
+	
+	# Check if enemy is within attack range - stop if so
+	var distance_to_edge = PlayerCollisionDetector.get_distance_to_player_capsule_edge(player_position, current_pos)
+	if distance_to_edge <= ATTACK_DETECTION_RADIUS:
+		velocities[id] = Vector2.ZERO
+		return  # Skip all other movement logic
 	
 	# Get flow-field direction
 	var target_direction = Vector2.ZERO
@@ -640,51 +704,28 @@ func _update_enemy_movement(id: int, delta: float):
 	else:
 		target_direction = (player_position - current_pos).normalized()
 	
-	# Add variability: wander/strafe + speed jitter + periodic bursts
+	# Direct pursuit - no strafe/wander for aggressive movement
 	if target_direction == Vector2.ZERO:
 		target_direction = (player_position - current_pos).normalized()
-	var strafe_strength: float = sin(behavior_wander_phase[id]) * 0.5  # side sway up to 0.5x
-	var perpendicular: Vector2 = Vector2(-target_direction.y, target_direction.x) * behavior_strafe_dir[id]
 	# Cheap obstacle avoidance
 	var avoid: Vector2 = _compute_avoidance_vector(current_pos) * avoidance_weight
 	# Optional boids-lite from FlockingSystem (V2 arrays)
 	var flock_force := Vector2.ZERO
 	if FlockingSystem.instance:
 		flock_force = FlockingSystem.instance.get_v2_force(id)
-	var combined_direction: Vector2 = (target_direction + perpendicular * strafe_strength + avoid + flock_force).normalized()
+	var combined_direction: Vector2 = (target_direction * 3.0 + avoid + flock_force).normalized()
 	
-	# Effective speed with jitter and bursts
-	var effective_speed: float = move_speeds[id] * speed_jitter[id]
-	# Apply burst if active, or occasionally trigger one when off cooldown
-	if burst_timer[id] > 0.0:
-		effective_speed *= 1.85
-	elif burst_cooldown[id] <= 0.0:
-		burst_timer[id] = randf_range(0.15, 0.4)
-		burst_cooldown[id] = randf_range(1.0, 2.0)
+	# Effective speed - base speed + temporary boost if active
+	var effective_speed: float = move_speeds[id]
+	var current_time = Time.get_ticks_msec() / 1000.0
+	if boost_end_times[id] > current_time:
+		effective_speed += temporary_speed_boosts[id]
 	
-	# Decide if this enemy should slow down or stop near the player (arrive + jitter logic)
-	var to_player: Vector2 = player_position - current_pos
-	var dist: float = to_player.length()
-	var halted: bool = _halted[id] == 1
-	if halted:
-		if dist > START_DISTANCE:
-			halted = false
-	else:
-		if dist <= STOP_DISTANCE:
-			halted = true
-	_halted[id] = 1 if halted else 0
-	var speed_scale: float = 0.0 if halted else _arrive_scale(dist)
+	# Apply movement at full speed - no arrive mechanics, no stopping
+	var target_velocity = combined_direction * effective_speed
 	
-	# Apply movement with smoothing (scale by arrive factor near the player)
-	var target_velocity = combined_direction * (effective_speed * speed_scale)
-	
-	# Smooth velocity transitions to reduce jankiness
-	var current_velocity = velocities[id]
-	# Scale smoothing by slice size so infrequently updated entities catch up smoothly
-	var total_count = max(1, min(positions.size(), alive_flags.size()))
-	var slice_factor: float = max(1.0, float(total_count) / float(max(1, update_slice_size)))
-	var lerp_factor = min(delta * 8.0 * slice_factor, 1.0)  # Smooth transitions
-	velocities[id] = current_velocity.lerp(target_velocity, lerp_factor)
+	# Direct velocity assignment - no smoothing for instant response
+	velocities[id] = target_velocity
 	
 	# Position integration moved to _integrate_positions_and_behaviors for smoother motion
 	
@@ -696,20 +737,17 @@ func _update_enemy_movement(id: int, delta: float):
 		if d > 0.08:
 			rotations[id] = lerp_angle(rotations[id], target_rotation, delta * 4.0)
 
-func _update_enemy_attack(id: int, _delta: float):
-	var time_seconds = Time.get_ticks_msec() / 1000.0
-	
-	# Check if can attack
-	if time_seconds - last_attack_times[id] < attack_cooldowns[id]:
-		return
-	
-	# Check if close enough to player to attack
-	var distance_to_player = positions[id].distance_to(player_position)
-	if distance_to_player > ATTACK_REACH:  # Attack range
-		return
-	
-	# Perform attack (damage will be handled by player collision detection)
-	last_attack_times[id] = time_seconds
+# Attack logic removed - handled by PlayerCollisionDetector
+func _update_enemy_attack(_id: int, _delta: float):
+	pass  # All attack logic is in PlayerCollisionDetector
+
+func _update_enemy_regeneration(id: int, delta: float):
+	# Apply regeneration if enemy has any
+	if regen_rates[id] > 0:
+		var current_health = healths[id]
+		var max_health = max_healths[id]
+		if current_health < max_health:
+			healths[id] = min(current_health + regen_rates[id] * delta, max_health)
 
 func _integrate_positions_and_behaviors(delta: float):
 	# Lightweight per-frame integration for smooth motion
@@ -966,12 +1004,18 @@ func _update_multimesh_transforms():
 		transform = transform.scaled(Vector2(flip_x * scales[enemy_id], -scales[enemy_id]))
 		transform.origin = positions[enemy_id]
 		
-		# Apply white flash color if enemy is flashing
+		# Apply flash color if enemy is flashing
 		var color = Color.WHITE
 		if flash_timers[enemy_id] > 0.0:
-			# Interpolate between normal and white based on flash timer
-			var flash_intensity = flash_timers[enemy_id] / FLASH_DURATION
-			color = Color(1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0)
+			# Check if this is a boost effect (longer than damage flash)
+			if flash_timers[enemy_id] > FLASH_DURATION:
+				# Yellow boost effect
+				var boost_intensity = 0.8  # Strong yellow tint
+				color = Color(1.0 + boost_intensity, 1.0 + boost_intensity, 0.5, 1.0)  # Yellow glow
+			else:
+				# White damage flash
+				var flash_intensity = flash_timers[enemy_id] / FLASH_DURATION
+				color = Color(1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0 + flash_intensity * 2.0, 1.0)
 		
 		match int(entity_types[enemy_id]):
 			3:
@@ -1104,7 +1148,11 @@ func _grow_arrays():
 	move_speeds.resize(new_size)
 	attack_damages.resize(new_size)
 	attack_cooldowns.resize(new_size)
-	last_attack_times.resize(new_size)
+	aoe_scales.resize(new_size)
+	regen_rates.resize(new_size)
+	last_boost_times.resize(new_size)
+	temporary_speed_boosts.resize(new_size)
+	boost_end_times.resize(new_size)
 	behavior_strafe_dir.resize(new_size)
 	behavior_wander_phase.resize(new_size)
 	behavior_wander_speed.resize(new_size)

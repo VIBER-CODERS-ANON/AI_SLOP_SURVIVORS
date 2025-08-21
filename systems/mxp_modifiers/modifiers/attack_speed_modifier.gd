@@ -1,37 +1,35 @@
 extends BaseMXPModifier
 class_name AttackSpeedModifier
 
-## !attackspeed command - Flat attack speed increase
-## Simple: +0.1 attacks per second per MXP spent
+## !attackspeed command - Percentage attack speed increase
+## Simple: +1% attack speed per MXP spent
 
-const FLAT_ATTACK_SPEED_BONUS: float = 0.1  # +0.1 attacks/sec per MXP
-const BASE_ATTACK_SPEED: float = 1.0  # Default base attack speed
+const ATTACK_SPEED_PERCENT_PER_MXP: float = 0.01  # +1% per MXP
 
 func _init():
 	command_name = "attackspeed"
 	display_name = "Attack Speed Boost"
-	description = "+0.1 attacks per second per MXP (!attackspeed, !attackspeed5, !attackspeedmax)"
+	description = "+1% attack speed per MXP (!attackspeed, !attackspeed5, !attackspeedmax)"
 	cost_per_use = 1
 	emoji = "⚔️"
 
 func get_effect_description(stacks: int) -> String:
-	var total_bonus = stacks * FLAT_ATTACK_SPEED_BONUS
-	var before_speed = BASE_ATTACK_SPEED + (total_bonus - FLAT_ATTACK_SPEED_BONUS)
-	var after_speed = BASE_ATTACK_SPEED + total_bonus
-	return "Attack Speed: %.1f → %.1f atk/sec (+%.1f)" % [before_speed, after_speed, FLAT_ATTACK_SPEED_BONUS]
+	var total_percent = stacks * ATTACK_SPEED_PERCENT_PER_MXP * 100
+	var before_percent = (stacks - 1) * ATTACK_SPEED_PERCENT_PER_MXP * 100
+	return "Attack Speed: %d%% → %d%% (+1%%)" % [100 + before_percent, 100 + total_percent]
 
 func apply_effect(chatter_data: Dictionary, amount: int) -> Dictionary:
 	# Initialize if not present
-	if not chatter_data.upgrades.has("bonus_attack_speed"):
-		chatter_data.upgrades["bonus_attack_speed"] = 0.0
+	if not chatter_data.upgrades.has("attack_speed_percent"):
+		chatter_data.upgrades["attack_speed_percent"] = 0.0
 	
-	var before_bonus = chatter_data.upgrades["bonus_attack_speed"]
+	var before_percent = chatter_data.upgrades["attack_speed_percent"]
 	
-	# Apply flat attack speed bonus
-	chatter_data.upgrades["bonus_attack_speed"] += amount * FLAT_ATTACK_SPEED_BONUS
+	# Apply percentage attack speed bonus (1% per MXP)
+	chatter_data.upgrades["attack_speed_percent"] += amount * ATTACK_SPEED_PERCENT_PER_MXP
 	
 	return {
-		"bonus_attack_speed": chatter_data.upgrades["bonus_attack_speed"],
-		"before_value": BASE_ATTACK_SPEED + before_bonus,
-		"after_value": BASE_ATTACK_SPEED + chatter_data.upgrades["bonus_attack_speed"]
+		"attack_speed_percent": chatter_data.upgrades["attack_speed_percent"],
+		"before_value": (1.0 + before_percent) * 100,
+		"after_value": (1.0 + chatter_data.upgrades["attack_speed_percent"]) * 100
 	}

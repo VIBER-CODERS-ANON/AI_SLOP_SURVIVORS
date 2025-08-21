@@ -637,6 +637,62 @@ for result in results:
     targets_hit += 1
 ```
 
+## Buff System (Temporary Effects)
+
+### Overview
+Buffs are temporary modifications to entity stats that expire after a duration. The first implemented buff is the `!boost` command.
+
+### Implementation Pattern
+
+#### For Data-Oriented Enemies (V2)
+Buffs are tracked using parallel arrays in EnemyManager:
+- Cooldown tracking array (when last used)
+- Active buff value array (current bonus)
+- Expiry time array (when buff ends)
+
+#### Example: Boost Buff Implementation
+
+```gdscript
+# In EnemyManager
+var last_boost_times: PackedFloat32Array
+var temporary_speed_boosts: PackedFloat32Array  
+var boost_end_times: PackedFloat32Array
+
+const BOOST_COOLDOWN: float = 60.0
+const BOOST_FLAT_BONUS: float = 500.0
+const BOOST_DURATION: float = 1.0
+
+# In spawn_enemy - buff available on spawn
+last_boost_times[id] = -BOOST_COOLDOWN  
+
+# In movement calculation
+var effective_speed = move_speeds[id] + temporary_speed_boosts[id]
+
+# In physics process - check expiry
+if boost_end_times[id] > 0 and current_time >= boost_end_times[id]:
+    temporary_speed_boosts[id] = 0.0
+    boost_end_times[id] = 0.0
+```
+
+### Creating a Buff Ability
+
+```gdscript
+class_name BoostBuffAbility
+extends BaseAbility
+
+func _init() -> void:
+    ability_tags = ["Buff", "Duration", "Movement", "Speed", "Temporary", "Command"]
+    base_cooldown = 60.0  # Per-entity cooldown
+    resource_costs = {}  # Free command
+```
+
+### Key Considerations
+1. **Per-Entity Cooldowns**: Each entity tracks its own cooldown
+2. **Initialization**: Set cooldown to negative value for immediate availability
+3. **Visual Feedback**: Flash effects to indicate active buffs
+4. **Activity Feed**: Report buff usage for player awareness
+5. **Command Routing**: Use trigger_ prefix pattern for chat commands
+
 ## Examples
 
 ### Example 1: Fireball (Projectile)

@@ -246,6 +246,10 @@ func _get_killer_info() -> Dictionary:
 				killer_name = source.get_display_name()
 			elif source.has_meta("source_name"):
 				killer_name = source.get_meta("source_name")
+			elif source.get("source_name"):
+				killer_name = source.source_name
+			elif source is ExplosionEffect and source.source_name != "Explosion":
+				killer_name = source.source_name
 			else:
 				killer_name = source.name
 			
@@ -257,10 +261,16 @@ func _get_killer_info() -> Dictionary:
 				death_cause = source.get_attack_name()
 			elif source.has_meta("attack_name"):
 				death_cause = source.get_meta("attack_name")
-			elif source.name == "PoisonCloud":
+			elif source.name == "PoisonCloud" or source is PoisonCloud:
 				death_cause = "toxic fart cloud"
-			elif source.name == "ExplosionEffect":
+				# Don't use "PoisonCloud" as killer name if we haven't found a better one
+				if killer_name == "PoisonCloud":
+					killer_name = "Unknown"
+			elif source.name == "ExplosionEffect" or source is ExplosionEffect:
 				death_cause = "explosion"
+				# Don't use "Explosion" as killer name if we haven't found a better one
+				if killer_name == "Explosion" or killer_name == "ExplosionEffect":
+					killer_name = "Unknown"
 			elif source.name == "HeartProjectile":
 				death_cause = "heart projectile"
 			else:
