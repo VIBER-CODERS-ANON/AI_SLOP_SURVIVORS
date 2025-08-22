@@ -16,31 +16,51 @@ var has_exploded: bool = false
 var telegraph_timer: float = 0.0
 var applied_aoe_scale: float = 1.0  # Track AoE scale for this explosion
 
+# Tuning constants
+const EXPLOSION_PREWAIT_MAX: float = 0.4
+const EXPLOSION_WARN_DB: float = -18.0
+const EXPLOSION_IMPACT_DB: float = 0.0
+
+# Stagger telegraph start to reduce spam layering
+var _rng := RandomNumberGenerator.new()
+var _prewait: float = 0.0
+var _prewait_timer: float = 0.0
+var _waiting_before_telegraph: bool = true
+
 func _ready():
 	# Ensure explosion pauses properly
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	
-	# Start telegraph phase
+	# Start with a brief random wait to stagger many explosions
+	_prewait = _rng.randf_range(0.0, EXPLOSION_PREWAIT_MAX)
+	_waiting_before_telegraph = _prewait > 0.0
 	set_process(true)
 	z_index = 10  # Draw above most things
 	
 	# Set name for death messages
 	name = source_name
 	
-	# Play warning sound using AudioManager
-	if AudioManager.instance:
-		AudioManager.instance.play_sfx(
-			preload("res://audio/sfx_Retro_20250811_093319.mp3"),
-			global_position,
-			-10,  # Quieter
-			1.5   # Higher pitch for warning
-		)
+	# Defer warning sound until telegraph actually begins
 
 func _process(_delta):
+	# Handle optional pre-wait before telegraph starts
+	if _waiting_before_telegraph:
+		_prewait_timer += _delta
+		if _prewait_timer >= _prewait:
+			_waiting_before_telegraph = false
+			# Begin telegraph and play warning sound now
+			if AudioManager.instance:
+				AudioManager.instance.play_sfx(
+					preload("res://audio/sfx_Retro_20250811_093319.mp3"),
+					global_position,
+					EXPLOSION_WARN_DB,
+					1.5
+				)
+		return
+
 	if is_telegraphing:
 		telegraph_timer += _delta
 		queue_redraw()
-		
 		if telegraph_timer >= telegraph_time:
 			_explode()
 	else:
@@ -108,7 +128,7 @@ func _explode():
 		AudioManager.instance.play_sfx(
 			preload("res://audio/sfx_Retro_20250811_093319.mp3"),
 			global_position,
-			5  # Louder for impact
+			EXPLOSION_IMPACT_DB
 		)
 	
 	# Deal damage
