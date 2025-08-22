@@ -18,6 +18,7 @@ var boss_vote_ui: Node
 var monster_power_display: Node
 var mxp_display: Node
 var boss_timer_display: Node
+var boon_selection_was_visible_during_pause: bool = false
 
 # References (set by GameController)
 var player: Player
@@ -102,6 +103,7 @@ func _setup_pause_menu():
 	pause_menu = preload("res://ui/pause_menu.gd").new()
 	pause_menu.name = "PauseMenu"
 	pause_menu.visible = false
+	pause_menu.z_index = 2000  # Ensure it's above everything else
 	ui_layer.add_child(pause_menu)
 
 func _setup_boon_selection():
@@ -207,6 +209,13 @@ func show_pause_menu():
 	if pause_menu:
 		print("UICoordinator: Showing pause menu")
 		pause_menu.show_menu()
+		# While pause menu is visible, disable input on boon selection so it can't steal clicks
+		if boon_selection and boon_selection.visible and boon_selection.has_method("set_input_enabled"):
+			boon_selection.set_input_enabled(false)
+		# Also hide boon selection visuals so it doesn't render above the pause menu
+		if boon_selection and boon_selection.visible:
+			boon_selection_was_visible_during_pause = true
+			boon_selection.visible = false
 	else:
 		print("UICoordinator: ERROR - pause_menu is null!")
 
@@ -214,6 +223,12 @@ func hide_pause_menu():
 	if pause_menu:
 		print("UICoordinator: Hiding pause menu")
 		pause_menu.hide_menu()
+		# Restore boon selection visuals and re-enable input if it was visible before pause
+		if boon_selection and boon_selection_was_visible_during_pause:
+			boon_selection.visible = true
+			if boon_selection.has_method("set_input_enabled"):
+				boon_selection.set_input_enabled(true)
+			boon_selection_was_visible_during_pause = false
 	else:
 		print("UICoordinator: ERROR - pause_menu is null!")
 

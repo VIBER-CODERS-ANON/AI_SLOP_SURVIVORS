@@ -79,7 +79,7 @@ func _execute_entity_command(username: String, command_name: String):
 		return
 	
 	# Process through TicketSpawnManager which handles the new system
-	TicketSpawnManager.instance.execute_entity_command(username, command_name)
+	TicketSpawnManager.instance.execute_command_on_entities(username, command_name)
 
 func get_user_color(username: String) -> Color:
 	# Simple color generation based on username

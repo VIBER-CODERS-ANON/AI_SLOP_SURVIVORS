@@ -11,6 +11,12 @@ signal quit_requested
 var twitch_config_dialog: TwitchConfigDialog
 var current_twitch_channel: String = "quin69"
 
+# Responsive layout
+var menu_scroll: ScrollContainer
+
+# Rendering layer for pause menu (ensures above nameplates/UI)
+const PAUSE_LAYER: int = 30
+
 # Debug panel
 var debug_panel: Control
 var debug_panel_window: Control
@@ -30,9 +36,39 @@ var websocket_enabled_check: CheckBox
 var websocket_url_input: LineEdit
 var websocket_status_label: Label
 
+func _enter_tree() -> void:
+	_ensure_canvas_layer()
+
+func _ensure_canvas_layer() -> void:
+	var parent = get_parent()
+	while parent and not (parent is CanvasLayer):
+		parent = parent.get_parent()
+	if parent and parent is CanvasLayer:
+		(parent as CanvasLayer).layer = PAUSE_LAYER
+		return
+	var cl := CanvasLayer.new()
+	cl.name = "PauseLayer"
+	cl.layer = PAUSE_LAYER
+	get_tree().root.add_child(cl)
+	call_deferred("_reparent_to_layer", cl)
+
+func _reparent_to_layer(cl: CanvasLayer) -> void:
+	if get_parent():
+		get_parent().remove_child(self)
+	cl.add_child(self)
+	# CanvasLayer handles cross-layer ordering
+	top_level = false
+	z_as_relative = false
+
+
 func _ready():
 	# This UI should work during pause
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	
+	# Set Pause Canvas Layer if already parented
+	var p = get_parent()
+	if p is CanvasLayer:
+		(p as CanvasLayer).layer = PAUSE_LAYER
 	
 	# Load saved channel from settings
 	_load_saved_channel()
@@ -44,11 +80,6 @@ func _ready():
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	
-	# Ensure proper rendering above everything else
-	top_level = true
-	z_as_relative = false
-	z_index = 1000  # High but within valid range
-	
 	# Create dark background
 	var bg = ColorRect.new()
 	bg.color = Color(0, 0, 0, 0.85)
@@ -58,15 +89,26 @@ func _ready():
 	# Create main container with scroll
 	var scroll_container = ScrollContainer.new()
 	scroll_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	scroll_container.position = Vector2(-180, -280)  # Center the container
-	scroll_container.custom_minimum_size = Vector2(360, 560)
+	scroll_container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	scroll_container.follow_focus = true
 	add_child(scroll_container)
+	menu_scroll = scroll_container
+
+	# Initialize responsive sizing and recentering
+	_update_layout_for_viewport()
+	resized.connect(_update_layout_for_viewport)
 	
 	var main_container = VBoxContainer.new()
 	main_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_container.add_theme_constant_override("separation", 20)
-	scroll_container.add_child(main_container)
+
+	# Horizontally center the whole content stack without stretching children
+	var h_center = HBoxContainer.new()
+	h_center.alignment = BoxContainer.ALIGNMENT_CENTER
+	h_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_container.add_child(h_center)
+	h_center.add_child(main_container)
 	
 	# Title
 	var title = Label.new()
@@ -249,6 +291,24 @@ func _ready():
 	
 	# Start hidden
 	visible = false
+
+func _update_layout_for_viewport():
+	# Dynamically size and center the scroll container with sensible bounds
+	if not menu_scroll:
+		return
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var target_width: float = clamp(viewport_size.x * 0.35, 480.0, 640.0)
+	var target_height: float = clamp(viewport_size.y * 0.8, 520.0, 880.0)
+
+	menu_scroll.anchor_left = 0.5
+	menu_scroll.anchor_top = 0.5
+	menu_scroll.anchor_right = 0.5
+	menu_scroll.anchor_bottom = 0.5
+	menu_scroll.offset_left = -target_width / 2.0
+	menu_scroll.offset_right = target_width / 2.0
+	menu_scroll.offset_top = -target_height / 2.0
+	menu_scroll.offset_bottom = target_height / 2.0
+	menu_scroll.custom_minimum_size = Vector2(target_width, target_height)
 
 func _create_menu_button(text: String, color: Color) -> Button:
 	var button = Button.new()
