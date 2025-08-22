@@ -69,7 +69,7 @@ func _handle_evolve_command(username: String, message: String):
 	if evolution_name.is_empty():
 		var feed = game_controller.get_action_feed()
 		if feed:
-			feed.add_message("Available evolutions: !evolvewoodlandjoe (5 MXP), !evolvesuccubus (10 MXP)", Color(0.8, 0.8, 0))
+			feed.add_message("Available evolutions: !evolvewoodlandjoe (10 MXP), !evolvesuccubus (10 MXP)", Color(0.8, 0.8, 0))
 		return
 	
 	evolution_system.request_evolution(username, evolution_name)

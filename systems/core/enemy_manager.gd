@@ -68,6 +68,10 @@ var chatter_usernames: Array[String]  # Username for each entity
 var chatter_colors: PackedColorArray  # Color for each entity
 var rarity_types: PackedByteArray  # NPCRarity.Type per entity (COMMON/MAGIC/RARE/UNIQUE)
 
+# Ability system
+var ability_casting_flags: PackedByteArray  # 0 = not casting, 1 = casting (stops movement)
+var ability_cooldowns: PackedFloat32Array  # Cooldown timers for abilities
+
 # Damage feedback (white flash)
 var flash_timers: PackedFloat32Array  # Timer for white flash effect
 const FLASH_DURATION: float = 0.15  # Duration of white flash in seconds
@@ -208,6 +212,12 @@ func _initialize_arrays():
 	rarity_types.resize(initial_capacity)
 	flash_timers = PackedFloat32Array()
 	flash_timers.resize(initial_capacity)
+	
+	# Initialize ability arrays
+	ability_casting_flags = PackedByteArray()
+	ability_casting_flags.resize(initial_capacity)
+	ability_cooldowns = PackedFloat32Array()
+	ability_cooldowns.resize(initial_capacity)
 	
 	# Initialize free ID pool with initial capacity
 	free_ids.clear()
@@ -357,6 +367,11 @@ func _get_succubus_frame() -> Vector2i:
 func _physics_process(delta: float):
 	if get_tree().paused:
 		return
+	
+	# Update ability cooldowns ONLY for succubus (entity_type 1)
+	for i in range(ability_cooldowns.size()):
+		if i < entity_types.size() and entity_types[i] == 1 and ability_cooldowns[i] > 0:
+			ability_cooldowns[i] = max(0, ability_cooldowns[i] - delta)
 	
 	# Tick succubus animation
 	_succubus_anim_time += delta
@@ -668,6 +683,12 @@ func _integrate_positions_and_behaviors(delta: float):
 	for i in range(array_size):
 		if alive_flags[i] == 0:
 			continue
+		
+		# Stop movement ONLY if casting an ability (not for regular attacks)
+		if i < ability_casting_flags.size() and ability_casting_flags[i] > 0:
+			velocities[i] = Vector2.ZERO
+			continue
+		
 		positions[i] += velocities[i] * delta
 		any_moved = true
 		# Advance wander phase every frame for smooth strafe
@@ -971,8 +992,8 @@ func _flash_enemy_white(enemy_id: int):
 	flash_timers[enemy_id] = FLASH_DURATION
 
 func _drop_xp_orb(enemy_id: int):
-	# 50% chance to drop XP
-	if randf() > 0.5:
+	# 75% chance to drop XP (25% chance not to drop)
+	if randf() > 0.75:
 		return
 	
 	# Check if resource exists before trying to load
@@ -1051,6 +1072,8 @@ func _grow_arrays():
 	chatter_colors.resize(new_size)
 	rarity_types.resize(new_size)
 	flash_timers.resize(new_size)
+	ability_casting_flags.resize(new_size)
+	ability_cooldowns.resize(new_size)
 	
 	# Add new IDs to free pool
 	for i in range(current_size, new_size):

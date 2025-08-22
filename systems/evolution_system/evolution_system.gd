@@ -23,7 +23,7 @@ func _register_evolutions():
 	register_evolution("woodlandjoe", EvolutionConfig.new().setup(
 		"WoodlandJoe",
 		"res://entities/enemies/woodland_joe.tscn",
-		5,  # MXP cost
+		10,  # MXP cost (doubled from 5)
 		"A slow but unstoppable juggernaut",
 		["Boss", "Melee", "WoodlandJoe"]
 	))

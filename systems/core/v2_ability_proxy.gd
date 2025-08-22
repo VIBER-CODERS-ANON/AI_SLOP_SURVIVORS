@@ -74,18 +74,26 @@ func attach_ability(ability_class, target_data: Dictionary) -> bool:
 			if tracked_ability.has_signal("succ_ended"):
 				tracked_ability.succ_ended.connect(_restore_movement)
 		
+		# Also stop movement for abilities with windup (like heart projectile)
+		if tracked_ability.get("is_winding_up"):
+			_stop_movement()
+		
 		return true
 	
 	return false
 
 func _update_ability() -> void:
 	if tracked_ability:
-		# Check if still channeling
+		# Check if still channeling or winding up
 		var is_channeling = tracked_ability.get("is_channeling")
-		if is_channeling:
+		var is_winding_up = tracked_ability.get("is_winding_up")
+		if is_channeling or is_winding_up:
 			tracked_ability.update(0.016, self)
 		else:
 			_restore_movement()
+			# Clear casting flag in enemy_manager
+			if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.ability_casting_flags.size():
+				enemy_manager.ability_casting_flags[enemy_id] = 0
 			if process_timer:
 				process_timer.queue_free()
 				process_timer = null
@@ -110,6 +118,10 @@ func on_ability_executed(_ability) -> void:
 	pass  # Stub for ability system
 
 func _exit_tree() -> void:
+	# Always clear casting flag when proxy is freed
+	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.ability_casting_flags.size():
+		enemy_manager.ability_casting_flags[enemy_id] = 0
+	
 	# Cleanup
 	if tracked_ability:
 		if tracked_ability.has_method("on_removed"):

@@ -16,7 +16,11 @@ func _entity_ready():
 	super._entity_ready()
 	_setup_evolution()
 	
-	# AI always targets player now - no configuration needed
+	# Disable the AI movement controller since we handle movement through abilities
+	var ai_controller = get_node_or_null("AIMovementController")
+	if ai_controller:
+		ai_controller.set_physics_process(false)
+		ai_controller.set_process(false)
 
 func _setup_evolution():
 	# Set creature type and properties
@@ -37,12 +41,12 @@ func _setup_evolution():
 	current_health = max_health
 	move_speed = 180.0  # Faster than ground units
 	damage = 0.0  # No contact damage - succubus only damages through abilities
-	attack_range = 300.0  # Ability range for heart projectiles
-	attack_cooldown = 1.0
+	attack_range = 0.0  # Set to 0 to prevent BaseEnemy attack logic if it somehow runs
+	attack_cooldown = 999.0  # Very long cooldown to prevent any base attacks
 	
 	# Configure as ranged attacker
 	attack_type = AttackType.RANGED
-	preferred_attack_distance = 280.0  # Stay at comfortable shooting distance (doubled)
+	# No preferred_attack_distance - abilities handle their own positioning
 	
 	# Flying units have different collision
 	collision_layer = 2  # Enemies layer
@@ -69,6 +73,7 @@ func _setup_abilities():
 	if ability_manager:
 		# Heart Projectile ability
 		heart_projectile_ability = HeartProjectileAbility.new()
+		heart_projectile_ability.request_move_to_range.connect(_on_heart_request_move)
 		add_ability(heart_projectile_ability)
 		
 		# Suction ability
@@ -83,53 +88,98 @@ func _setup_abilities():
 signal succ_started(target: Node)
 signal succ_ended()
 
-# State for moving to succ range
-var succ_move_target: Node = null
-var succ_desired_range: float = 0.0
+# State for moving to ability range
+var ability_move_target: Node = null
+var ability_desired_range: float = 0.0
+var ability_type: String = ""  # Track which ability requested movement
 
 func _on_suction_request_move(target: Node, desired_range: float):
 	# Set up movement towards target for succ ability
-	succ_move_target = target
-	succ_desired_range = desired_range
+	ability_move_target = target
+	ability_desired_range = desired_range
+	ability_type = "suction"
 	print("💋 Moving to SUCC range: ", desired_range)
 
+func _on_heart_request_move(target: Node, desired_range: float):
+	# Set up movement towards target for heart projectile ability
+	ability_move_target = target
+	ability_desired_range = desired_range
+	ability_type = "heart"
+	print("💋 Moving to heart projectile range: ", desired_range)
+
+## Override to prevent BaseEnemy AI movement
+func _update_ai_target_position(_ai_controller):
+	# Do nothing - succubus handles its own movement through abilities
+	pass
+
 func _entity_physics_process(delta):
-	# No need to check channeling here - ability handles movement stop internally
+	# DO NOT call super - we handle everything ourselves to avoid BaseEnemy AI
 	
-	# Handle moving to succ range if requested
-	if succ_move_target and is_instance_valid(succ_move_target):
-		var distance = global_position.distance_to(succ_move_target.global_position)
+	# Find player if needed (from BaseEnemy)
+	if not target_player or not is_instance_valid(target_player):
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			target_player = players[0]
+	
+	# Update ability cooldowns
+	if suction_ability:
+		suction_ability.update(delta, self)
+	if heart_projectile_ability:
+		heart_projectile_ability.update(delta, self)
+	
+	# Check if any ability is casting/channeling - if so, don't move or attack
+	var is_casting = (suction_ability and suction_ability.is_channeling) or (heart_projectile_ability and heart_projectile_ability.is_winding_up)
+	if is_casting:
+		movement_velocity = Vector2.ZERO
+		velocity = movement_velocity + knockback_velocity
+		move_and_slide()
+		return  # Don't process movement or attacks while casting
+	
+	# Handle moving to ability range if requested
+	if ability_move_target and is_instance_valid(ability_move_target):
+		var distance = global_position.distance_to(ability_move_target.global_position)
 		
 		# Check if we're in range now
-		if distance <= succ_desired_range:
-			# Try to execute succ ability
-			if suction_ability and suction_ability.can_execute(self, SuctionAbility.create_target_data(succ_move_target)):
-				execute_ability("suction", SuctionAbility.create_target_data(succ_move_target))
+		if distance <= ability_desired_range:
+			# Try to execute the appropriate ability
+			match ability_type:
+				"suction":
+					if suction_ability and suction_ability.can_execute(self, SuctionAbility.create_target_data(ability_move_target)):
+						execute_ability("suction", SuctionAbility.create_target_data(ability_move_target))
+				"heart":
+					if heart_projectile_ability and heart_projectile_ability.can_execute(self, HeartProjectileAbility.create_target_data(ability_move_target)):
+						execute_ability("heart_projectile", HeartProjectileAbility.create_target_data(ability_move_target))
+			
 			# Clear movement request
-			succ_move_target = null
-			succ_desired_range = 0.0
+			ability_move_target = null
+			ability_desired_range = 0.0
+			ability_type = ""
 		else:
-			# Move towards target
-			var direction = (succ_move_target.global_position - global_position).normalized()
+			# Move towards target for ability
+			var direction = (ability_move_target.global_position - global_position).normalized()
 			movement_velocity = direction * move_speed
-			# Let base handle the actual movement
-			super._entity_physics_process(delta)
-			return
+	else:
+		# NO MOVEMENT when not moving for abilities - succubus is ranged only
+		movement_velocity = Vector2.ZERO
 	
-	# Let base enemy handle AI and movement
-	super._entity_physics_process(delta)
+	# Process knockback (from BaseEntity)
+	if knockback_velocity.length() > 0:
+		knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, 500 * delta)
+	
+	# Handle physics manually - NEVER call super to avoid base enemy chase behavior
+	velocity = movement_velocity + knockback_velocity
+	move_and_slide()
+	_face_movement_direction()
 	
 	# Check if we should attack (always when player exists)
-	if target_player and is_instance_valid(target_player):
-		var distance = global_position.distance_to(target_player.global_position)
-		
-		# Try to use Succ ability - will request movement if out of range
+	# Only check when not already moving for an ability
+	if not ability_move_target and target_player and is_instance_valid(target_player):
+		# Try to use Succ ability first (higher priority) - will request movement if out of range
 		if suction_ability and suction_ability.can_execute(self, SuctionAbility.create_target_data(target_player)):
 			execute_ability("suction", SuctionAbility.create_target_data(target_player))
-		# Otherwise shoot projectiles
+		# Otherwise try heart projectiles - will request movement if out of range
 		elif heart_projectile_ability and heart_projectile_ability.can_execute(self, HeartProjectileAbility.create_target_data(target_player)):
-			if distance <= heart_projectile_ability.base_range:
-				execute_ability("heart_projectile", HeartProjectileAbility.create_target_data(target_player))
+			execute_ability("heart_projectile", HeartProjectileAbility.create_target_data(target_player))
 	
 
 # Visual feedback on spawn (no more aggro state)

@@ -34,6 +34,7 @@ var damage_started: bool = false
 var sprite_animation_tween: Tween = null
 var beam_pulse_tween: Tween = null
 var channeling_entity: Node = null  # Store entity reference for cleanup
+var channeling_holder: Node = null  # Store holder (proxy) reference for V2 cleanup
 
 # Movement state (to make entity stand still during channel)
 var stored_velocity: Vector2 = Vector2.ZERO
@@ -99,6 +100,7 @@ func can_execute(holder, target_data) -> bool:
 	return true
 
 func _execute_ability(holder, target_data) -> void:
+	channeling_holder = holder  # Store holder for later cleanup
 	var entity = holder
 	if holder.has_method("get_entity_node"):
 		entity = holder.get_entity_node()
@@ -116,6 +118,14 @@ func _execute_ability(holder, target_data) -> void:
 		# The entity's AI should handle this and re-attempt the ability when in range
 		request_move_to_target.emit(target, succ_range * 0.9)  # Move to 90% of max range
 		# DO NOT start cooldown here - only start after successfully beginning channel
+		
+		# Clear casting flag for V2 enemies since we're not actually casting
+		if channeling_holder and channeling_holder.has_method("get_meta") and channeling_holder.get_meta("is_v2_proxy", false):
+			var proxy = channeling_holder
+			if proxy.enemy_manager and proxy.enemy_id >= 0 and proxy.enemy_id < proxy.enemy_manager.ability_casting_flags.size():
+				proxy.enemy_manager.ability_casting_flags[proxy.enemy_id] = 0
+			# Free the proxy since we're not using it
+			proxy.queue_free()
 		return
 	
 	# Start channeling
@@ -295,6 +305,12 @@ func _end_channel() -> void:
 	damage_delay_remaining = 0.0
 	damage_started = false
 	
+	# Clear casting flag for V2 enemies
+	if channeling_holder and channeling_holder.has_method("get_meta") and channeling_holder.get_meta("is_v2_proxy", false):
+		var proxy = channeling_holder
+		if proxy.enemy_manager and proxy.enemy_id >= 0 and proxy.enemy_id < proxy.enemy_manager.ability_casting_flags.size():
+			proxy.enemy_manager.ability_casting_flags[proxy.enemy_id] = 0
+	
 	# Restore entity movement (don't actually restore old velocity, just allow movement again)
 	# We clear the stored values but don't apply them back
 	stored_velocity = Vector2.ZERO
@@ -315,6 +331,7 @@ func _end_channel() -> void:
 			sprite.scale = Vector2(0.75, 0.75)
 	
 	channeling_entity = null  # Clear reference
+	channeling_holder = null  # Clear holder reference
 	
 	if beam_pulse_tween:
 		beam_pulse_tween.kill()

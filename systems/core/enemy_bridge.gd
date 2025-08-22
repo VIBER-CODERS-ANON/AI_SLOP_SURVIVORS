@@ -151,6 +151,10 @@ func _update_enemy_abilities(_delta: float):
 		if enemy_id >= enemy_manager.alive_flags.size() or enemy_manager.alive_flags[enemy_id] == 0:
 			continue
 		
+		# Skip if enemy is currently casting
+		if enemy_id < enemy_manager.ability_casting_flags.size() and enemy_manager.ability_casting_flags[enemy_id] > 0:
+			continue
+		
 		var abilities = enemy_abilities[enemy_id]
 		for ability in abilities:
 			# Check if ability is off cooldown
@@ -193,11 +197,11 @@ func _should_use_ability(enemy_id: int, ability: Dictionary) -> bool:
 			# Boosts should only happen via !boost command, not automatically
 			return false
 		"heart_projectile":
-			# Use projectile when in range
-			return distance < 300.0 and distance > 50.0
+			# Use projectile when in range (must match ability's base_range of 400)
+			return distance < 400.0 and distance > 50.0
 		"suction":
-			# Use suction when close
-			var in_range = distance < 150.0
+			# Use suction when close (must match ability's succ_range of 200)
+			var in_range = distance < 200.0
 			if in_range:
 				print("🔍 Enemy %d can use suction (distance: %.1f)" % [enemy_id, distance])
 			return in_range
@@ -304,45 +308,55 @@ func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
 	if not GameController.instance or not GameController.instance.player:
 		return
 	
-	var projectile_scene_path = config.get("visuals", {}).get("projectile_scene", "res://entities/enemies/abilities/heart_projectile.tscn")
-	if ResourceLoader.exists(projectile_scene_path):
-		var projectile = load(projectile_scene_path).instantiate()
-		projectile.global_position = pos
-		
-		# Aim at player
-		var player_pos = GameController.instance.player.global_position
-		var direction = (player_pos - pos).normalized()
-		var speed = config.get("speed", 200.0)
-		var damage = config.get("damage", 10.0)
-		
-		# Set up the projectile with proper parameters
-		if projectile.has_method("setup"):
-			# Create a dummy owner for attribution (since V2 enemies are data, not nodes)
-			var fake_owner = Node.new()
-			fake_owner.name = "V2Enemy_" + str(enemy_id)
-			fake_owner.set_meta("enemy_id", enemy_id)
-			fake_owner.set_meta("username", enemy_manager.chatter_usernames[enemy_id])
-			fake_owner.set_meta("attack_name", "heart projectile")
-			
-			# Add methods for death attribution
-			fake_owner.set_script(preload("res://systems/bridge/projectile_owner.gd"))
-			fake_owner.setup(enemy_id, enemy_manager.chatter_usernames[enemy_id])
-			
-			projectile.setup(direction, speed, damage, fake_owner)
-		else:
-			# Fallback: set properties directly
-			projectile.velocity = direction * speed
-			projectile.damage = damage
-		
-		GameController.instance.add_child(projectile)
+	# Check if enemy is already casting
+	if enemy_manager.ability_casting_flags[enemy_id] > 0:
+		return  # Already casting something
 	
-	print("💖 Enemy %d fired heart projectile" % enemy_id)
+	# Check cooldown ONLY for succubus (entity_type 1)
+	if enemy_manager.entity_types[enemy_id] == 1 and enemy_manager.ability_cooldowns[enemy_id] > 0:
+		return  # Still on cooldown
+	
+	# Use V2AbilityProxy for proper ability handling with windup
+	var proxy = V2AbilityProxy.new()
+	var username = ""
+	if enemy_id < enemy_manager.chatter_usernames.size():
+		username = enemy_manager.chatter_usernames[enemy_id]
+	proxy.setup(enemy_id, enemy_manager, username)
+	get_tree().current_scene.add_child(proxy)
+	proxy.global_position = pos
+	
+	# Create target data for ability
+	var target_data = {
+		"target_enemy": GameController.instance.player,
+		"target_position": GameController.instance.player.global_position
+	}
+	
+	# Mark enemy as casting
+	enemy_manager.ability_casting_flags[enemy_id] = 1
+	
+	# Attach heart projectile ability - this will handle windup, animation, etc
+	if proxy.attach_ability(HeartProjectileAbility, target_data):
+		print("💖 Enemy %d starting heart projectile cast" % enemy_id)
+		# Set cooldown ONLY for succubus (entity_type 1)
+		if enemy_manager.entity_types[enemy_id] == 1:
+			enemy_manager.ability_cooldowns[enemy_id] = 1.0  # 1 second cooldown after cast
+	else:
+		# Failed to attach ability, clear casting flag
+		enemy_manager.ability_casting_flags[enemy_id] = 0
+		proxy.queue_free()
 
 func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
 	print("🌪️ Starting suction ability for enemy %d" % enemy_id)
 	
 	if not GameController.instance or not GameController.instance.player:
 		return
+	
+	# Check if already casting
+	if enemy_manager.ability_casting_flags[enemy_id] > 0:
+		return
+	
+	# Mark as casting for suction
+	enemy_manager.ability_casting_flags[enemy_id] = 1
 	
 	# Get username for attribution
 	var username = ""

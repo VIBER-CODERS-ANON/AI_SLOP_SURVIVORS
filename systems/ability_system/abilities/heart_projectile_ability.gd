@@ -13,7 +13,7 @@ extends BaseAbility
 # Visual/Audio
 @export var shoot_sound_path: String = "res://audio/sfx_quick_20250814_104353.mp3"
 @export var kiss_sound_path: String = "res://BespokeAssetSources/Succubus/succAudioLoop.mp3"
-@export var windup_duration: float = 0.3  # 300ms telegraph
+@export var windup_duration: float = 1.0  # 1 second stand still before firing
 
 # Cached resources
 var projectile_scene: PackedScene
@@ -23,6 +23,10 @@ var kiss_sound: AudioStream
 # Animation state
 var is_winding_up: bool = false
 var original_sprite_scale: Vector2 = Vector2.ONE  # Store original scale
+var casting_entity: Node = null  # Track entity during cast
+
+# Movement state for getting to max range
+signal request_move_to_range(target: Node, desired_range: float)
 
 func _init() -> void:
 	# Set base properties
@@ -33,12 +37,12 @@ func _init() -> void:
 	ability_type = 0  # ACTIVE
 	
 	# Ability costs and cooldown
-	base_cooldown = 2.0
+	base_cooldown = 1.0  # 1 second cooldown
 	resource_costs = {}  # No resource cost
 	
 	# Targeting - requires a target enemy
 	targeting_type = 1  # TARGET_ENEMY (shoots at target)
-	base_range = 300.0  # Max shooting range (doubled for more aggressive ranged attacks)
+	base_range = 400.0  # Max shooting range
 
 func on_added(holder) -> void:
 	super.on_added(holder)
@@ -78,15 +82,8 @@ func can_execute(holder, target_data) -> bool:
 	if not is_instance_valid(target):
 		return false
 	
-	# Check range
-	var entity = holder
-	if holder.has_method("get_entity_node"):
-		entity = holder.get_entity_node()
-	
-	if entity:
-		var distance = entity.global_position.distance_to(target.global_position)
-		if distance > base_range:
-			return false
+	# Don't check range here - we'll move into range if needed
+	# Range check moved to the actual execution
 	
 	return true
 
@@ -101,11 +98,39 @@ func _execute_ability(holder, target_data) -> void:
 	if not is_instance_valid(target):
 		return
 	
+	# Check if we're in range
+	var distance = entity.global_position.distance_to(target.global_position)
+	if distance > base_range:
+		# Request move to MAX range (not 90% like SUCC)
+		# We want to attack from maximum distance
+		request_move_to_range.emit(target, base_range * 0.95)  # 95% to ensure we're safely in range
+		# DO NOT start cooldown when requesting movement
+		
+		# Clear casting flag for V2 enemies since we're not actually casting
+		if holder.has_method("get_meta") and holder.get_meta("is_v2_proxy", false):
+			var proxy = holder
+			if proxy.enemy_manager and proxy.enemy_id >= 0 and proxy.enemy_id < proxy.enemy_manager.ability_casting_flags.size():
+				proxy.enemy_manager.ability_casting_flags[proxy.enemy_id] = 0
+			# Free the proxy since we're not using it
+			proxy.queue_free()
+		return
+	
+	# We're in range, proceed with attack
+	# Start cooldown IMMEDIATELY to prevent spam
+	_start_cooldown(holder)
+	
 	# Start windup animation
 	_start_windup_animation(entity, holder, target_data)
 
 func _start_windup_animation(entity: Node, holder, target_data) -> void:
 	is_winding_up = true
+	casting_entity = entity
+	
+	# Stop entity movement during cast
+	if "velocity" in entity:
+		entity.velocity = Vector2.ZERO
+	if "movement_velocity" in entity:
+		entity.movement_velocity = Vector2.ZERO
 	
 	# Play kiss sound immediately
 	if kiss_sound and AudioManager.instance:
@@ -116,35 +141,53 @@ func _start_windup_animation(entity: Node, holder, target_data) -> void:
 			1.0
 		)
 	
-	# Get sprite for animation
+	# Get sprite for animation - stand still for 1 second with visual indicator
 	var sprite = entity.get_node_or_null("Sprite")
 	if sprite:
-		# Ensure we reset to original scale first to prevent compounding
+		# Reset to original scale
 		sprite.scale = original_sprite_scale
-		sprite.modulate = Color.WHITE
 		
-		# Create pronounced kiss animation - stretch only, pink only at the end
+		# Simple charging animation over 1 second
 		var tween = entity.create_tween()
 		
-		# Dramatic stretch animation - like blowing a kiss (using stored original scale)
-		# First stretch horizontally (pucker up)
-		tween.tween_property(sprite, "scale", Vector2(original_sprite_scale.x * 0.8, original_sprite_scale.y * 1.3), windup_duration * 0.4)
-		# Then stretch vertically (kiss)
-		tween.tween_property(sprite, "scale", Vector2(original_sprite_scale.x * 1.4, original_sprite_scale.y * 0.9), windup_duration * 0.4)
-		
-		# Brief pink flash only at the very end (right before projectile fires)
-		tween.tween_property(sprite, "scale", original_sprite_scale, windup_duration * 0.15)
-		tween.parallel().tween_property(sprite, "modulate", Color(1.6, 0.4, 1.2), windup_duration * 0.05)  # Quick pink flash
-		tween.parallel().tween_property(sprite, "modulate", Color.WHITE, windup_duration * 0.1)  # Quick fade back
+		# Gradual stretch horizontally over 0.8 seconds (charging up)
+		tween.tween_property(sprite, "scale:x", original_sprite_scale.x * 1.3, windup_duration * 0.8)
+		# Quick release animation in last 0.2 seconds
+		tween.tween_property(sprite, "scale:x", original_sprite_scale.x * 1.5, windup_duration * 0.1)
+		tween.tween_property(sprite, "scale:x", original_sprite_scale.x, windup_duration * 0.1)
 	
-	# Wait for windup duration then fire projectile
+	# Wait for full 1 second windup duration then fire projectile
 	await entity.get_tree().create_timer(windup_duration).timeout
 	
 	# Fire the actual projectile
 	_fire_projectile(entity, holder, target_data)
 
+func update(delta: float, holder) -> void:
+	super.update(delta, holder)
+	
+	# FORCE entity to be completely still during windup
+	if is_winding_up and casting_entity and is_instance_valid(casting_entity):
+		# Stop ALL movement
+		casting_entity.velocity = Vector2.ZERO
+		if "movement_velocity" in casting_entity:
+			casting_entity.movement_velocity = Vector2.ZERO
+		# Ensure entity doesn't move
+		casting_entity.set_physics_process(false)
+
 func _fire_projectile(entity: Node, holder, target_data) -> void:
 	is_winding_up = false
+	
+	# Re-enable physics on the entity
+	if casting_entity and is_instance_valid(casting_entity):
+		casting_entity.set_physics_process(true)
+	
+	casting_entity = null
+	
+	# Clear casting flag for V2 enemies
+	if holder.has_method("get_meta") and holder.get_meta("is_v2_proxy", false):
+		var proxy = holder
+		if proxy.enemy_manager and proxy.enemy_id >= 0 and proxy.enemy_id < proxy.enemy_manager.ability_casting_flags.size():
+			proxy.enemy_manager.ability_casting_flags[proxy.enemy_id] = 0
 	
 	var target = target_data.target_enemy
 	if not is_instance_valid(target):
@@ -176,12 +219,13 @@ func _fire_projectile(entity: Node, holder, target_data) -> void:
 		if "lifetime" in projectile:
 			projectile.lifetime = projectile_lifetime
 	
-	# Start cooldown
-	_start_cooldown(holder)
-	
 	# Notify holder
 	holder.on_ability_executed(self)
 	executed.emit(target_data)
+	
+	# For V2 proxy, free it after projectile is fired (non-channeled ability)
+	if holder.has_method("get_meta") and holder.get_meta("is_v2_proxy", false):
+		holder.queue_free()
 
 ## Helper to create target data for this ability
 static func create_target_data(enemy: Node) -> Dictionary:
