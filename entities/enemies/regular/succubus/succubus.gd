@@ -94,12 +94,7 @@ func _on_suction_request_move(target: Node, desired_range: float):
 	print("💋 Moving to SUCC range: ", desired_range)
 
 func _entity_physics_process(delta):
-	# Stop movement during channeling
-	if suction_ability and suction_ability.is_channeling:
-		movement_velocity = Vector2.ZERO
-		# Still need to call super for other physics updates
-		super._entity_physics_process(delta)
-		return
+	# No need to check channeling here - ability handles movement stop internally
 	
 	# Handle moving to succ range if requested
 	if succ_move_target and is_instance_valid(succ_move_target):
@@ -130,11 +125,10 @@ func _entity_physics_process(delta):
 		
 		# Try to use Succ ability - will request movement if out of range
 		if suction_ability and suction_ability.can_execute(self, SuctionAbility.create_target_data(target_player)):
-			if not suction_ability.is_channeling:
-				execute_ability("suction", SuctionAbility.create_target_data(target_player))
+			execute_ability("suction", SuctionAbility.create_target_data(target_player))
 		# Otherwise shoot projectiles
 		elif heart_projectile_ability and heart_projectile_ability.can_execute(self, HeartProjectileAbility.create_target_data(target_player)):
-			if distance <= heart_projectile_ability.base_range and not (suction_ability and suction_ability.is_channeling):
+			if distance <= heart_projectile_ability.base_range:
 				execute_ability("heart_projectile", HeartProjectileAbility.create_target_data(target_player))
 	
 

@@ -8,7 +8,7 @@ extends BaseAbility
 @export var damage_total: float = 18.75  # Total damage over duration (nerfed by 0.5)
 @export var channel_duration: float = 3.0
 @export var succ_range: float = 200.0
-@export var break_distance_multiplier: float = 2.0  # Channel breaks at range * multiplier
+@export var break_distance_multiplier: float = 1.2  # Channel breaks at range * multiplier
 
 # Audio
 @export var succ_audio_path: String = "res://BespokeAssetSources/Succubus/succAudioLoop.mp3"
@@ -35,6 +35,10 @@ var sprite_animation_tween: Tween = null
 var beam_pulse_tween: Tween = null
 var channeling_entity: Node = null  # Store entity reference for cleanup
 
+# Movement state (to make entity stand still during channel)
+var stored_velocity: Vector2 = Vector2.ZERO
+var stored_movement_velocity: Vector2 = Vector2.ZERO
+
 signal succ_started(target: Node)
 signal succ_ended()
 signal request_move_to_target(target: Node, desired_range: float)
@@ -48,7 +52,7 @@ func _init() -> void:
 	ability_type = 0  # ACTIVE
 	
 	# Ability costs and cooldown
-	base_cooldown = 20.0  # Long cooldown
+	base_cooldown = 30.0  # 30 second cooldown per entity
 	resource_costs = {}  # No resource cost
 	
 	# Targeting - requires target enemy
@@ -111,6 +115,7 @@ func _execute_ability(holder, target_data) -> void:
 		# Request move to range
 		# The entity's AI should handle this and re-attempt the ability when in range
 		request_move_to_target.emit(target, succ_range * 0.9)  # Move to 90% of max range
+		# DO NOT start cooldown here - only start after successfully beginning channel
 		return
 	
 	# Start channeling
@@ -121,6 +126,14 @@ func _execute_ability(holder, target_data) -> void:
 	damage_delay_remaining = damage_delay
 	damage_started = false
 	channeling_entity = entity  # Store entity reference for cleanup
+	
+	# Stop entity movement during channel
+	if "velocity" in entity:
+		stored_velocity = entity.velocity
+		entity.velocity = Vector2.ZERO
+	if "movement_velocity" in entity:
+		stored_movement_velocity = entity.movement_velocity
+		entity.movement_velocity = Vector2.ZERO
 	
 	# Succubus started SUCC (800ms before damage)
 	
@@ -155,6 +168,12 @@ func _update_channel(delta: float, holder) -> void:
 	if not entity:
 		_end_channel()
 		return
+	
+	# Keep entity still during channel
+	if "velocity" in entity:
+		entity.velocity = Vector2.ZERO
+	if "movement_velocity" in entity:
+		entity.movement_velocity = Vector2.ZERO
 	
 	# Check if target is still valid
 	if not channel_target or not is_instance_valid(channel_target):
@@ -275,6 +294,11 @@ func _end_channel() -> void:
 	damage_accumulator = 0.0
 	damage_delay_remaining = 0.0
 	damage_started = false
+	
+	# Restore entity movement (don't actually restore old velocity, just allow movement again)
+	# We clear the stored values but don't apply them back
+	stored_velocity = Vector2.ZERO
+	stored_movement_velocity = Vector2.ZERO
 	
 	# Stop animations and reset sprite appearance
 	if sprite_animation_tween:
