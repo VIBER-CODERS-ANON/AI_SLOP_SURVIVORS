@@ -17,6 +17,7 @@ var _send_queue: Array[String] = []
 var _last_state: int = 0
 var _last_connect_attempt: float = 0.0
 const RECONNECT_INTERVAL := 3.0
+var _last_game_controller_instance = null
 
 func _ready():
 	instance = self
@@ -32,6 +33,13 @@ func _ready():
 		enabled = auto_enable
 		url = default_url
 		print("🔌 WebSocketManager: Using defaults - enabled: %s, url: %s" % [enabled, url])
+	
+	# Connect to scene tree changes to detect reloads
+	if not get_tree().is_connected("tree_changed", Callable(self, "_on_scene_tree_changed")):
+		get_tree().tree_changed.connect(_on_scene_tree_changed)
+	
+	# Initialize GameController tracking
+	_last_game_controller_instance = GameController.instance
 	
 	# Wait a bit for other systems to initialize, then try to connect and wire signals
 	print("🔌 WebSocketManager: Waiting 2 seconds for other systems...")
@@ -495,3 +503,18 @@ func _on_pause_state_changed(is_paused: bool) -> void:
 		send_event("game_resumed", {
 			"timestamp": Time.get_unix_time_from_system()
 		})
+
+# Scene reload detection
+func _on_scene_tree_changed() -> void:
+	# Check if GameController instance has changed (indicating a scene reload)
+	if GameController.instance != _last_game_controller_instance:
+		print("🔄 WebSocketManager: Scene reload detected - GameController instance changed")
+		_last_game_controller_instance = GameController.instance
+		
+		# Re-wire signals after a short delay to allow systems to initialize
+		await get_tree().create_timer(1.0).timeout
+		print("🔄 WebSocketManager: Re-wiring signals after scene reload...")
+		_try_wire_signals()
+		
+		# Send new session start event
+		call_deferred("notify_session_start")
