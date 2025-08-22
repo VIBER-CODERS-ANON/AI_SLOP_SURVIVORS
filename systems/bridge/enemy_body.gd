@@ -23,6 +23,11 @@ func take_damage(damage_amount: float, attacker: Node = null, _weapon_tags: Arra
 	var mgr = _get_manager()
 	if enemy_id < 0 or mgr == null:
 		return
+	
+	# Critical fix: Check if enemy is still alive before processing damage
+	if enemy_id >= mgr.alive_flags.size() or mgr.alive_flags[enemy_id] == 0:
+		return  # Enemy is already dead, ignore damage
+	
 	var killer_name: String = ""
 	if attacker:
 		if attacker.has_meta("chatter_username"):
