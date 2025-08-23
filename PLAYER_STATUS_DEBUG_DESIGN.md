@@ -7,6 +7,7 @@ This document outlines the design for a comprehensive player status display syst
 ## Current State Analysis
 
 ### What Exists Now
+
 - **PlayerStatsDisplay**: Basic health/mana bars only
 - **XP Bar**: Experience progression display
 - **MXP Display**: Monster XP currency from Twitch
@@ -14,6 +15,7 @@ This document outlines the design for a comprehensive player status display syst
 - **Player class**: Tracks all bonus stats but doesn't display them
 
 ### What's Missing
+
 - **Active boons display** with effects and durations
 - **Stat breakdown** showing base vs modified values
 - **Real-time stat calculations** and tooltips
@@ -23,6 +25,7 @@ This document outlines the design for a comprehensive player status display syst
 ## Proposed Player Status Debug Panel
 
 ### Panel Location
+
 The player status panel will be integrated into the main debug UI as a collapsible section:
 
 ```
@@ -163,17 +166,17 @@ func _setup_tabs():
     # Create tabbed interface
     var tab_container = TabContainer.new()
     add_child(tab_container)
-    
+
     # Core Stats tab
     core_stats_tab = _create_core_stats_tab()
     tab_container.add_child(core_stats_tab)
     core_stats_tab.name = "Core Stats"
-    
+
     # Active Boons tab
     active_boons_tab = _create_active_boons_tab()
     tab_container.add_child(active_boons_tab)
     active_boons_tab.name = "Active Boons"
-    
+
     # Modifiers tab
     modifiers_tab = _create_modifiers_tab()
     tab_container.add_child(modifiers_tab)
@@ -189,7 +192,7 @@ func _connect_to_player():
 func update_display():
     if not player_ref:
         return
-    
+
     _update_core_stats()
     _update_active_boons()
     _update_modifiers()
@@ -202,10 +205,10 @@ func _create_core_stats_tab() -> Control:
     var scroll = ScrollContainer.new()
     var container = VBoxContainer.new()
     scroll.add_child(container)
-    
+
     # Health section
     var health_section = _create_stat_section(
-        "Health", 
+        "Health",
         func(): return "%d/%d (%d + %d bonus)" % [
             player_ref.current_health,
             player_ref.max_health,
@@ -214,7 +217,7 @@ func _create_core_stats_tab() -> Control:
         ]
     )
     container.add_child(health_section)
-    
+
     # Add manipulation controls
     var health_controls = HBoxContainer.new()
     health_input = LineEdit.new()
@@ -222,23 +225,23 @@ func _create_core_stats_tab() -> Control:
     var set_health_btn = Button.new()
     set_health_btn.text = "Set"
     set_health_btn.pressed.connect(_set_player_health)
-    
+
     var damage_btn = Button.new()
     damage_btn.text = "Damage 10"
     damage_btn.pressed.connect(func(): player_ref.take_damage(10, "debug"))
-    
+
     var heal_btn = Button.new()
     heal_btn.text = "Heal Full"
     heal_btn.pressed.connect(func(): player_ref.current_health = player_ref.max_health)
-    
+
     health_controls.add_child(health_input)
     health_controls.add_child(set_health_btn)
     health_controls.add_child(damage_btn)
     health_controls.add_child(heal_btn)
     container.add_child(health_controls)
-    
+
     # Similar sections for other stats...
-    
+
     return scroll
 
 func _set_player_health():
@@ -255,20 +258,20 @@ func _create_active_boons_tab() -> Control:
     var scroll = ScrollContainer.new()
     active_boons_list = VBoxContainer.new()
     scroll.add_child(active_boons_list)
-    
+
     # Add controls at bottom
     var controls = HBoxContainer.new()
     add_boon_dropdown = OptionButton.new()
     add_boon_dropdown.text = "Add Boon"
-    
+
     var add_btn = Button.new()
     add_btn.text = "Add Selected"
     add_btn.pressed.connect(_add_selected_boon)
-    
+
     controls.add_child(add_boon_dropdown)
     controls.add_child(add_btn)
     active_boons_list.add_child(controls)
-    
+
     return scroll
 
 func _update_active_boons():
@@ -276,10 +279,10 @@ func _update_active_boons():
     for child in active_boons_list.get_children():
         if child.has_meta("is_boon_display"):
             child.queue_free()
-    
+
     # Get player's active boons (this would require extending the Player class)
     var active_boons = player_ref.get_active_boons() # New method needed
-    
+
     for boon_data in active_boons:
         var boon_display = _create_boon_display(boon_data)
         active_boons_list.add_child(boon_display)
@@ -288,42 +291,42 @@ func _update_active_boons():
 func _create_boon_display(boon_data: Dictionary) -> Control:
     var container = PanelContainer.new()
     container.set_meta("is_boon_display", true)
-    
+
     var content = VBoxContainer.new()
     container.add_child(content)
-    
+
     # Boon name and rarity
     var header = HBoxContainer.new()
     var rarity_icon = Label.new()
     rarity_icon.text = _get_rarity_icon(boon_data.rarity)
-    
+
     var name_label = Label.new()
     name_label.text = "[%s] %s" % [boon_data.rarity, boon_data.boon.display_name]
     name_label.modulate = _get_rarity_color(boon_data.rarity)
-    
+
     header.add_child(rarity_icon)
     header.add_child(name_label)
     content.add_child(header)
-    
+
     # Effect description
     var desc_label = Label.new()
     desc_label.text = boon_data.boon.get_debug_description()
     desc_label.add_theme_font_size_override("font_size", 14)
     content.add_child(desc_label)
-    
+
     # Controls
     var controls = HBoxContainer.new()
     var remove_btn = Button.new()
     remove_btn.text = "Remove"
     remove_btn.pressed.connect(_remove_boon.bind(boon_data.boon.id))
     controls.add_child(remove_btn)
-    
+
     if boon_data.boon.can_stack:
         var add_stack_btn = Button.new()
         add_stack_btn.text = "Add Stack"
         add_stack_btn.pressed.connect(_add_boon_stack.bind(boon_data.boon.id))
         controls.add_child(add_stack_btn)
-    
+
     content.add_child(controls)
     return container
 ```
@@ -335,38 +338,38 @@ func _create_modifiers_tab() -> Control:
     var scroll = ScrollContainer.new()
     var container = VBoxContainer.new()
     scroll.add_child(container)
-    
+
     # Real-time calculation displays
     var calculations_label = RichTextLabel.new()
     calculations_label.custom_minimum_size.y = 400
     calculations_label.fit_content = true
     container.add_child(calculations_label)
-    
+
     # Store reference for updates
     set_meta("calculations_display", calculations_label)
-    
+
     return scroll
 
 func _update_modifiers():
     var display = get_meta("calculations_display") as RichTextLabel
     if not display or not player_ref:
         return
-    
+
     var text = ""
-    
+
     # Move Speed breakdown
     text += "[b]Move Speed (%d total):[/b]\n" % _get_total_move_speed()
     text += "• Base: %d\n" % player_ref.base_move_speed
     text += "• Boon bonuses: +%d\n" % player_ref.bonus_move_speed
     text += "• Equipment: +0\n"
     text += "• Temporary effects: +0\n\n"
-    
+
     # Damage calculation
     var base_weapon_damage = _get_base_weapon_damage()
     var total_flat_bonus = player_ref.bonus_damage
     var total_multiplier = player_ref.bonus_damage_multiplier
     var final_damage = (base_weapon_damage + total_flat_bonus) * total_multiplier
-    
+
     text += "[b]Damage Calculation:[/b]\n"
     text += "• Base weapon: %d\n" % base_weapon_damage
     text += "• Flat bonuses: +%d\n" % total_flat_bonus
@@ -374,24 +377,24 @@ func _update_modifiers():
     text += "• Final: (%d + %d) × %.1f = %d damage\n\n" % [
         base_weapon_damage, total_flat_bonus, total_multiplier, final_damage
     ]
-    
+
     # Critical hit calculations
     var crit_chance = player_ref.bonus_crit_chance
     var crit_multiplier = 2.0 + player_ref.bonus_crit_multiplier
     var expected_dps = final_damage * (1.0 + (crit_chance / 100.0) * (crit_multiplier - 1.0))
-    
+
     text += "[b]Critical Hits:[/b]\n"
     text += "• Chance: %.1f%% (0%% base + %.1f%% boons)\n" % [crit_chance, crit_chance]
     text += "• Multiplier: %.1fx (2.0x base + %.1fx boons)\n" % [crit_multiplier, player_ref.bonus_crit_multiplier]
     text += "• Expected DPS: %.1f\n\n" % expected_dps
-    
+
     # AoE calculations
     text += "[b]Area of Effect:[/b]\n"
     text += "• Base: 1.0x (100%%)\n"
     text += "• Boon multipliers: %.1fx (%.0f%%)\n" % [player_ref.area_of_effect, player_ref.area_of_effect * 100]
     text += "• Equipment: 1.0x\n"
     text += "• Final: %.1fx area\n" % player_ref.area_of_effect
-    
+
     display.text = text
 ```
 
@@ -405,7 +408,7 @@ var player_status_panel: PlayerStatusDebugPanel
 
 func _create_debug_ui():
     # ... existing debug UI creation ...
-    
+
     # Add player status section
     var player_section = _create_collapsible_section("Player Status")
     player_status_panel = PlayerStatusDebugPanel.new()
@@ -414,7 +417,7 @@ func _create_debug_ui():
 
 func _update_debug_display():
     # ... existing updates ...
-    
+
     # Update player status
     if player_status_panel:
         player_status_panel.update_display()
@@ -459,18 +462,21 @@ func get_debug_stat_breakdown() -> Dictionary:
 ## Benefits of This System
 
 ### For Development
+
 - **Complete stat visibility** during testing
 - **Real-time boon experimentation** without save/load
 - **Stat calculation validation** to ensure formulas work correctly
 - **Player progression testing** at any level/configuration
 
 ### For Debugging
+
 - **Boon interaction testing** - see exactly how effects stack
 - **Balance validation** - check if stat values are reasonable
 - **Edge case identification** - test extreme stat combinations
 - **Performance impact** - monitor complex calculations
 
 ### For Game Design
+
 - **Boon effectiveness analysis** - see actual impact of each boon
 - **Progression curve validation** - test player power at different levels
 - **Build experimentation** - quickly test different character builds
@@ -478,22 +484,26 @@ func get_debug_stat_breakdown() -> Dictionary:
 
 ## Implementation Timeline
 
-### Week 1: Foundation
+### Foundation
+
 - Create `PlayerStatusDebugPanel` class
 - Implement Core Stats tab
 - Basic stat display and manipulation
 
-### Week 2: Boon System
+### Boon System
+
 - Implement Active Boons tab
 - Add boon addition/removal functionality
 - Integrate with existing boon system
 
-### Week 3: Calculations
+### Calculations
+
 - Implement Modifiers tab
 - Add real-time calculation displays
 - Optimize update performance
 
-### Week 4: Integration & Polish
+### Integration & Polish
+
 - Integrate with main debug system
 - Add keyboard shortcuts
 - Performance optimization and testing
