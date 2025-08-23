@@ -1,6 +1,6 @@
 ## AI Slop Survivors Rebuild
 
-Preface: I deleted all source code so you wouldn't have to spend time figuring that out. I did my best to not touch any of your project settings nor assets.
+Preface: I deleted all source code so you wouldn't have to spend time figuring that out. I did my best to not touch any of your project settings nor assets. I never saw how you had godot configured so couldn't verify parity on my end. Worse case you reset your godot settings again which I know is a pain.
 
 If you're reading this from Github and don't know how to access this locally do this:
   - commit/discard any changes in your current branch
