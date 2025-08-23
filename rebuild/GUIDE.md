@@ -18,20 +18,20 @@ This rebuild works best when you focus on exactly one system at a time, in small
 
 ### Recommended order (links)
 
-- [[01_Core Loop]]
-- [[02_Enemy System]]
-- [[03_Twitch Integration]]
-- [[04_Command System]]
-- [[05_Spawning & Tickets]]
-- [[06_MXP & Upgrades]]
-- [[07_Evolution System]]
-- [[08_Boss System]]
-- [[09_Ability System]]
-- [[10_UI System]]
-- [[11_Performance & Rendering]]
-- [[12_Debug & Cheats]]
-- [[13_Data & Config]]
-- Finally: [[14_Testing Strategy]]
+- [01_Core Loop](01_Core%20Loop.md)
+- [02_Enemy System](02_Enemy%20System.md)
+- [03_Twitch Integration](03_Twitch%20Integration.md)
+- [04_Command System](04_Command%20System.md)
+- [05_Spawning & Tickets](05_Spawning%20%26%20Tickets.md)
+- [06_MXP & Upgrades](06_MXP%20%26%20Upgrades.md)
+- [07_Evolution System](07_Evolution%20System.md)
+- [08_Boss System](08_Boss%20System.md)
+- [09_Ability System](09_Ability%20System.md)
+- [10_UI System](10_UI%20System.md)
+- [11_Performance & Rendering](11_Performance%20%26%20Rendering.md)
+- [12_Debug & Cheats](12_Debug%20%26%20Cheats.md)
+- [13_Data & Config](13_Data%20%26%20Config.md)
+- Finally: [14_Testing Strategy](14_Testing%20Strategy.md)
 
 Notes:
 - Keep each change small. Validate before moving on.

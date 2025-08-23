@@ -12,14 +12,14 @@ If you're reading this from Github and don't know how to access this locally do 
 
 This Obsidian vault is a non-technical, system-by-system blueprint to recreate the game from scratch. Open the `rebuild/` folder in Obsidian and then:
 
-- **Start here**: [[Systems Index]] and [[GUIDE]]
+- **Start here**: [Systems Index](Systems%20Index.md) and [GUIDE](GUIDE.md)
 - **Goal**: You can rebuild the game one system at a time using these notes.
 
 ## Conventions
 
 - **System page layout**: Purpose → Done-when checklist → Validation steps → Isolated testing options.
 - **Validation Gate**: A manual check to confirm a step is working before moving on.
-- **Links**: Obsidian-style links like [[03_Twitch Integration]].
+- **Links**: Obsidian-style links like [03_Twitch Integration](03_Twitch%20Integration.md).
 - **Scope**: These docs capture behavior, not implementation details. You will "code" each step with the prompts provided and verify functionality.
 
 ## High-level Summary
@@ -29,4 +29,4 @@ This Obsidian vault is a non-technical, system-by-system blueprint to recreate t
 - Modular ability framework: abilities are pluggable resources; any entity can use any ability.
 - Performance-first: batched updates, object pooling, spatial grid, and GPU instancing.
 
-See [[Architecture Overview]] for an accessible overview.
+See [Architecture Overview](Architecture%20Overview.md) for an accessible overview.
