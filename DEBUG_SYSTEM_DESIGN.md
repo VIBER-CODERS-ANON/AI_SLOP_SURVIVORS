@@ -14,16 +14,19 @@ This document outlines a comprehensive debugging system and architectural improv
 ### Problems to Solve
 
 1. **Hardcoded Enemy Definitions**
+
    - Enemy stats scattered across multiple files
    - Adding new enemies requires code changes in multiple places
    - No central configuration system
 
 2. **Dual Spawning Systems**
+
    - Minions: Direct calls to EnemyManager
    - Bosses: Direct calls to BossFactory
    - No unified interface for spawning
 
 3. **Limited Debug Capabilities**
+
    - Basic keyboard shortcuts only
    - No runtime inspection tools
    - Can't test specific enemy behaviors easily
@@ -112,11 +115,11 @@ func spawn_entity(enemy_resource: EnemyResource, position: Vector2, owner_userna
             return _spawn_minion(enemy_resource, position, owner_username)
         "boss":
             return _spawn_boss(enemy_resource, position, owner_username)
-    
+
 func _spawn_minion(resource: EnemyResource, position: Vector2, username: String) -> int:
     # Delegate to EnemyManager for array-based handling
     return EnemyManager.instance.spawn_from_resource(resource, position, username)
-    
+
 func _spawn_boss(resource: EnemyResource, position: Vector2, username: String) -> Node:
     # Delegate to BossFactory for node-based handling
     return BossFactory.instance.spawn_from_resource(resource, position, username)
@@ -129,21 +132,24 @@ func _spawn_boss(resource: EnemyResource, position: Vector2, username: String) -
 Before implementing the new debug system, the following outdated systems should be removed:
 
 ##### Current Cheat System (To Be Removed)
+
 - **CheatManager** (`systems/core/cheat_manager.gd`) - Entire file can be deleted
 - **InputManager cheat handling** (`systems/core/input_manager.gd`) - Remove all cheat key bindings:
   - Alt+1-6: Spawn test enemies
-  - Alt+7-0: Spawn bosses  
+  - Alt+7-0: Spawn bosses
   - F1-F3: Grant XP/MXP/Health
   - Ctrl+1-4: God mode, XP, level up, boss vote
 - **Mock chat system** in TwitchBot - Should be integrated into debug UI instead
 
 ##### Overlapping Debug Features (To Be Consolidated)
+
 - Keyboard shortcuts scattered across multiple files
 - Console logging for debug info (replace with UI display)
 - Hardcoded test spawn methods in GameController
 - Debug flags in various managers
 
 ##### Migration Notes
+
 - Keep F12 as the debug mode toggle key
 - All other debug functionality moves to the debug UI
 - Remove all `print()` debug statements once UI inspection is available
@@ -169,7 +175,7 @@ var debug_ui: Control
 func toggle_debug_mode():
     debug_enabled = !debug_enabled
     emit_signal("debug_mode_toggled", debug_enabled)
-    
+
     if debug_enabled:
         _enter_debug_mode()
     else:
@@ -178,18 +184,18 @@ func toggle_debug_mode():
 func _enter_debug_mode():
     # Disable Twitch spawning
     TicketSpawnManager.instance.set_spawning_enabled(false)
-    
+
     # Clear all enemies
     EnemyManager.instance.clear_all_enemies()
     BossFactory.instance.clear_all_bosses()
-    
+
     # Show debug UI
     _show_debug_ui()
-    
+
 func _exit_debug_mode():
     # Re-enable normal systems
     TicketSpawnManager.instance.set_spawning_enabled(true)
-    
+
     # Hide debug UI
     _hide_debug_ui()
 ```
@@ -245,24 +251,29 @@ func _exit_debug_mode():
 #### Systems Requiring Updates
 
 1. **EnemyManager**
+
    - Add `spawn_from_resource()` method
    - Update to read from EnemyResource instead of hardcoded values
    - Maintain backward compatibility during transition
 
 2. **BossFactory**
+
    - Add `spawn_from_resource()` method
    - Migrate BOSS_CONFIGS to resource files
    - Update boss scripts to read from resources
 
 3. **EnemyConfigManager**
+
    - Deprecate in favor of resource system
    - Create migration tool to convert existing configs
 
 4. **Evolution System**
+
    - Update to use resource evolution_targets
    - Make evolution paths data-driven
 
 5. **CommandProcessor**
+
    - Update spawn commands to use SpawnManager
    - Add debug command support
 
@@ -272,22 +283,26 @@ func _exit_debug_mode():
 
 #### Migration Strategy
 
-**Phase 1: Foundation (Week 1)**
+**Phase 1: Foundation**
+
 - Create resource classes (EnemyResource, AbilityResource)
 - Build SpawnManager with dual delegation
 - Implement DebugManager core functionality
 
-**Phase 2: Resource Migration (Week 2)**
+**Phase 2: Resource Migration**
+
 - Convert existing enemies to .tres files
 - Create resource loader/cache system
 - Update EnemyManager to support resources
 
-**Phase 3: Debug UI (Week 3)**
+**Phase 3: Debug UI**
+
 - Build debug panel UI scene
 - Implement entity selection/inspection
 - Add ability triggering system
 
-**Phase 4: Integration (Week 4)**
+**Phase 4: Integration**
+
 - Update all systems to use SpawnManager
 - Deprecate old spawning methods
 - Full testing and polish
@@ -310,7 +325,7 @@ func get_entity_at_position(world_pos: Vector2) -> Dictionary:
             "id": minion_id,
             "data": EnemyManager.instance.get_enemy_data(minion_id)
         }
-    
+
     # Check bosses (node-based)
     var boss = BossFactory.instance.get_boss_at_position(world_pos)
     if boss:
@@ -319,7 +334,7 @@ func get_entity_at_position(world_pos: Vector2) -> Dictionary:
             "node": boss,
             "data": boss.get_debug_data()
         }
-    
+
     return {}
 ```
 
@@ -342,18 +357,21 @@ func trigger_ability(entity_data: Dictionary, ability_name: String):
 ### 6. Benefits of This Architecture
 
 #### For Development
+
 - **Easy Content Addition**: Just create a new .tres file
 - **Visual Editing**: Use Godot's inspector to tweak values
 - **Hot Reload**: Change resources without recompiling
 - **Version Control**: Resources diff better than code
 
 #### For Testing
+
 - **Isolated Testing**: Test specific enemies/abilities
 - **State Inspection**: See exactly what's happening
 - **Reproducible Scenarios**: Save/load test configurations
 - **Performance Analysis**: Identify bottlenecks easily
 
 #### For Performance
+
 - **Preserved Optimization**: Dual system remains intact
 - **Lazy Loading**: Load resources on demand
 - **Efficient Caching**: Resource system handles caching
@@ -362,6 +380,7 @@ func trigger_ability(entity_data: Dictionary, ability_name: String):
 ### 7. Example Resource Files
 
 #### Rat Enemy Resource
+
 ```gdscript
 # res://resources/enemies/minions/rat.tres
 [gd_resource type="Resource" script_class="EnemyResource"]
@@ -384,6 +403,7 @@ spawn_weight = 100
 ```
 
 #### Thor Boss Resource
+
 ```gdscript
 # res://resources/enemies/bosses/thor.tres
 [gd_resource type="Resource" script_class="EnemyResource"]
@@ -431,16 +451,19 @@ abilities = [
 ## Implementation Priority
 
 1. **Critical** (Do First)
+
    - DebugManager core
    - Resource classes
    - SpawnManager interface
 
 2. **High** (Core Functionality)
+
    - Debug UI panel
    - Entity selection/inspection
    - Resource migration for existing enemies
 
 3. **Medium** (Enhanced Features)
+
    - Ability triggering system
    - Performance monitoring
    - Visual debug overlays
@@ -453,6 +476,7 @@ abilities = [
 ## Conclusion
 
 This architecture provides:
+
 - **Clean separation** between debug and production code
 - **Scalable system** for adding new content
 - **Powerful debugging** tools for development

@@ -5,16 +5,19 @@
 After reviewing the codebase, the core issues are:
 
 ### 1. **Scalability Problem**
+
 - **Current**: All enemies hardcoded in `EnemyConfigManager` dictionaries
 - **Issue**: Adding enemies requires code changes in 3+ files
 - **Solution**: Resource-based (.tres) enemy definitions
 
 ### 2. **Ability System Problem**
+
 - **Current**: Abilities hardcoded in `EnemyBridge` with 649-line switch statements
 - **Issue**: Adding abilities requires modifying core bridge code
 - **Solution**: Modular ability resources that any enemy can use
 
 ### 3. **Debug/Testing Problem**
+
 - **Current**: Basic keyboard shortcuts (Alt+1 spawns rats, etc.)
 - **Issue**: Can't inspect state, trigger abilities, or test specific scenarios
 - **Solution**: Comprehensive debug UI with inspection and control
@@ -24,6 +27,7 @@ After reviewing the codebase, the core issues are:
 ### Phase 1: Resource-Based Enemy System
 
 #### Enemy Resource (.tres)
+
 ```gdscript
 # res://resources/enemies/rat.tres
 extends Resource
@@ -53,6 +57,7 @@ class_name EnemyResource
 ```
 
 #### Ability Resource (.tres)
+
 ```gdscript
 # res://resources/abilities/explode.tres
 extends Resource
@@ -85,6 +90,7 @@ class_name AbilityResource
 ### Phase 2: Unified Spawn System
 
 #### SpawnManager (New)
+
 ```gdscript
 extends Node
 class_name SpawnManager
@@ -103,7 +109,7 @@ func spawn_enemy(resource_id: String, position: Vector2, owner: String = "") -> 
     if not resource:
         push_error("Unknown enemy: " + resource_id)
         return -1
-    
+
     match resource.spawn_type:
         "multimesh":
             return _spawn_multimesh_enemy(resource, position, owner)
@@ -113,7 +119,7 @@ func spawn_enemy(resource_id: String, position: Vector2, owner: String = "") -> 
 func _spawn_multimesh_enemy(resource: EnemyResource, pos: Vector2, owner: String) -> int:
     # Delegate to EnemyManager but with resource data
     var id = EnemyManager.instance.get_next_free_id()
-    
+
     # Apply resource stats
     EnemyManager.instance.positions[id] = pos
     EnemyManager.instance.healths[id] = resource.health
@@ -122,11 +128,11 @@ func _spawn_multimesh_enemy(resource: EnemyResource, pos: Vector2, owner: String
     EnemyManager.instance.attack_damages[id] = resource.damage
     EnemyManager.instance.scales[id] = resource.scale
     EnemyManager.instance.chatter_usernames[id] = owner
-    
+
     # Register abilities
     for ability_res in resource.abilities:
         AbilityManager.instance.register_entity_ability(id, ability_res)
-    
+
     return id
 
 func _spawn_node_enemy(resource: EnemyResource, pos: Vector2, owner: String) -> Node:
@@ -135,7 +141,7 @@ func _spawn_node_enemy(resource: EnemyResource, pos: Vector2, owner: String) -> 
     instance.global_position = pos
     instance.enemy_resource = resource
     instance.owner_username = owner
-    
+
     # Let the node initialize itself from resource
     GameController.instance.add_child(instance)
     return instance
@@ -144,6 +150,7 @@ func _spawn_node_enemy(resource: EnemyResource, pos: Vector2, owner: String) -> 
 ### Phase 3: Modular Ability System
 
 #### AbilityExecutor (New)
+
 ```gdscript
 extends Node
 class_name AbilityExecutor
@@ -154,7 +161,7 @@ func execute_ability(entity_id: int, ability_res: AbilityResource, target_data: 
     # Check cooldown
     if not _check_cooldown(entity_id, ability_res.ability_id):
         return
-    
+
     # Execute based on type
     match ability_res.ability_type:
         "instant":
@@ -165,30 +172,30 @@ func execute_ability(entity_id: int, ability_res: AbilityResource, target_data: 
             _execute_channel(entity_id, ability_res, target_data)
         "aura":
             _execute_aura(entity_id, ability_res, target_data)
-    
+
     # Set cooldown
     _set_cooldown(entity_id, ability_res.ability_id, ability_res.cooldown)
 
 func _execute_instant(entity_id: int, ability: AbilityResource, _target_data: Dictionary):
     var pos = _get_entity_position(entity_id)
-    
+
     # Spawn effect
     if ability.effect_scene:
         var effect = ability.effect_scene.instantiate()
         effect.global_position = pos
-        
+
         # Apply scaling
         if ability.scales_with_aoe:
             var aoe_scale = _get_entity_aoe_scale(entity_id)
             effect.scale *= aoe_scale
-        
+
         if ability.scales_with_damage:
             var damage_mult = _get_entity_damage_mult(entity_id)
             if effect.has_property("damage"):
                 effect.damage = ability.damage * damage_mult
-        
+
         GameController.instance.add_child(effect)
-    
+
     # Play sound
     if ability.sound:
         AudioManager.play_sound_at(ability.sound, pos)
@@ -197,6 +204,7 @@ func _execute_instant(entity_id: int, ability: AbilityResource, _target_data: Di
 ### Phase 4: Debug System
 
 #### DebugUI Structure
+
 ```
 ┌─────────────────────────────────────────────┐
 │ Debug Mode (F12)                            │
@@ -228,6 +236,7 @@ func _execute_instant(entity_id: int, ability: AbilityResource, _target_data: Di
 ```
 
 #### DebugManager
+
 ```gdscript
 extends Node
 class_name DebugManager
@@ -240,20 +249,20 @@ var is_debug_mode: bool = false
 
 func toggle_debug_mode():
     is_debug_mode = !is_debug_mode
-    
+
     if is_debug_mode:
         # Disable normal spawning
         TicketSpawnManager.instance.enabled = false
-        
+
         # Show debug UI
         _show_debug_ui()
-        
+
         # Enable click selection
         _enable_entity_selection()
     else:
         # Re-enable normal systems
         TicketSpawnManager.instance.enabled = true
-        
+
         # Hide debug UI
         _hide_debug_ui()
 
@@ -264,15 +273,15 @@ func _on_entity_clicked(entity_id: int):
 func _update_inspector():
     if selected_entity_id < 0:
         return
-    
+
     # Get entity data
     var data = _get_entity_data(selected_entity_id)
-    
+
     # Update UI
     debug_ui.get_node("Inspector/Name").text = data.name
     debug_ui.get_node("Inspector/Health").text = "%d/%d" % [data.health, data.max_health]
     debug_ui.get_node("Inspector/Speed").text = str(data.speed)
-    
+
     # Update abilities
     var ability_list = debug_ui.get_node("Inspector/Abilities")
     ability_list.clear()
@@ -283,7 +292,7 @@ func _update_inspector():
 func trigger_selected_ability(ability_id: String):
     if selected_entity_id < 0:
         return
-    
+
     var ability_res = SpawnManager.instance.ability_resources.get(ability_id)
     if ability_res:
         AbilityExecutor.instance.execute_ability(selected_entity_id, ability_res, {})
@@ -291,23 +300,27 @@ func trigger_selected_ability(ability_id: String):
 
 ## Migration Path
 
-### Step 1: Create Resource Classes (Week 1)
+### Step 1: Create Resource Classes
+
 1. Create `EnemyResource` and `AbilityResource` classes
 2. Convert existing enemies to .tres files
 3. Create resource loading system
 
-### Step 2: Build Core Systems (Week 1-2)
+### Step 2: Build Core Systems
+
 1. Implement `SpawnManager` with dual delegation
 2. Create `AbilityExecutor` for modular abilities
 3. Update `EnemyManager` to work with resources
 
-### Step 3: Debug System (Week 2-3)
+### Step 3: Debug System
+
 1. Build debug UI scene
 2. Implement `DebugManager`
 3. Add entity selection and inspection
 4. Add ability triggering
 
-### Step 4: Integration (Week 3-4)
+### Step 4: Integration
+
 1. Update `CommandProcessor` to use new systems
 2. Migrate `EnemyBridge` functionality to `AbilityExecutor`
 3. Update evolution system to use resources
@@ -316,16 +329,19 @@ func trigger_selected_ability(ability_id: String):
 ## Benefits
 
 ### For Development
+
 - **Add enemies**: Create a .tres file, no code changes
 - **Add abilities**: Create a .tres file, works on any enemy
 - **Test easily**: Debug UI shows everything, trigger anything
 
 ### For Performance
+
 - **Preserved**: Dual system (multimesh/node) remains
 - **Improved**: Resources cached, less runtime allocation
 - **Scalable**: Easy to add pooling, LOD, etc.
 
 ### For Maintenance
+
 - **Modular**: Each system has one job
 - **Data-driven**: Configuration separate from logic
 - **Debuggable**: Full visibility into runtime state
@@ -333,6 +349,7 @@ func trigger_selected_ability(ability_id: String):
 ## Example: Adding a New Enemy
 
 ### Old Way (Current)
+
 1. Edit `EnemyConfigManager` to add dictionary entry
 2. Edit `EnemyBridge` to add ability handling
 3. Edit `EnemyManager` to add type constant
@@ -340,6 +357,7 @@ func trigger_selected_ability(ability_id: String):
 5. Test with keyboard shortcuts
 
 ### New Way (Proposed)
+
 1. Create `zombie.tres` with stats and abilities
 2. Drop in `res://resources/enemies/` folder
 3. Done - appears in debug UI, spawn system, everything
@@ -347,12 +365,14 @@ func trigger_selected_ability(ability_id: String):
 ## Example: Adding a New Ability
 
 ### Old Way (Current)
+
 1. Edit `EnemyBridge._execute_ability()` switch statement
 2. Add ability config in `EnemyConfigManager`
 3. Create effect scene
 4. Add to specific enemy types
 
 ### New Way (Proposed)
+
 1. Create `lightning_strike.tres` with parameters
 2. Add to any enemy's ability array
 3. Done - works automatically
@@ -360,16 +380,19 @@ func trigger_selected_ability(ability_id: String):
 ## Redundancies Found in Current Codebase
 
 ### IMPORTANT: Consult before making changes
+
 **⚠️ Always confirm with the developer which system to keep before removing any redundancies to ensure the correct implementation is preserved.**
 
 ### 1. **Multiple Ability Systems**
+
 - **KEEP:** `ability_system/` - Modern modular system with `BaseAbility`
-- **REMOVE:** 
+- **REMOVE:**
   - `EnemyBridge` ability execution (649-line switch statements)
   - `V2AbilityProxy` ability bridging
   - Duplicate abilities (e.g., `suction_ability.gd` vs `suction_ability_v2.gd`)
 
 ### 2. **Multiple Movement Controllers**
+
 - **KEEP:** To be determined - consult which movement system works best
 - **REDUNDANT:**
   - `ai_movement_controller.gd`
@@ -379,6 +402,7 @@ func trigger_selected_ability(ability_id: String):
   - Movement logic in `EnemyManager`
 
 ### 3. **Boss Configuration Systems**
+
 - **KEEP:** Convert to resource-based system
 - **REMOVE:**
   - `boss_spawner/BossConfig` (convert to .tres)
@@ -386,6 +410,7 @@ func trigger_selected_ability(ability_id: String):
   - Boss configs in `EnemyConfigManager`
 
 ### 4. **Debug/Testing Systems**
+
 - **KEEP:** New `DebugManager` system
 - **REMOVE:**
   - `CheatManager` entirely
@@ -395,6 +420,7 @@ func trigger_selected_ability(ability_id: String):
   - Scattered debug code
 
 ### 5. **Enemy Stats Storage**
+
 - **KEEP:** New `EnemyResource` system
 - **REMOVE/REFACTOR:**
   - `EnemyConfigManager` dictionaries
@@ -402,6 +428,7 @@ func trigger_selected_ability(ability_id: String):
   - Consolidate with `NPCRarity` multipliers
 
 ### 6. **Ability Definitions**
+
 - **KEEP:** `ability_system/abilities/` with BaseAbility
 - **REMOVE:**
   - Hardcoded abilities in `EnemyBridge`
@@ -409,6 +436,7 @@ func trigger_selected_ability(ability_id: String):
   - Duplicate ability implementations
 
 ### 7. **Bridge/Proxy Patterns**
+
 - **KEEP:** Direct integration patterns
 - **REMOVE:**
   - `EnemyBridge` (refactor to use ability system directly)
@@ -418,27 +446,32 @@ func trigger_selected_ability(ability_id: String):
 ## Consolidation Strategy
 
 ### Phase 0: Consultation (Before Any Changes)
+
 1. **Review redundancies** with developer
 2. **Identify which systems** are actively used vs legacy
 3. **Confirm removal list** before proceeding
 4. **Document decisions** for future reference
 
 ### Phase 1: Ability System Consolidation
+
 1. Migrate all abilities to `BaseAbility` pattern
 2. Remove duplicate ability implementations
 3. Refactor `EnemyBridge` to use ability system directly
 
-### Phase 2: Configuration Consolidation  
+### Phase 2: Configuration Consolidation
+
 1. Create unified `EnemyResource` system
 2. Migrate all enemy configs to .tres files
 3. Remove redundant config managers
 
 ### Phase 3: Debug System Unification
+
 1. Implement new `DebugManager`
 2. Remove all old cheat systems
 3. Consolidate debug functionality
 
 ### Phase 4: Movement System Cleanup
+
 1. Evaluate which movement controller to keep
 2. Consolidate movement logic
 3. Remove redundant controllers
@@ -446,6 +479,7 @@ func trigger_selected_ability(ability_id: String):
 ## Conclusion
 
 This architecture:
+
 - **Solves the scalability problem** with resource-based configuration
 - **Solves the modularity problem** with separated ability system
 - **Solves the testing problem** with comprehensive debug UI
