@@ -136,7 +136,7 @@ func _setup_game_world():
 	_create_player()
 	
 	# Setup UI
-	var ui_layer = ui_coordinator.setup_ui(self)
+	var _ui_layer = ui_coordinator.setup_ui(self)
 	ui_coordinator.connect_player_signals(player)
 	
 	# Get reference to the pause menu created by UICoordinator
@@ -213,7 +213,7 @@ func _handle_chat_message(username: String, message: String, color: Color = Colo
 	chat_message_received.emit(username, message, color)
 	
 	# Check for keywords that affect the game
-	var msg_lower = message.to_lower()
+	var _msg_lower = message.to_lower()
 	
 	# Handle commands
 	if message.begins_with("!"):

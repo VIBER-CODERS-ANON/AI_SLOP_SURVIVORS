@@ -34,7 +34,7 @@ func _create_health_ui():
 	health_bar = ProgressBar.new()
 	health_bar.name = "HealthBar"
 	health_bar.modulate = bar_color
-	health_bar.position = Vector2(-bar_size.x / 2, 0)
+	health_bar.position = Vector2(-bar_size.x / 2.0, 0)
 	health_bar.size = bar_size
 	health_bar.show_percentage = show_percentage
 	health_bar.value = 100

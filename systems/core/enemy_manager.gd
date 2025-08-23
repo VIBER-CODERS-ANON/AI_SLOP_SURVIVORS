@@ -613,15 +613,29 @@ func _process_enemy_slice(delta: float):
 func _update_enemy_movement(id: int, delta: float):
 	var current_pos = positions[id]
 	
-	# Check if enemy is within attack range - stop if so
+	# Check if enemy is within attack range - stop if so (except succubus)
 	var distance_to_edge = PlayerCollisionDetector.get_distance_to_player_capsule_edge(player_position, current_pos)
-	if distance_to_edge <= ATTACK_DETECTION_RADIUS:
+	if entity_types[id] != 1 and distance_to_edge <= ATTACK_DETECTION_RADIUS:
 		velocities[id] = Vector2.ZERO
 		return  # Skip all other movement logic
 	
 	# Get flow-field direction
 	var target_direction = Vector2.ZERO
-	if enable_flow_field:
+	
+	# Special movement for succubus (entity_type 1) - maintain optimal range
+	if entity_types[id] == 1:
+		var distance = current_pos.distance_to(player_position)
+		if distance < 170.0:  # Too close
+			# Back away
+			target_direction = (current_pos - player_position).normalized()
+		elif distance > 195.0:  # Too far for suction (200 range)
+			# Move closer
+			target_direction = (player_position - current_pos).normalized()
+		else:
+			# In optimal range (170-195), strafe around player
+			var tangent = (player_position - current_pos).rotated(PI/2.0).normalized()
+			target_direction = tangent * behavior_strafe_dir[id]
+	elif enable_flow_field:
 		var grid_pos = Vector2i(current_pos / GRID_SIZE)
 		if flow_field.has(grid_pos):
 			target_direction = flow_field[grid_pos]

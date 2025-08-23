@@ -89,7 +89,7 @@ func _ready():
 	# Start hidden
 	visible = false
 
-func _unhandled_input(event):
+func _unhandled_input(_event):
 	if not visible:
 		return
 	

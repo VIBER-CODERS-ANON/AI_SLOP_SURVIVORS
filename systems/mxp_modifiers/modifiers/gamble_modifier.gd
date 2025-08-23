@@ -53,7 +53,7 @@ func apply_effect(chatter_data: Dictionary, amount: int) -> Dictionary:
 func get_success_message(username: String, amount: int, chatter_data: Dictionary) -> String:
 	var effect_data = chatter_data.get("last_gamble_result", {})
 	var wins = effect_data.get("wins", 0)
-	var total_winnings = effect_data.get("total_winnings", 0)
+	var _total_winnings = effect_data.get("total_winnings", 0)
 	var net_result = effect_data.get("net_result", 0)
 	
 	# Get current MXP balance

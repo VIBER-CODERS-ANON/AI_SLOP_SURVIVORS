@@ -148,10 +148,13 @@ func connect_player_signals(p: Player):
 	if not player:
 		return
 	
-	# Connect player signals to UI updates
-	player.health_changed.connect(_on_player_health_changed)
-	player.experience_gained.connect(_on_player_experience_gained)
-	player.level_up.connect(_on_player_level_up)
+	# Connect player signals to UI updates (check if already connected first)
+	if not player.health_changed.is_connected(_on_player_health_changed):
+		player.health_changed.connect(_on_player_health_changed)
+	if not player.experience_gained.is_connected(_on_player_experience_gained):
+		player.experience_gained.connect(_on_player_experience_gained)
+	if not player.level_up.is_connected(_on_player_level_up):
+		player.level_up.connect(_on_player_level_up)
 	
 	# Initialize UI with player values
 	update_hp_display(player.current_health, player.max_health)

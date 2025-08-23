@@ -3,7 +3,8 @@ class_name CursorManager
 
 ## Handles all cursor-related functionality including custom cursors, debug tools, and hotspot management
 
-signal cursor_hotspot_changed(new_hotspot: Vector2)
+# Unused signal - kept for potential future use
+# signal cursor_hotspot_changed(new_hotspot: Vector2)
 
 # Cursor configuration
 var cursor_hotspot: Vector2 = Vector2(42, 37)  # Fine-tuned 5px left for perfect alignment

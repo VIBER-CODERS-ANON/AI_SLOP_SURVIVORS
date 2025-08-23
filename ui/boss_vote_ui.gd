@@ -234,7 +234,7 @@ func _on_vote_started(vote_options: Array):
 			var desc_label = vbox.get_child(3)  # Description is fourth child
 			var _buff_title_label = vbox.get_child(4)  # Buff title is fifth child (not used)
 			var buff_label = vbox.get_child(5)  # Buff description is sixth child
-			var vote_label = vbox.get_child(6)  # Vote count is seventh child
+			var _vote_label = vbox.get_child(6)  # Vote count is seventh child (not used here)
 			
 			name_label.text = boss_data.get("display_name", "Unknown")
 			desc_label.text = boss_data.get("description", "")

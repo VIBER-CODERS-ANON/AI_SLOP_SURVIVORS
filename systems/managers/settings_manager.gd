@@ -119,7 +119,7 @@ func _apply_display_settings():
 		DisplayServer.window_set_size(Vector2i(res_width, res_height))
 		# Center the window
 		var screen_size = DisplayServer.screen_get_size()
-		var window_pos = (screen_size - Vector2i(res_width, res_height)) / 2
+		var window_pos = (screen_size - Vector2i(res_width, res_height)) / 2.0
 		DisplayServer.window_set_position(window_pos)
 	
 	print("⚙️ Applied display settings - Fullscreen: %s, Resolution: %dx%d, VSync: %s" % [
@@ -157,7 +157,7 @@ func _force_apply_display_settings():
 	
 	# Center window
 	var screen_size = DisplayServer.screen_get_size()
-	var window_pos = (screen_size - Vector2i(res_width, res_height)) / 2
+	var window_pos = (screen_size - Vector2i(res_width, res_height)) / 2.0
 	DisplayServer.window_set_position(window_pos)
 	
 	await get_tree().process_frame
@@ -248,7 +248,7 @@ func set_fullscreen(enabled: bool):
 		
 		# Center the window
 		var screen_size = DisplayServer.screen_get_size()
-		var window_pos = (screen_size - Vector2i(res_width, res_height)) / 2
+		var window_pos = (screen_size - Vector2i(res_width, res_height)) / 2.0
 		DisplayServer.window_set_position(window_pos)
 		print("⚙️ Switched to windowed mode: %dx%d" % [res_width, res_height])
 
@@ -272,7 +272,7 @@ func set_resolution(width: int, height: int):
 		DisplayServer.window_set_size(Vector2i(width, height))
 		# Center the window
 		var screen_size = DisplayServer.screen_get_size()
-		var window_pos = (screen_size - Vector2i(width, height)) / 2
+		var window_pos = (screen_size - Vector2i(width, height)) / 2.0
 		DisplayServer.window_set_position(window_pos)
 		print("⚙️ Resolution changed to: %dx%d" % [width, height])
 	elif current_mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN or current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN:
@@ -282,7 +282,7 @@ func set_resolution(width: int, height: int):
 		DisplayServer.window_set_size(Vector2i(width, height))
 		# Center before going back to fullscreen
 		var screen_size = DisplayServer.screen_get_size()
-		var window_pos = (screen_size - Vector2i(width, height)) / 2
+		var window_pos = (screen_size - Vector2i(width, height)) / 2.0
 		DisplayServer.window_set_position(window_pos)
 		await get_tree().process_frame
 		# Switch back to borderless

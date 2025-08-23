@@ -31,9 +31,9 @@ func setup(p_enemy_id: int, p_enemy_manager: Node, username: String = "") -> voi
 	update_timer = Timer.new()
 	update_timer.wait_time = 0.05
 	update_timer.one_shot = false
+	update_timer.autostart = true  # Autostart when added to tree
 	update_timer.timeout.connect(_update_position)
 	add_child(update_timer)
-	update_timer.start()
 
 func _update_position() -> void:
 	if not enemy_manager:
@@ -45,10 +45,15 @@ func _update_position() -> void:
 	else:
 		# Enemy died
 		if tracked_ability and tracked_ability.has_method("_end_channel"):
-			tracked_ability._end_channel()
+			tracked_ability._end_channel(self)
 		queue_free()
 
 func attach_ability(ability_class, target_data: Dictionary) -> bool:
+	# Ensure we're in the tree before proceeding
+	if not is_inside_tree():
+		push_warning("V2AbilityProxy: Attempted to attach ability before added to tree")
+		return false
+	
 	# Create ability instance
 	tracked_ability = ability_class.new()
 	tracked_ability.on_added(self)
@@ -71,7 +76,9 @@ func attach_ability(ability_class, target_data: Dictionary) -> bool:
 			_stop_movement()
 			
 			# Connect to channel end signal if it exists
-			if tracked_ability.has_signal("succ_ended"):
+			if tracked_ability.has_signal("channel_ended"):
+				tracked_ability.channel_ended.connect(_restore_movement)
+			elif tracked_ability.has_signal("succ_ended"):  # Fallback for old ability
 				tracked_ability.succ_ended.connect(_restore_movement)
 		
 		# Also stop movement for abilities with windup (like heart projectile)
@@ -127,6 +134,6 @@ func _exit_tree() -> void:
 		if tracked_ability.has_method("on_removed"):
 			tracked_ability.on_removed(self)
 		if tracked_ability.has_method("_end_channel"):
-			tracked_ability._end_channel()
+			tracked_ability._end_channel(self)
 	
 	_restore_movement()

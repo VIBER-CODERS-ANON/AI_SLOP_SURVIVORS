@@ -172,7 +172,7 @@ func _on_spawn_effect_complete(boss: Node):
 
 # Removed _show_ziz_fullscreen_attack - moved to zzran_boss.gd
 
-func _create_boss_health_ui(boss: Node):
+func _create_boss_health_ui(_boss: Node):
 	# Legacy function - bosses now handle their own health bars
 	# Kept for compatibility
 	pass

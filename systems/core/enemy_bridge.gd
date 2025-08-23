@@ -9,7 +9,7 @@ static var instance: EnemyBridge
 
 # Preload classes for complex ability execution
 const V2AbilityProxyClass = preload("res://systems/core/v2_ability_proxy.gd")
-const SuctionAbilityClass = preload("res://systems/ability_system/abilities/suction_ability.gd")
+const SuctionAbilityClass = preload("res://systems/ability_system/abilities/suction_ability_v2.gd")
 
 # System references
 var enemy_manager: EnemyManager
@@ -155,14 +155,28 @@ func _update_enemy_abilities(_delta: float):
 		if enemy_id < enemy_manager.ability_casting_flags.size() and enemy_manager.ability_casting_flags[enemy_id] > 0:
 			continue
 		
-		var abilities = enemy_abilities[enemy_id]
-		for ability in abilities:
-			# Check if ability is off cooldown
-			if current_time - ability.last_used >= ability.cooldown:
-				# Check if conditions are met to use ability
+		# Special handling for succubus (entity_type 1) - use enemy_manager cooldown
+		if enemy_id < enemy_manager.entity_types.size() and enemy_manager.entity_types[enemy_id] == 1:
+			# Check shared cooldown in enemy_manager
+			if enemy_manager.ability_cooldowns[enemy_id] > 0:
+				continue  # Still on cooldown
+			
+			# Try abilities in priority order
+			var abilities = enemy_abilities[enemy_id]
+			for ability in abilities:
 				if _should_use_ability(enemy_id, ability):
 					_execute_ability(enemy_id, ability)
-					ability.last_used = current_time
+					break  # Only execute one ability
+		else:
+			# Regular enemies use the old system
+			var abilities = enemy_abilities[enemy_id]
+			for ability in abilities:
+				# Check if ability is off cooldown
+				if current_time - ability.last_used >= ability.cooldown:
+					# Check if conditions are met to use ability
+					if _should_use_ability(enemy_id, ability):
+						_execute_ability(enemy_id, ability)
+						ability.last_used = current_time
 
 func _update_active_effects(delta: float):
 	# Boost timers are now handled in enemy_manager's _physics_process
@@ -200,10 +214,8 @@ func _should_use_ability(enemy_id: int, ability: Dictionary) -> bool:
 			# Use projectile when in range (must match ability's base_range of 400)
 			return distance < 400.0 and distance > 50.0
 		"suction":
-			# Use suction when close (must match ability's succ_range of 200)
-			var in_range = distance < 200.0
-			if in_range:
-				print("🔍 Enemy %d can use suction (distance: %.1f)" % [enemy_id, distance])
+			# Only attempt suction when actually in range
+			var in_range = distance <= 200.0
 			return in_range
 		"suicide_bomb":
 			# Proximity trigger for ugandan warriors
@@ -240,8 +252,8 @@ func _execute_ability(enemy_id: int, ability: Dictionary):
 
 func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
 	# Get base values
-	var damage = config.get("damage", 20.0)
-	var radius = config.get("radius", 80.0)
+	var _damage = config.get("damage", 20.0)
+	var _radius = config.get("radius", 80.0)
 	var aoe_scale = 1.0
 	var username = ""
 	
@@ -304,17 +316,20 @@ func _trigger_fart_cloud(enemy_id: int, pos: Vector2, config: Dictionary):
 # Boost is now handled directly in execute_command_for_enemy with flat speed bonus
 # Old multiplier-based boost functions removed
 
-func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
+func _fire_heart_projectile(enemy_id: int, pos: Vector2, _config: Dictionary):
 	if not GameController.instance or not GameController.instance.player:
 		return
 	
-	# Check if enemy is already casting
+	# Check if enemy is already casting (should already be checked but safety)
 	if enemy_manager.ability_casting_flags[enemy_id] > 0:
 		return  # Already casting something
 	
-	# Check cooldown ONLY for succubus (entity_type 1)
-	if enemy_manager.entity_types[enemy_id] == 1 and enemy_manager.ability_cooldowns[enemy_id] > 0:
-		return  # Still on cooldown
+	# DOUBLE CHECK RANGE before creating proxy
+	var player_pos = GameController.instance.player.global_position
+	var distance = pos.distance_to(player_pos)
+	if distance > 400.0:
+		# Not in range for heart projectile
+		return
 	
 	# Use V2AbilityProxy for proper ability handling with windup
 	var proxy = V2AbilityProxy.new()
@@ -337,25 +352,30 @@ func _fire_heart_projectile(enemy_id: int, pos: Vector2, config: Dictionary):
 	# Attach heart projectile ability - this will handle windup, animation, etc
 	if proxy.attach_ability(HeartProjectileAbility, target_data):
 		print("💖 Enemy %d starting heart projectile cast" % enemy_id)
-		# Set cooldown ONLY for succubus (entity_type 1)
+		# Set cooldown for succubus (entity_type 1)
 		if enemy_manager.entity_types[enemy_id] == 1:
-			enemy_manager.ability_cooldowns[enemy_id] = 1.0  # 1 second cooldown after cast
+			enemy_manager.ability_cooldowns[enemy_id] = 2.0  # 2 second cooldown after heart projectile
 	else:
 		# Failed to attach ability, clear casting flag
 		enemy_manager.ability_casting_flags[enemy_id] = 0
 		proxy.queue_free()
 
 func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
-	print("🌪️ Starting suction ability for enemy %d" % enemy_id)
-	
 	if not GameController.instance or not GameController.instance.player:
 		return
 	
-	# Check if already casting
+	# Check if already casting (should already be checked but safety)
 	if enemy_manager.ability_casting_flags[enemy_id] > 0:
 		return
 	
-	# Mark as casting for suction
+	# DOUBLE CHECK RANGE before creating proxy
+	var player_pos = GameController.instance.player.global_position
+	var distance = pos.distance_to(player_pos)
+	if distance > 200.0:
+		# Not in range, don't create proxy
+		return
+	
+	# Mark as casting
 	enemy_manager.ability_casting_flags[enemy_id] = 1
 	
 	# Get username for attribution
@@ -366,11 +386,13 @@ func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
 	# Use the reusable proxy system
 	var proxy = V2AbilityProxyClass.new()
 	proxy.name = "SuccubusProxy_%d" % enemy_id
-	proxy.global_position = pos
-	GameController.instance.add_child(proxy)
 	
-	# Setup proxy
+	# Setup proxy BEFORE adding to tree (timer will autostart when added)
 	proxy.setup(enemy_id, enemy_manager, username)
+	
+	# Now add to tree and set position
+	GameController.instance.add_child(proxy)
+	proxy.global_position = pos
 	
 	# Create target data
 	var target_data = {
@@ -380,15 +402,25 @@ func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
 	
 	# Attach and execute ability
 	if proxy.attach_ability(SuctionAbilityClass, target_data):
-		print("✅ Suction ability started successfully")
+		print("💜 Suction ability started for enemy %d at distance %.1f" % [enemy_id, pos.distance_to(GameController.instance.player.global_position)])
+		
+		# Set cooldown for succubus (entity_type 1) 
+		if enemy_manager.entity_types[enemy_id] == 1:
+			enemy_manager.ability_cooldowns[enemy_id] = 30.0  # 30 second cooldown for suction
 		
 		# Clean up when ability ends
-		if proxy.tracked_ability and proxy.tracked_ability.has_signal("succ_ended"):
-			proxy.tracked_ability.succ_ended.connect(func():
+		if proxy.tracked_ability and proxy.tracked_ability.has_signal("channel_ended"):
+			proxy.tracked_ability.channel_ended.connect(func():
+				# Clear casting flag when suction ends
+				if enemy_id < enemy_manager.ability_casting_flags.size():
+					enemy_manager.ability_casting_flags[enemy_id] = 0
 				proxy.queue_free()
 			)
 	else:
 		print("❌ Failed to start suction ability")
+		# Clear casting flag if ability failed to start
+		if enemy_id < enemy_manager.ability_casting_flags.size():
+			enemy_manager.ability_casting_flags[enemy_id] = 0
 		proxy.queue_free()
 
 func _trigger_suicide_bomb(enemy_id: int, pos: Vector2, config: Dictionary):

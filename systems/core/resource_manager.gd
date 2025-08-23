@@ -18,8 +18,9 @@ var background_music_player: AudioStreamPlayer
 # Common resource paths
 const SCENES = {
 	"xp_orb": "res://entities/pickups/xp_orb.tscn",
-	"health_orb": "res://entities/pickups/health_orb.tscn",
-	"damage_number": "res://ui/damage_number.tscn",
+	# Removed non-existent scenes - health_orb and damage_number
+	# "health_orb": "res://entities/pickups/health_orb.tscn",
+	# "damage_number": "res://ui/damage_number.tscn",
 	# Legacy rat scene kept for tools only; spawning is handled by EnemyManager
 	# "twitch_rat": "res://entities/enemies/twitch_rat.tscn",
 	"succubus": "res://entities/enemies/succubus.tscn",
@@ -40,7 +41,7 @@ func _ready() -> void:
 
 func _preload_common_resources() -> void:
 	# Preload frequently used scenes
-	for key in ["xp_orb", "health_orb", "damage_number"]:
+	for key in ["xp_orb"]:  # Only preload scenes that actually exist
 		if SCENES.has(key):
 			load_scene(SCENES[key])
 

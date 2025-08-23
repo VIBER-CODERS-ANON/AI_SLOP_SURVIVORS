@@ -70,8 +70,8 @@ func _load_enemy_configurations():
 			"scale": 1.0
 		},
 		"abilities": [
-			{"id": "heart_projectile", "cooldown": 2.0, "damage": 10.0},
-			{"id": "suction", "cooldown": 5.0, "channel_time": 2.0, "drain_rate": 5.0}
+			{"id": "suction", "cooldown": 30.0, "channel_time": 3.0, "drain_rate": 5.0},  # Suction first priority
+			{"id": "heart_projectile", "cooldown": 1.0, "damage": 10.0}  # Heart projectile as fallback
 		],
 		"tags": ["Enemy", "Flying", "Evolved", "Succubus", "TwitchMob", "Ranged"],
 		"visuals": {

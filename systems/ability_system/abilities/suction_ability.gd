@@ -62,21 +62,7 @@ func _init() -> void:
 
 func on_added(holder) -> void:
 	super.on_added(holder)
-	
-	# Create audio player for looping sound
-	var entity = holder
-	if holder.has_method("get_entity_node"):
-		entity = holder.get_entity_node()
-	if entity:
-		succ_audio_player = AudioStreamPlayer2D.new()
-		succ_audio_player.name = "SuccAudioPlayer"
-		if succ_audio_path != "":
-			succ_audio_player.stream = load(succ_audio_path)
-		succ_audio_player.bus = "SFX"
-		succ_audio_player.volume_db = -5.0
-		entity.add_child(succ_audio_player)
-	
-	# SuctionAbility added
+	# Don't create audio player here - wait until ability actually starts channeling
 
 func can_execute(holder, target_data) -> bool:
 	if not super.can_execute(holder, target_data):
@@ -124,6 +110,11 @@ func _execute_ability(holder, target_data) -> void:
 			var proxy = channeling_holder
 			if proxy.enemy_manager and proxy.enemy_id >= 0 and proxy.enemy_id < proxy.enemy_manager.ability_casting_flags.size():
 				proxy.enemy_manager.ability_casting_flags[proxy.enemy_id] = 0
+			# Clean up audio player immediately to prevent any sound
+			if succ_audio_player and is_instance_valid(succ_audio_player):
+				succ_audio_player.stop()
+				succ_audio_player.queue_free()
+				succ_audio_player = null
 			# Free the proxy since we're not using it
 			proxy.queue_free()
 		return
@@ -136,6 +127,16 @@ func _execute_ability(holder, target_data) -> void:
 	damage_delay_remaining = damage_delay
 	damage_started = false
 	channeling_entity = entity  # Store entity reference for cleanup
+	
+	# Create audio player NOW that we're actually channeling
+	if not succ_audio_player and entity:
+		succ_audio_player = AudioStreamPlayer2D.new()
+		succ_audio_player.name = "SuccAudioPlayer"
+		if succ_audio_path != "":
+			succ_audio_player.stream = load(succ_audio_path)
+		succ_audio_player.bus = "SFX"
+		succ_audio_player.volume_db = -5.0
+		entity.add_child(succ_audio_player)
 	
 	# Stop entity movement during channel
 	if "velocity" in entity:
@@ -156,8 +157,9 @@ func _execute_ability(holder, target_data) -> void:
 	# Don't play audio immediately - wait for first frame of channeling
 	# Audio will start in _update_channel after validation
 	
-	# Start cooldown immediately (prevents re-casting)
-	_start_cooldown(holder)
+	# Start cooldown ONLY if not a V2 proxy (V2 uses enemy_manager cooldowns)
+	if not holder.has_method("get_meta") or not holder.get_meta("is_v2_proxy", false):
+		_start_cooldown(holder)
 	
 	# Notify holder
 	holder.on_ability_executed(self)

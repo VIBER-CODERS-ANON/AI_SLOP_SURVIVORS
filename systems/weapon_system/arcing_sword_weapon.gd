@@ -497,7 +497,7 @@ func add_arc_degrees(degrees: float):
 	arc_angle_degrees += degrees
 	print("⚔️ Arc angle increased by %.0f° to %.0f°!" % [degrees, arc_angle_degrees])
 	if arc_angle_degrees >= 360:
-		var full_circles = int(arc_angle_degrees / 360)
+		var full_circles = int(arc_angle_degrees / 360.0)
 		print("🌀 Sword now performs %d full rotation(s) plus %.0f°!" % [full_circles, fmod(arc_angle_degrees, 360)])
 
 ## Execute an extra strike with optional angular offset

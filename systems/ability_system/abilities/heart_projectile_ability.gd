@@ -116,8 +116,9 @@ func _execute_ability(holder, target_data) -> void:
 		return
 	
 	# We're in range, proceed with attack
-	# Start cooldown IMMEDIATELY to prevent spam
-	_start_cooldown(holder)
+	# Start cooldown ONLY if not a V2 proxy (V2 uses enemy_manager cooldowns)
+	if not holder.has_method("get_meta") or not holder.get_meta("is_v2_proxy", false):
+		_start_cooldown(holder)
 	
 	# Start windup animation
 	_start_windup_animation(entity, holder, target_data)

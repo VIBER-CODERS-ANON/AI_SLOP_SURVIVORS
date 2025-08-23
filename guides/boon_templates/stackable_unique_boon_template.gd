@@ -109,7 +109,7 @@ func _get_stack_pattern(stack_number: int) -> Dictionary:
     # Useful for abilities that need positioning
     
     return {
-        "offset_angle": floor((stack_number - 1) / 2) * 20.0,
+        "offset_angle": floor((stack_number - 1) / 2.0) * 20.0,
         "alternate_side": stack_number % 2 == 0,
         "radius_multiplier": 1.0 + (stack_number * 0.1),
         "delay_offset": stack_number * 0.1
