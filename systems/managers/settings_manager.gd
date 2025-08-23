@@ -1,5 +1,5 @@
 extends Node
-class_name SettingsManager
+## class_name SettingsManager
 
 ## Manages persistent game settings that save between sessions
 ## Currently handles audio volume settings
@@ -30,6 +30,10 @@ const DEFAULT_SETTINGS = {
 	},
 	"twitch": {
 		"channel_name": "quin69"
+	},
+	"websocket": {
+		"enabled": false,
+		"url": "ws://localhost:8080/ws"
 	}
 }
 
@@ -219,6 +223,23 @@ func set_twitch_channel(channel_name: String):
 	settings_config.set_value("twitch", "channel_name", channel_name)
 	save_settings()
 	print("⚙️ Twitch channel saved: %s" % channel_name)
+
+## WebSocket (Twitch Extension client) settings
+func get_websocket_enabled() -> bool:
+	return settings_config.get_value("websocket", "enabled", false)
+
+func set_websocket_enabled(enabled: bool):
+	settings_config.set_value("websocket", "enabled", enabled)
+	save_settings()
+	print("⚙️ WebSocket enabled: %s" % str(enabled))
+
+func get_websocket_url() -> String:
+	return settings_config.get_value("websocket", "url", "ws://localhost:8080/ws")
+
+func set_websocket_url(ws_url: String):
+	settings_config.set_value("websocket", "url", ws_url)
+	save_settings()
+	print("⚙️ WebSocket URL saved: %s" % ws_url)
 
 ## Set display settings
 func set_fullscreen(enabled: bool):

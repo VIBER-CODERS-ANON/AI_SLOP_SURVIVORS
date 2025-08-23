@@ -56,6 +56,9 @@ func _ready():
 	if taggable:
 		taggable.add_tag("Boss")
 	
+	# Add to bosses group for WebSocket detection
+	add_to_group("bosses")
+	
 	# Call parent ready
 	super._ready()
 	
