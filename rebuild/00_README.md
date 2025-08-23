@@ -2,13 +2,15 @@
 
 Preface: I deleted all source code so you wouldn't have to spend time figuring that out. I did my best to not touch any of your project settings nor assets.
 
-If you're reading this from Github and don't know how to access this locally do this:
+If you're reading this from Github and don't know how to access this locally do this. This will make a local branch and leave you main alone and it won't fuck with any of your remotes:
   - commit/discard any changes in your current branch
   - `git fetch`
-  - `git checkout talitore/guided-refactor`
-  - literally nothing else if they succeeded
+  - `git remote add talitore git@github.com:talitore/AI_SLOP_SURVIVORS.git`
+  - if that fails: `git remote add talitore https://github.com/talitore/AI_SLOP_SURVIVORS.git`
+  - `git checkout -b talitore/guided-refactor talitore/talitore/guided-refactor`
+  - should be it
 
-This vault is a non-technical, system-by-system blueprint to recreate the game from scratch. Open the `rebuild/` folder in Obsidian and then:
+This Obsidian vault is a non-technical, system-by-system blueprint to recreate the game from scratch. Open the `rebuild/` folder in Obsidian and then:
 
 - **Start here**: [[Systems Index]] and [[GUIDE]]
 - **Goal**: You can rebuild the game one system at a time using these notes.
@@ -28,5 +30,3 @@ This vault is a non-technical, system-by-system blueprint to recreate the game f
 - Performance-first: batched updates, object pooling, spatial grid, and GPU instancing.
 
 See [[Architecture Overview]] for an accessible overview.
-
-
