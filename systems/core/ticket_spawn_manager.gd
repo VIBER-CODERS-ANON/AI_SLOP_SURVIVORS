@@ -195,13 +195,35 @@ func _spawn_random_monster() -> bool:
 	
 	var data = joined_chatters[username]
 	var monster_type = data.monster_type
-	var monster_type_id = MONSTER_TYPE_IDS.get(monster_type, 0)
 	
 	# Get spawn position
 	if not GameController.instance or not GameController.instance.player:
 		return false
 	
 	var spawn_pos = _get_off_screen_spawn_position()
+	
+	# Try to use SpawnManager with resources if available
+	if SpawnManager.instance and SpawnManager.instance.loaded_resources.has(monster_type):
+		var resource = SpawnManager.instance.loaded_resources[monster_type]
+		var result = SpawnManager.instance.spawn_entity(resource, spawn_pos, username)
+		if result.success:
+			var enemy_id = result.get("id", -1)
+			if enemy_id >= 0:
+				# Track the entity
+				if not alive_monsters.has(username):
+					alive_monsters[username] = []
+				alive_monsters[username].append(enemy_id)
+				
+				# Apply upgrades if needed
+				if ChatterEntityManager.instance:
+					_apply_upgrades_to_entity(enemy_id, username)
+				
+				entity_spawned.emit(username, enemy_id)
+				return true
+		return false
+	
+	# Fall back to legacy system
+	var monster_type_id = MONSTER_TYPE_IDS.get(monster_type, 0)
 	var color = _get_user_color(username)
 	
 	# Spawn using EnemyManager

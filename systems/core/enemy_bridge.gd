@@ -16,6 +16,7 @@ var enemy_manager: EnemyManager
 var config_manager: EnemyConfigManager
 var ability_manager: AbilityManager
 var lighting_manager: LightingManager
+var ability_executor: AbilityExecutor  # New reference to AbilityExecutor
 
 # V2 Enemy ability tracking
 var enemy_abilities: Dictionary = {}  # enemy_id -> Array[ActiveAbility]
@@ -39,6 +40,7 @@ func _ready():
 func _connect_to_systems():
 	enemy_manager = EnemyManager.instance
 	config_manager = EnemyConfigManager.instance
+	ability_executor = AbilityExecutor.instance
 	
 	# Find other systems
 	ability_manager = get_node("../AbilityManager") if get_node_or_null("../AbilityManager") else null
@@ -53,6 +55,11 @@ func _connect_to_systems():
 		print("✅ EnemyBridge connected to EnemyConfigManager")
 	else:
 		print("❌ EnemyBridge: EnemyConfigManager not found!")
+	
+	if ability_executor:
+		print("✅ EnemyBridge connected to AbilityExecutor")
+	else:
+		print("⚠️ EnemyBridge: AbilityExecutor not found (using legacy system)")
 
 func _process(delta: float):
 	if not enemy_manager or not config_manager:
@@ -65,8 +72,14 @@ func _process(delta: float):
 		last_ability_update = 0.0
 
 # Called when a new enemy is spawned via EnemyManager
-func on_enemy_spawned(enemy_id: int, enemy_type_str: String):
-	_setup_enemy_abilities(enemy_id, enemy_type_str)
+func on_enemy_spawned(enemy_id: int, enemy_type_str: String, resource: EnemyResource = null):
+	# If we have a resource with abilities, register them with AbilityExecutor
+	if resource and resource.abilities.size() > 0 and ability_executor:
+		ability_executor.register_entity_abilities(enemy_id, resource.abilities)
+	else:
+		# Fall back to legacy system
+		_setup_enemy_abilities(enemy_id, enemy_type_str)
+	
 	_setup_enemy_effects(enemy_id, enemy_type_str)
 	_setup_enemy_lighting(enemy_id, enemy_type_str)
 
@@ -78,6 +91,10 @@ func evolve_enemy(enemy_id: int, enemy_type_str: String):
 
 # Called when an enemy dies or is despawned
 func on_enemy_despawned(enemy_id: int):
+	# Clean up from AbilityExecutor if it exists
+	if ability_executor:
+		ability_executor.cleanup_entity(enemy_id)
+	
 	_cleanup_enemy_data(enemy_id)
 
 func _setup_enemy_abilities(enemy_id: int, enemy_type_str: String):
@@ -607,11 +624,49 @@ func _get_type_string(type_id: int) -> String:
 		8: return "forsen_boss"
 		_: return "unknown"
 
+# Helper function to create temporary ability resources for commands
+func _create_command_ability_resource(command: String) -> AbilityResource:
+	var ability = AbilityResource.new()
+	
+	match command:
+		"explode":
+			ability.ability_id = "command_explode"
+			ability.display_name = "Explode"
+			ability.trigger_type = "instant"
+			ability.damage = 20.0
+			ability.range = 80.0
+			ability.cooldown = 0.0
+			ability.effect_scene = load("res://entities/effects/explosion_effect.tscn")
+			
+		"fart":
+			ability.ability_id = "command_fart"
+			ability.display_name = "Fart"
+			ability.trigger_type = "area"
+			ability.damage = 5.0
+			ability.range = 100.0
+			ability.duration = 3.0
+			ability.cooldown = 0.0
+			ability.effect_scene = load("res://entities/effects/poison_cloud.tscn")
+			
+		_:
+			return null
+	
+	return ability
+
 # Public API for V2 enemy commands
 func execute_command_for_enemy(enemy_id: int, command: String):
 	if not enemy_manager or enemy_id >= enemy_manager.alive_flags.size() or enemy_manager.alive_flags[enemy_id] == 0:
 		return
 	
+	# Try to use AbilityExecutor if available for resource-based abilities
+	if ability_executor and command in ["explode", "fart"]:
+		# Create temporary ability resource for the command
+		var temp_ability = _create_command_ability_resource(command)
+		if temp_ability:
+			ability_executor.execute_ability(enemy_id, temp_ability)
+			return
+	
+	# Fall back to legacy execution
 	match command:
 		"explode":
 			var config = {"damage": 20.0, "radius": 80.0, "visuals": {"effect_scene": "res://entities/effects/explosion_effect.tscn"}}

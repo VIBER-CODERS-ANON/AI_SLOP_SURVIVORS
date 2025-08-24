@@ -538,9 +538,9 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 			_apply_rarity_modifiers_v2(id, rarity)
 	print("👾 Spawned enemy ID %d (%s) for %s at %s" % [id, _get_type_name(enemy_type), username, position])
 	
-	# Notify bridge system
+	# Notify bridge system (pass null resource for legacy spawns)
 	if EnemyBridge.instance:
-		EnemyBridge.instance.on_enemy_spawned(id, enemy_type_str)
+		EnemyBridge.instance.on_enemy_spawned(id, enemy_type_str, null)
 	
 	return id
 
@@ -575,8 +575,10 @@ func spawn_from_resource(resource: EnemyResource, position: Vector2, username: S
 		scales[id] = resource.base_scale
 		attack_cooldowns[id] = resource.attack_cooldown
 		
-		# Store resource reference for abilities (if needed)
-		# TODO: Integrate with ability system
+		# Notify bridge system with the resource for ability setup
+		if EnemyBridge.instance:
+			var enemy_type_str = _get_type_name_string(enemy_type)
+			EnemyBridge.instance.on_enemy_spawned(id, enemy_type_str, resource)
 	
 	return id
 
