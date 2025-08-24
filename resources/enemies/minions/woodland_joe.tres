@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_resource.gd" id="1"]
+[ext_resource type="Texture2D" path="res://BespokeAssetSources/woodenJoe.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "woodland_joe"
+display_name = "Woodland Joe"
+enemy_category = "minion"
+base_health = 20.0
+base_speed = 45.0
+base_damage = 10.0
+base_scale = 1.0
+xp_value = 3
+mxp_value = 2
+sprite_texture = ExtResource("2")
+ai_type = "ranged"
+attack_range = 150.0
+attack_cooldown = 1.5
+abilities = []
+passive_abilities = ["shoot", "rapid_fire"]
+can_evolve = false
+evolution_targets = []
+spawn_weight = 60

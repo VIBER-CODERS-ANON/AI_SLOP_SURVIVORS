@@ -544,6 +544,139 @@ func spawn_enemy(enemy_type: int, position: Vector2, username: String, color: Co
 	
 	return id
 
+# New resource-based spawn method
+func spawn_from_resource(resource: EnemyResource, position: Vector2, username: String = "") -> int:
+	if not resource:
+		print("⚠️ EnemyManager: Invalid enemy resource")
+		return -1
+	
+	# Map resource enemy_id to internal type
+	var enemy_type = _get_type_from_resource_id(resource.enemy_id)
+	if enemy_type < 0:
+		print("⚠️ EnemyManager: Unknown enemy type from resource: ", resource.enemy_id)
+		return -1
+	
+	# Use color from chatter or default white
+	var color = Color.WHITE
+	if username != "" and ChatterEntityManager.instance:
+		var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
+		if chatter_data and chatter_data.has("color"):
+			color = chatter_data.color
+	
+	# Spawn using existing system
+	var id = spawn_enemy(enemy_type, position, username, color)
+	
+	if id >= 0:
+		# Override stats with resource values
+		max_healths[id] = resource.base_health
+		healths[id] = resource.base_health
+		move_speeds[id] = resource.base_speed
+		attack_damages[id] = resource.base_damage
+		scales[id] = resource.base_scale
+		attack_cooldowns[id] = resource.attack_cooldown
+		
+		# Store resource reference for abilities (if needed)
+		# TODO: Integrate with ability system
+	
+	return id
+
+func _get_type_from_resource_id(resource_id: String) -> int:
+	# Map resource IDs to internal enemy types
+	match resource_id:
+		"rat": return 0
+		"succubus": return 1
+		"woodland_joe": return 2
+		_: return -1
+
+# Helper method for getting enemy at position (for debug selection)
+func get_enemy_at_position(world_pos: Vector2, radius: float = 30.0) -> int:
+	for id in range(positions.size()):
+		if alive_flags[id] == 0:
+			continue
+		
+		if positions[id].distance_to(world_pos) <= radius:
+			return id
+	
+	return -1
+
+# Get enemies in radius (for area selections)
+func get_enemies_in_radius(world_pos: Vector2, radius: float) -> Array[int]:
+	var enemies = []
+	for id in range(positions.size()):
+		if alive_flags[id] == 0:
+			continue
+		
+		if positions[id].distance_to(world_pos) <= radius:
+			enemies.append(id)
+	
+	return enemies
+
+# Get enemy data for debug inspection
+func get_enemy_data(id: int) -> Dictionary:
+	if id < 0 or id >= alive_flags.size() or alive_flags[id] == 0:
+		return {}
+	
+	return {
+		"id": id,
+		"enemy_type": _get_type_name_string(entity_types[id]),
+		"position": positions[id],
+		"health": healths[id],
+		"max_health": max_healths[id],
+		"speed": move_speeds[id],
+		"damage": attack_damages[id],
+		"owner_username": chatter_usernames[id],
+		"color": chatter_colors[id],
+		"state": "casting" if ability_casting_flags[id] else "moving",
+		"abilities": _get_enemy_abilities(entity_types[id])
+	}
+
+func _get_enemy_abilities(enemy_type: int) -> Array:
+	match enemy_type:
+		1: # Succubus
+			return ["explode", "suction", "speed_boost"]
+		2: # Woodland Joe
+			return ["shoot", "rapid_fire"]
+		_:
+			return []
+
+# Debug methods for ability system
+func trigger_enemy_ability(enemy_id: int, ability_name: String) -> bool:
+	if enemy_id < 0 or enemy_id >= alive_flags.size() or alive_flags[enemy_id] == 0:
+		return false
+	
+	# Forward to EnemyBridge which manages abilities
+	if EnemyBridge.instance:
+		EnemyBridge.instance.execute_ability(enemy_id, ability_name)
+		return true
+	
+	return false
+
+# Debug methods for enemy manipulation
+func heal_enemy(enemy_id: int, amount: float):
+	if enemy_id < 0 or enemy_id >= alive_flags.size() or alive_flags[enemy_id] == 0:
+		return
+	
+	healths[enemy_id] = min(healths[enemy_id] + amount, max_healths[enemy_id])
+
+
+func kill_enemy(enemy_id: int):
+	if enemy_id < 0 or enemy_id >= alive_flags.size() or alive_flags[enemy_id] == 0:
+		return
+	
+	despawn_enemy(enemy_id)
+
+# Clear all enemies (for debug mode)
+func clear_all_enemies():
+	for id in range(alive_flags.size()):
+		if alive_flags[id] == 1:
+			despawn_enemy(id)
+	print("[EnemyManager] Cleared all enemies")
+
+# Set AI enabled state (for debug pause)
+func set_ai_enabled(enabled: bool):
+	# Store in a flag that _physics_process checks
+	# TODO: Implement AI pause flag
+	pass
 
 func despawn_enemy(id: int):
 	if id < 0 or id >= alive_flags.size() or alive_flags[id] == 0:
@@ -578,7 +711,7 @@ func despawn_enemy(id: int):
 		body.collision_mask = 0
 		body.set_meta("enemy_id", null)
 
-func damage_enemy(id: int, damage: float, killer_name: String = "", death_cause: String = ""):
+func damage_enemy(id: int, damage: float, killer_name: String = "debug", death_cause: String = "debug_damage"):
 	if id < 0 or id >= alive_flags.size() or alive_flags[id] == 0:
 		return
 	
@@ -1138,20 +1271,6 @@ func get_enemy_position(id: int) -> Vector2:
 		return Vector2.ZERO
 	return positions[id]
 
-func get_enemies_in_radius(center: Vector2, radius: float) -> Array[int]:
-	var result: Array[int] = []
-	var radius_squared = radius * radius
-	
-	var array_size = min(positions.size(), alive_flags.size())
-	for i in range(array_size):
-		if alive_flags[i] == 0:
-			continue
-		
-		if positions[i].distance_squared_to(center) <= radius_squared:
-			result.append(i)
-	
-	return result
-
 func get_active_enemy_count() -> int:
 	return active_count
 
@@ -1163,13 +1282,6 @@ func get_stats() -> Dictionary:
 		"spatial_grid_cells": spatial_grid.size(),
 		"flow_field_cells": flow_field.size()
 	}
-
-func clear_all_enemies():
-	# Despawn all active enemies
-	var array_size = min(positions.size(), alive_flags.size())
-	for i in range(array_size):
-		if alive_flags[i] == 1:
-			despawn_enemy(i)
 
 func reset_all_evolutions():
 	# Reset all enemies to their base type (rat)

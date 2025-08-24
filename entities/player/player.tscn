@@ -4,7 +4,7 @@
 [ext_resource type="SpriteFrames" uid="uid://b64bgqxyt8w0b" path="res://entities/player/quin_sprite_frames.tres" id="2"]
 [ext_resource type="Script" uid="uid://2jj1oj3e72kx" path="res://systems/weapon_system/arcing_sword_weapon.gd" id="3"]
 [ext_resource type="Script" uid="uid://lfewbu5i4qx2" path="res://systems/lighting/player_light.gd" id="4"]
-[ext_resource type="Script" path="res://systems/detection/player_collision_detector.gd" id="5"]
+[ext_resource type="Script" uid="uid://bv57hrhtkofbs" path="res://systems/detection/player_collision_detector.gd" id="5"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 16.0
@@ -12,7 +12,6 @@ height = 60.0
 
 [node name="Player" type="CharacterBody2D"]
 z_index = 5
-collision_mask = 1
 script = ExtResource("1")
 
 [node name="SpriteContainer" type="Node2D" parent="."]

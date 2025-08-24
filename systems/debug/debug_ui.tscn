@@ -1,0 +1,168 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/debug/debug_ui.gd" id="1"]
+
+[node name="DebugUI" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+offset_left = 10.0
+offset_top = 50.0
+offset_right = 410.0
+offset_bottom = 650.0
+custom_minimum_size = Vector2(400, 600)
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Debug Panel (F12 to toggle)"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EnemySpawnerLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Enemy Spawner"
+
+[node name="EnemySpawner" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EnemyDropdown" type="OptionButton" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner"]
+layout_mode = 2
+text = "Select Enemy Type"
+
+[node name="SpawnButtons" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner"]
+layout_mode = 2
+
+[node name="SpawnAtCursor" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner/SpawnButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Spawn at Cursor"
+
+[node name="SpawnAtPlayer" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner/SpawnButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Spawn at Player"
+
+[node name="CountLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner"]
+layout_mode = 2
+text = "Count:"
+
+[node name="CountButtons" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner"]
+layout_mode = 2
+
+[node name="Count1" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner/CountButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "1"
+
+[node name="Count5" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner/CountButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "5"
+
+[node name="Count10" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner/CountButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "10"
+
+[node name="Count100" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EnemySpawner/CountButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EntityInspectorLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Entity Inspector"
+
+[node name="EntityInspector" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="InspectorLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/EntityInspector"]
+layout_mode = 2
+text = "No Entity Selected (Shift+Click to select)"
+
+[node name="InspectorContent" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer/EntityInspector"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 100)
+text = ""
+
+[node name="AbilityContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/EntityInspector"]
+layout_mode = 2
+
+[node name="AbilitiesLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/EntityInspector/AbilityContainer"]
+layout_mode = 2
+text = "Abilities:"
+
+[node name="EntityActions" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/EntityInspector"]
+layout_mode = 2
+
+[node name="KillSelected" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EntityInspector/EntityActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Kill Selected"
+
+[node name="HealFull" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EntityInspector/EntityActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Heal Full"
+
+[node name="Damage10" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/EntityInspector/EntityActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Damage 10"
+
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="SystemControlsLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "System Controls"
+
+[node name="SystemControls" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="PauseAI" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer/SystemControls"]
+layout_mode = 2
+text = "Pause AI"
+
+[node name="ShowCollision" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer/SystemControls"]
+layout_mode = 2
+text = "Show Collision Shapes"
+
+[node name="ShowPathfinding" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer/SystemControls"]
+layout_mode = 2
+text = "Show Pathfinding Grid"
+
+[node name="ShowPerformance" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer/SystemControls"]
+layout_mode = 2
+text = "Show Performance Stats"
+
+[node name="ActionButtons" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/SystemControls"]
+layout_mode = 2
+
+[node name="ClearEnemies" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/SystemControls/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Clear All Enemies"
+
+[node name="ResetSession" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/SystemControls/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reset Session"

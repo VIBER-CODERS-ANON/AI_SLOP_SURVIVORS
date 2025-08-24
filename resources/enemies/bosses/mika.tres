@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_resource.gd" id="1"]
+[ext_resource type="Texture2D" path="res://BespokeAssetSources/mika.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "mika"
+display_name = "Mika the Beastmaster"
+enemy_category = "boss"
+base_health = 600.0
+base_speed = 50.0
+base_damage = 30.0
+base_scale = 2.5
+xp_value = 60
+mxp_value = 12
+sprite_texture = ExtResource("2")
+node_scene = null
+ai_type = "complex"
+attack_range = 60.0
+attack_cooldown = 1.8
+abilities = []
+passive_abilities = ["charge", "slam", "roar", "summon_minions"]
+can_evolve = false
+evolution_targets = []
+spawn_weight = 0
+boss_tier = 2
+boss_music = null
+death_dialogue = ["The hunt... continues...", "You are worthy prey.", "My pack will avenge me!"]

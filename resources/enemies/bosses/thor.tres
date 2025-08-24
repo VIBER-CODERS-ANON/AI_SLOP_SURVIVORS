@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_resource.gd" id="1"]
+[ext_resource type="Texture2D" path="res://entities/enemies/bosses/thor/pirate_skull.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "thor"
+display_name = "Thor the Coward"
+enemy_category = "boss"
+base_health = 500.0
+base_speed = 40.0
+base_damage = 25.0
+base_scale = 2.0
+xp_value = 50
+mxp_value = 10
+sprite_texture = ExtResource("2")
+node_scene = null
+ai_type = "complex"
+attack_range = 50.0
+attack_cooldown = 2.0
+abilities = []
+passive_abilities = ["hammer_throw", "lightning_strike", "thunder_clap"]
+can_evolve = false
+evolution_targets = []
+spawn_weight = 0
+boss_tier = 1
+boss_music = null
+death_dialogue = ["You may have defeated me, but you'll never escape!", "The storm will consume you all!", "This isn't over..."]

@@ -3,6 +3,8 @@ class_name BossFactory
 
 ## Factory class for spawning all boss types
 
+static var instance: BossFactory
+
 signal boss_spawned(boss_node: Node, boss_type: String)
 
 # Boss spawn configurations (based on original game controller methods)
@@ -58,6 +60,9 @@ const BOSS_CONFIGS = {
 
 # Reference to game scene for adding bosses
 var game_scene: Node2D
+
+func _ready():
+	instance = self
 
 func spawn_boss(boss_type: String, spawn_position: Vector2) -> Node:
 	if not BOSS_CONFIGS.has(boss_type):
@@ -198,3 +203,114 @@ func get_random_spawn_position(player_position: Vector2, min_distance: float = 3
 	var angle = randf() * TAU
 	var distance = randf_range(min_distance, max_distance)
 	return player_position + Vector2(cos(angle), sin(angle)) * distance
+
+# New resource-based spawn method
+func spawn_from_resource(resource: EnemyResource, position: Vector2, username: String = "") -> Node:
+	if not resource:
+		print("⚠️ BossFactory: Invalid boss resource")
+		return null
+	
+	if resource.enemy_category != "boss":
+		print("⚠️ BossFactory: Resource is not a boss type")
+		return null
+	
+	# Try to use existing config if available
+	if BOSS_CONFIGS.has(resource.enemy_id):
+		var boss = spawn_boss(resource.enemy_id, position)
+		if boss and username != "":
+			boss.set_meta("owner_username", username)
+		return boss
+	
+	# Create boss from resource data
+	var boss = _create_boss_from_resource(resource, position)
+	if not boss:
+		return null
+	
+	# Set owner if provided
+	if username != "":
+		boss.set_meta("owner_username", username)
+	
+	# Add to scene
+	if game_scene:
+		game_scene.add_child(boss)
+	else:
+		push_error("No game scene set for BossFactory")
+		boss.queue_free()
+		return null
+	
+	# Add to bosses group
+	boss.add_to_group("bosses")
+	
+	boss_spawned.emit(boss, resource.enemy_id)
+	print("👹 Boss '%s' spawned from resource at %s" % [resource.display_name, position])
+	
+	return boss
+
+func _create_boss_from_resource(resource: EnemyResource, spawn_position: Vector2) -> CharacterBody2D:
+	var boss = CharacterBody2D.new()
+	boss.name = resource.display_name.replace(" ", "_")
+	boss.position = spawn_position
+	
+	# Set up visuals
+	var sprite: Sprite2D = null
+	if resource.sprite_texture:
+		sprite = Sprite2D.new()
+		sprite.texture = resource.sprite_texture
+		sprite.scale = Vector2.ONE * resource.base_scale
+		boss.add_child(sprite)
+	elif resource.sprite_frames:
+		var animated_sprite = AnimatedSprite2D.new()
+		animated_sprite.sprite_frames = resource.sprite_frames
+		animated_sprite.scale = Vector2.ONE * resource.base_scale
+		boss.add_child(animated_sprite)
+		sprite = animated_sprite
+	
+	# Set up collision
+	var collision = CollisionShape2D.new()
+	var shape = CircleShape2D.new()
+	shape.radius = 30.0 * resource.base_scale
+	collision.shape = shape
+	boss.add_child(collision)
+	
+	# Add basic boss properties
+	boss.set_script(preload("res://entities/enemies/base_boss.gd") if FileAccess.file_exists("res://entities/enemies/base_boss.gd") else null)
+	
+	# Set stats from resource
+	boss.set_meta("max_health", resource.base_health)
+	boss.set_meta("health", resource.base_health)
+	boss.set_meta("speed", resource.base_speed)
+	boss.set_meta("damage", resource.base_damage)
+	boss.set_meta("attack_range", resource.attack_range)
+	boss.set_meta("attack_cooldown", resource.attack_cooldown)
+	boss.set_meta("xp_value", resource.xp_value)
+	boss.set_meta("mxp_value", resource.mxp_value)
+	
+	# Store resource reference
+	boss.set_meta("enemy_resource", resource)
+	
+	return boss
+
+# Clear all bosses (for debug mode)
+func clear_all_bosses():
+	var bosses = get_tree().get_nodes_in_group("bosses")
+	for boss in bosses:
+		if is_instance_valid(boss):
+			boss.queue_free()
+	print("[BossFactory] Cleared all bosses")
+
+# Get boss at position (for debug selection)
+func get_boss_at_position(world_pos: Vector2) -> Node:
+	var bosses = get_tree().get_nodes_in_group("bosses")
+	var closest_boss = null
+	var closest_distance = 50.0  # Maximum selection distance
+	
+	for boss in bosses:
+		if not is_instance_valid(boss):
+			continue
+		
+		var distance = boss.global_position.distance_to(world_pos)
+		if distance < closest_distance:
+			closest_distance = distance
+			closest_boss = boss
+	
+	return closest_boss

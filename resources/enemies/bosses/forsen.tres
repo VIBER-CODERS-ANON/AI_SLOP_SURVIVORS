@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_resource.gd" id="1"]
+[ext_resource type="Texture2D" path="res://BespokeAssetSources/forsen/forsen.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "forsen"
+display_name = "Forsen the Chaotic"
+enemy_category = "boss"
+base_health = 700.0
+base_speed = 45.0
+base_damage = 35.0
+base_scale = 2.2
+xp_value = 70
+mxp_value = 15
+sprite_texture = ExtResource("2")
+node_scene = null
+ai_type = "complex"
+attack_range = 70.0
+attack_cooldown = 1.5
+abilities = []
+passive_abilities = ["spawn_minions", "rage", "teleport", "chaos_blast"]
+can_evolve = false
+evolution_targets = []
+spawn_weight = 0
+boss_tier = 3
+boss_music = null
+death_dialogue = ["UNLUCKY", "forsenE", "I'll be back with more snus!"]

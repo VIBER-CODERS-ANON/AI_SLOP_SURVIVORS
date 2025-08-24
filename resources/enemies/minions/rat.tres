@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_resource.gd" id="1"]
+[ext_resource type="Texture2D" path="res://BespokeAssetSources/rat/ratwalk1.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "rat"
+display_name = "Rat"
+enemy_category = "minion"
+base_health = 10.0
+base_speed = 80.0
+base_damage = 5.0
+base_scale = 0.8
+xp_value = 1
+mxp_value = 1
+sprite_texture = ExtResource("2")
+ai_type = "basic_chase"
+attack_range = 30.0
+attack_cooldown = 1.0
+abilities = []
+passive_abilities = []
+can_evolve = false
+evolution_targets = []
+spawn_weight = 100

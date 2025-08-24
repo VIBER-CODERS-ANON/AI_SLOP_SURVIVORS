@@ -19,7 +19,8 @@ var state_manager: GameStateManager
 var cursor_manager: CursorManager
 var system_initializer: SystemInitializer
 var command_processor: CommandProcessor
-var cheat_manager: CheatManager
+var debug_manager: DebugManager
+var spawn_manager: SpawnManager
 
 # References
 var player: Player
@@ -52,11 +53,15 @@ func _ready():
 	command_processor.game_controller = self
 	add_child(command_processor)
 	
-	# Initialize cheat manager
-	cheat_manager = CheatManager.new()
-	cheat_manager.name = "CheatManager"
-	cheat_manager.game_controller = self
-	add_child(cheat_manager)
+	# Initialize spawn manager (must be before debug manager)
+	spawn_manager = SpawnManager.new()
+	spawn_manager.name = "SpawnManager"
+	add_child(spawn_manager)
+	
+	# Initialize debug manager (replaces old cheat manager)
+	debug_manager = DebugManager.new()
+	debug_manager.name = "DebugManager"
+	add_child(debug_manager)
 	
 	# Initialize system initializer and all game systems
 	system_initializer = SystemInitializer.new()
@@ -147,9 +152,6 @@ func _setup_game_world():
 	
 	# Connect to Twitch
 	_connect_twitch_bot()
-	
-	# Show cheat instructions
-	input_manager.show_cheat_instructions()
 
 func _create_player():
 	var player_scene = ResourceManager.load_scene("res://entities/player/player.tscn")
@@ -167,19 +169,11 @@ func _create_player():
 	player.health_changed.connect(ui_coordinator._on_player_health_changed)
 	player.experience_gained.connect(ui_coordinator._on_player_experience_gained)
 	
-	# Set player reference for input manager and cheat manager
+	# Set player reference for input manager
 	input_manager.player = player
-	cheat_manager.player = player
 
 func _connect_systems():
-	# Connect input manager signals to cheat manager
-	input_manager.xp_orbs_requested.connect(cheat_manager.spawn_xp_orbs_around_player)
-	input_manager.boss_vote_requested.connect(cheat_manager.trigger_boss_vote)
-	input_manager.mxp_granted.connect(cheat_manager.grant_global_mxp)
-	input_manager.hp_boost_requested.connect(func(_amount): cheat_manager.grant_player_health_boost())
-	input_manager.rats_spawn_requested.connect(cheat_manager.spawn_test_rats)
-	input_manager.boss_spawn_requested.connect(cheat_manager.spawn_boss_cheat)
-	input_manager.clear_enemies_requested.connect(cheat_manager.clear_all_enemies)
+	# Connect input manager (debug functionality moved to DebugManager)
 	input_manager.pause_toggled.connect(_handle_pause_toggle)
 	
 	# Connect pause menu signals
@@ -333,3 +327,10 @@ func spawn_forsen_boss(spawn_pos: Vector2) -> Node:
 	else:
 		push_error("BossFactory not available")
 		return null
+
+# Display notification to the player
+func display_notification(text: String, color: Color = Color.WHITE):
+	if ui_coordinator and ui_coordinator.has_method("show_notification"):
+		ui_coordinator.show_notification(text, color)
+	else:
+		print("[Notification] " + text)
