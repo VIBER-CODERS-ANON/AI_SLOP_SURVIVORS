@@ -9,7 +9,7 @@ class_name AbilityResource
 @export_group("Ability Configuration")
 @export var cooldown: float = 5.0
 @export var damage: float = 20.0
-@export var range: float = 100.0
+@export var ability_range: float = 100.0
 @export var duration: float = 0.0  # For channeled/continuous abilities
 
 # Trigger Configuration

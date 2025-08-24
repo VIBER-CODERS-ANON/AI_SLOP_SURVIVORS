@@ -14,6 +14,11 @@ const MAX_ENEMIES: int = 1000
 
 # Enemy movement and attack constants
 
+# AI Types
+const AI_TYPE_BASIC_CHASE = 0
+const AI_TYPE_RANGED = 1
+const AI_TYPE_SPECIAL = 2
+
 # Succubus animation constants
 const SUCCUBUS_FRAMES_H: int = 6
 const SUCCUBUS_FRAMES_V: int = 1
@@ -64,6 +69,7 @@ var _halted: PackedByteArray                    # 0 = moving, 1 = halted near pl
 # Entity metadata
 var alive_flags: PackedByteArray  # 0 = dead, 1 = alive
 var entity_types: PackedByteArray  # 0 = rat, 1 = succubus, 2 = woodland_joe (bosses use node-based system)
+var ai_types: PackedByteArray  # AI behavior types: 0 = basic_chase, 1 = ranged, 2 = special
 var chatter_usernames: Array[String]  # Username for each entity
 var chatter_colors: PackedColorArray  # Color for each entity
 var rarity_types: PackedByteArray  # NPCRarity.Type per entity (COMMON/MAGIC/RARE/UNIQUE)
@@ -204,6 +210,8 @@ func _initialize_arrays():
 	alive_flags.resize(initial_capacity)
 	entity_types = PackedByteArray()
 	entity_types.resize(initial_capacity)
+	ai_types = PackedByteArray()
+	ai_types.resize(initial_capacity)
 	chatter_usernames = []
 	chatter_usernames.resize(initial_capacity)
 	chatter_colors = PackedColorArray()
@@ -575,6 +583,17 @@ func spawn_from_resource(resource: EnemyResource, position: Vector2, username: S
 		scales[id] = resource.base_scale
 		attack_cooldowns[id] = resource.attack_cooldown
 		
+		# Set AI type based on resource
+		match resource.ai_type:
+			"basic_chase":
+				ai_types[id] = AI_TYPE_BASIC_CHASE
+			"ranged":
+				ai_types[id] = AI_TYPE_RANGED
+			"special":
+				ai_types[id] = AI_TYPE_SPECIAL
+			_:
+				ai_types[id] = AI_TYPE_BASIC_CHASE
+		
 		# Notify bridge system with the resource for ability setup
 		if EnemyBridge.instance:
 			var enemy_type_str = _get_type_name_string(enemy_type)
@@ -748,26 +767,34 @@ func _process_enemy_slice(delta: float):
 func _update_enemy_movement(id: int, delta: float):
 	var current_pos = positions[id]
 	
-	# Check if enemy is within attack range - stop if so (except succubus)
+	# Check if using ranged AI (for succubus and other ranged enemies)
+	var is_ranged = false
+	if id < ai_types.size():
+		is_ranged = (ai_types[id] == AI_TYPE_RANGED)
+	
+	# Check if enemy is within attack range - stop if so (except ranged enemies)
 	var distance_to_edge = PlayerCollisionDetector.get_distance_to_player_capsule_edge(player_position, current_pos)
-	if entity_types[id] != 1 and distance_to_edge <= ATTACK_DETECTION_RADIUS:
+	if not is_ranged and distance_to_edge <= ATTACK_DETECTION_RADIUS:
 		velocities[id] = Vector2.ZERO
 		return  # Skip all other movement logic
 	
 	# Get flow-field direction
 	var target_direction = Vector2.ZERO
 	
-	# Special movement for succubus (entity_type 1) - maintain optimal range
-	if entity_types[id] == 1:
+	# Ranged AI movement - maintain optimal range
+	if is_ranged:
 		var distance = current_pos.distance_to(player_position)
-		if distance < 170.0:  # Too close
+		var optimal_min = 170.0
+		var optimal_max = 195.0
+		
+		if distance < optimal_min:  # Too close
 			# Back away
 			target_direction = (current_pos - player_position).normalized()
-		elif distance > 195.0:  # Too far for suction (200 range)
+		elif distance > optimal_max:  # Too far for abilities
 			# Move closer
 			target_direction = (player_position - current_pos).normalized()
 		else:
-			# In optimal range (170-195), strafe around player
+			# In optimal range, strafe around player
 			var tangent = (player_position - current_pos).rotated(PI/2.0).normalized()
 			target_direction = tangent * behavior_strafe_dir[id]
 	elif enable_flow_field:
@@ -1217,6 +1244,7 @@ func _grow_arrays():
 	_halted.resize(new_size)
 	alive_flags.resize(new_size)
 	entity_types.resize(new_size)
+	ai_types.resize(new_size)
 	chatter_usernames.resize(new_size)
 	chatter_colors.resize(new_size)
 	rarity_types.resize(new_size)

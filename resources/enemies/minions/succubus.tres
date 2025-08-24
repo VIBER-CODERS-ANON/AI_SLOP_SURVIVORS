@@ -1,25 +1,27 @@
-[gd_resource type="Resource" script_class="EnemyResource" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EnemyResource" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://resources/enemy_resource.gd" id="1"]
 [ext_resource type="Texture2D" path="res://entities/enemies/regular/succubus/succubus_spritesheet.png" id="2"]
+[ext_resource type="Resource" path="res://resources/abilities/heart_projectile.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/abilities/suction.tres" id="4"]
 
 [resource]
 script = ExtResource("1")
 enemy_id = "succubus"
 display_name = "Succubus"
 enemy_category = "minion"
-base_health = 25.0
-base_speed = 60.0
-base_damage = 8.0
+base_health = 50.0
+base_speed = 180.0
+base_damage = 0.0
 base_scale = 1.0
 xp_value = 2
-mxp_value = 2
+mxp_value = 10
 sprite_texture = ExtResource("2")
-ai_type = "basic_chase"
-attack_range = 30.0
-attack_cooldown = 1.2
-abilities = []
-passive_abilities = ["explode", "suction", "speed_boost"]
+ai_type = "ranged"
+attack_range = 400.0
+attack_cooldown = 999.0
+abilities = [ExtResource("4"), ExtResource("3")]
+passive_abilities = ["flying", "evolved"]
 can_evolve = false
 evolution_targets = []
-spawn_weight = 80
+spawn_weight = 20

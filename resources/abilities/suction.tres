@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AbilityResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/ability_resource.gd" id="1"]
+[ext_resource type="AudioStream" path="res://BespokeAssetSources/Succubus/succAudioLoop.mp3" id="2"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "suction"
+display_name = "Life Drain"
+description = "Channels a life-draining beam at the target"
+cooldown = 30.0
+damage = 18.75
+ability_range = 200.0
+duration = 3.0
+trigger_type = "channeled"
+cast_time = 0.8
+projectile_speed = 0.0
+effect_scene = null
+impact_scene = null
+cast_animation = ""
+sound_effect = ExtResource("2")
+custom_script = null
+additional_parameters = {
+    "damage_delay": 0.8,
+    "break_distance_multiplier": 1.2,
+    "beam_color": Color(1.0, 0.2, 0.5, 0.7),
+    "beam_width": 20.0,
+    "channel_duration": 3.0,
+    "damage_total": 18.75
+}

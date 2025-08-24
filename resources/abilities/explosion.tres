@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="AbilityResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/ability_resource.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "explosion"
+display_name = "Explode"
+description = "Self-destruct dealing area damage"
+cooldown = 0.0
+damage = 100.0
+range = 150.0
+duration = 0.0
+trigger_type = "instant"
+cast_time = 0.0
+projectile_speed = 0.0
+effect_scene = null
+impact_scene = null
+cast_animation = ""
+sound_effect = null
+custom_script = null
+additional_parameters = {
+    "command_only": true,
+    "aoe_radius": 150.0,
+    "self_destruct": true
+}

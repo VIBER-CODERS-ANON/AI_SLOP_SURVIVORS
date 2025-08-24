@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="AbilityResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/ability_resource.gd" id="1"]
+[ext_resource type="AudioStream" path="res://audio/sfx_quick_20250814_104353.mp3" id="2"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "heart_projectile"
+display_name = "Heart Projectile"
+description = "Shoots a heart-shaped projectile that damages enemies"
+cooldown = 1.0
+damage = 10.0
+ability_range = 400.0
+duration = 0.0
+trigger_type = "projectile"
+cast_time = 1.0
+projectile_speed = 300.0
+effect_scene = null
+impact_scene = null
+cast_animation = ""
+sound_effect = ExtResource("2")
+custom_script = null
+additional_parameters = {
+    "windup_duration": 1.0,
+    "projectile_lifetime": 3.0,
+    "projectile_scene_path": "res://entities/enemies/abilities/heart_projectile.tscn",
+    "kiss_sound_path": "res://BespokeAssetSources/Succubus/succAudioLoop.mp3"
+}

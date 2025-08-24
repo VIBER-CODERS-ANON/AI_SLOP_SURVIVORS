@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="AbilityResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/ability_resource.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "fart"
+display_name = "Fart"
+description = "Creates a poison cloud"
+cooldown = 0.0
+damage = 5.0
+range = 100.0
+duration = 5.0
+trigger_type = "area"
+cast_time = 0.0
+projectile_speed = 0.0
+effect_scene = null
+impact_scene = null
+cast_animation = ""
+sound_effect = null
+custom_script = null
+additional_parameters = {
+    "command_only": true,
+    "cloud_radius": 100.0,
+    "dot_damage": 5.0
+}

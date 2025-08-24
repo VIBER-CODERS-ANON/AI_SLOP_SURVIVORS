@@ -9,7 +9,7 @@ static var instance: EnemyBridge
 
 # Preload classes for complex ability execution
 const V2AbilityProxyClass = preload("res://systems/core/v2_ability_proxy.gd")
-const SuctionAbilityClass = preload("res://systems/ability_system/abilities/suction_ability_v2.gd")
+# Removed - suction now handled by AbilityExecutor
 
 # System references
 var enemy_manager: EnemyManager
@@ -75,9 +75,11 @@ func _process(delta: float):
 func on_enemy_spawned(enemy_id: int, enemy_type_str: String, resource: EnemyResource = null):
 	# If we have a resource with abilities, register them with AbilityExecutor
 	if resource and resource.abilities.size() > 0 and ability_executor:
+		print("🎯 Registering %d abilities for %s (id:%d)" % [resource.abilities.size(), enemy_type_str, enemy_id])
 		ability_executor.register_entity_abilities(enemy_id, resource.abilities)
 	else:
 		# Fall back to legacy system
+		print("⚠️ Using legacy abilities for %s (id:%d)" % [enemy_type_str, enemy_id])
 		_setup_enemy_abilities(enemy_id, enemy_type_str)
 	
 	_setup_enemy_effects(enemy_id, enemy_type_str)
@@ -172,28 +174,15 @@ func _update_enemy_abilities(_delta: float):
 		if enemy_id < enemy_manager.ability_casting_flags.size() and enemy_manager.ability_casting_flags[enemy_id] > 0:
 			continue
 		
-		# Special handling for succubus (entity_type 1) - use enemy_manager cooldown
-		if enemy_id < enemy_manager.entity_types.size() and enemy_manager.entity_types[enemy_id] == 1:
-			# Check shared cooldown in enemy_manager
-			if enemy_manager.ability_cooldowns[enemy_id] > 0:
-				continue  # Still on cooldown
-			
-			# Try abilities in priority order
-			var abilities = enemy_abilities[enemy_id]
-			for ability in abilities:
+		# All enemies use the same cooldown system now
+		var abilities = enemy_abilities[enemy_id]
+		for ability in abilities:
+			# Check if ability is off cooldown
+			if current_time - ability.last_used >= ability.cooldown:
+				# Check if conditions are met to use ability
 				if _should_use_ability(enemy_id, ability):
 					_execute_ability(enemy_id, ability)
-					break  # Only execute one ability
-		else:
-			# Regular enemies use the old system
-			var abilities = enemy_abilities[enemy_id]
-			for ability in abilities:
-				# Check if ability is off cooldown
-				if current_time - ability.last_used >= ability.cooldown:
-					# Check if conditions are met to use ability
-					if _should_use_ability(enemy_id, ability):
-						_execute_ability(enemy_id, ability)
-						ability.last_used = current_time
+					ability.last_used = current_time
 
 func _update_active_effects(delta: float):
 	# Boost timers are now handled in enemy_manager's _physics_process
@@ -227,13 +216,6 @@ func _should_use_ability(enemy_id: int, ability: Dictionary) -> bool:
 		"boost":
 			# Boosts should only happen via !boost command, not automatically
 			return false
-		"heart_projectile":
-			# Use projectile when in range (must match ability's base_range of 400)
-			return distance < 400.0 and distance > 50.0
-		"suction":
-			# Only attempt suction when actually in range
-			var in_range = distance <= 200.0
-			return in_range
 		"suicide_bomb":
 			# Proximity trigger for ugandan warriors
 			return distance < 120.0 and randf() < 0.15
@@ -259,9 +241,13 @@ func _execute_ability(enemy_id: int, ability: Dictionary):
 			# Boost is now handled via execute_command_for_enemy
 			execute_command_for_enemy(enemy_id, "boost")
 		"heart_projectile":
-			_fire_heart_projectile(enemy_id, enemy_pos, ability.config)
+			# Now handled by AbilityExecutor - should not reach here
+			print("⚠️ Old heart projectile code reached - this shouldn't happen!")
+			pass
 		"suction":
-			_start_suction_ability(enemy_id, enemy_pos, ability.config)
+			# Now handled by AbilityExecutor - should not reach here
+			print("⚠️ Old suction code reached - this shouldn't happen!")
+			pass
 		"suicide_bomb":
 			_trigger_suicide_bomb(enemy_id, enemy_pos, ability.config)
 		"telegraph_charge":
@@ -334,6 +320,9 @@ func _trigger_fart_cloud(enemy_id: int, pos: Vector2, config: Dictionary):
 # Old multiplier-based boost functions removed
 
 func _fire_heart_projectile(enemy_id: int, pos: Vector2, _config: Dictionary):
+	# OLD CODE - DISABLED - Heart projectile now handled by AbilityExecutor
+	return
+	
 	if not GameController.instance or not GameController.instance.player:
 		return
 	
@@ -367,7 +356,7 @@ func _fire_heart_projectile(enemy_id: int, pos: Vector2, _config: Dictionary):
 	enemy_manager.ability_casting_flags[enemy_id] = 1
 	
 	# Attach heart projectile ability - this will handle windup, animation, etc
-	if proxy.attach_ability(HeartProjectileAbility, target_data):
+	if false:  # DISABLED - HeartProjectileAbility class no longer exists
 		print("💖 Enemy %d starting heart projectile cast" % enemy_id)
 		# Set cooldown for succubus (entity_type 1)
 		if enemy_manager.entity_types[enemy_id] == 1:
@@ -378,6 +367,9 @@ func _fire_heart_projectile(enemy_id: int, pos: Vector2, _config: Dictionary):
 		proxy.queue_free()
 
 func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
+	# OLD CODE - DISABLED - Suction now handled by AbilityExecutor
+	return
+	
 	if not GameController.instance or not GameController.instance.player:
 		return
 	
@@ -418,7 +410,7 @@ func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
 	}
 	
 	# Attach and execute ability
-	if proxy.attach_ability(SuctionAbilityClass, target_data):
+	if false:  # DISABLED - SuctionAbilityClass no longer exists
 		print("💜 Suction ability started for enemy %d at distance %.1f" % [enemy_id, pos.distance_to(GameController.instance.player.global_position)])
 		
 		# Set cooldown for succubus (entity_type 1) 

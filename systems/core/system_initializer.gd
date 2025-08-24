@@ -50,6 +50,10 @@ func initialize_all_systems(parent: Node):
 	_create_and_add_system(parent, "EnemyManager", 
 		preload("res://systems/core/enemy_manager.gd").new())
 	
+	# Ability Executor - MUST come before EnemyBridge
+	_create_and_add_system(parent, "AbilityExecutor",
+		preload("res://systems/core/ability_executor.gd").new())
+	
 	# Enemy Bridge
 	_create_and_add_system(parent, "EnemyBridge", 
 		preload("res://systems/core/enemy_bridge.gd").new())

@@ -32,7 +32,13 @@ func _scan_directory_for_resources(dir: DirAccess, path: String):
 			var resource = load(full_path)
 			if resource is EnemyResource:
 				loaded_resources[resource.enemy_id] = resource
-				print("[SpawnManager] Loaded enemy resource: ", resource.enemy_id)
+				print("[SpawnManager] Loaded enemy resource: %s with %d abilities" % [resource.enemy_id, resource.abilities.size()])
+				# Debug ability loading
+				for ability in resource.abilities:
+					if ability is AbilityResource:
+						print("  - Ability: %s" % ability.ability_id)
+					else:
+						print("  - Invalid ability reference!")
 		file_name = dir.get_next()
 
 # Unified spawn interface
