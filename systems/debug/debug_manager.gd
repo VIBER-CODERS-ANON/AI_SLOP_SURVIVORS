@@ -136,13 +136,13 @@ func _hide_debug_ui():
 		debug_ui.visible = false
 
 # Debug UI callbacks
-func _on_spawn_requested(enemy_id: String, position: Vector2, count: int, owner: String):
+func _on_spawn_requested(enemy_id: String, position: Vector2, count: int, owner_name: String):
 	if not SpawnManager.instance:
 		return
 	
 	for i in count:
 		var spawn_pos = position + Vector2(randf() * 50 - 25, randf() * 50 - 25)
-		SpawnManager.instance.spawn_entity_by_id(enemy_id, spawn_pos, owner)
+		SpawnManager.instance.spawn_entity_by_id(enemy_id, spawn_pos, owner_name)
 
 func _on_entity_action(action: String, params: Dictionary):
 	match action:

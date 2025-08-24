@@ -431,16 +431,18 @@ func _trigger_suicide_bomb(enemy_id: int, pos: Vector2, config: Dictionary):
 	# Telegraph effect
 	_create_bomb_telegraph(pos, telegraph_time)
 	
-	# Delay the actual explosion
-	get_tree().create_timer(telegraph_time).timeout.connect(func():
-		# Check if enemy is still alive
-		if enemy_id < enemy_manager.alive_flags.size() and enemy_manager.alive_flags[enemy_id] == 1:
-			_trigger_explosion(enemy_id, pos, {"damage": damage, "radius": radius})
-			# Kill the enemy
-			enemy_manager.despawn_enemy(enemy_id)
-	)
+	# Delay the actual explosion - use bind to avoid lambda capture
+	var timer = get_tree().create_timer(telegraph_time)
+	timer.timeout.connect(_delayed_explosion.bind(enemy_id, pos, damage, radius))
 	
 	print("💣 Enemy %d priming suicide bomb" % enemy_id)
+
+func _delayed_explosion(enemy_id: int, pos: Vector2, damage: float, radius: float):
+	# Check if enemy is still alive
+	if enemy_id < enemy_manager.alive_flags.size() and enemy_manager.alive_flags[enemy_id] == 1:
+		_trigger_explosion(enemy_id, pos, {"damage": damage, "radius": radius})
+		# Kill the enemy
+		enemy_manager.despawn_enemy(enemy_id)
 
 func _trigger_telegraph_charge(enemy_id: int, pos: Vector2, config: Dictionary):
 	if not GameController.instance or not GameController.instance.player:
@@ -453,22 +455,26 @@ func _trigger_telegraph_charge(enemy_id: int, pos: Vector2, config: Dictionary):
 	# Show telegraph line
 	_create_charge_telegraph(pos, player_pos, telegraph_time)
 	
-	# After telegraph, execute charge
-	get_tree().create_timer(telegraph_time).timeout.connect(func():
-		if enemy_id < enemy_manager.alive_flags.size() and enemy_manager.alive_flags[enemy_id] == 1:
-			# Set velocity toward target
-			var direction = (player_pos - pos).normalized()
-			enemy_manager.velocities[enemy_id] = direction * charge_speed
-			enemy_manager.move_speeds[enemy_id] = charge_speed
-			
-			# Charge for a short duration then despawn (like horse enemy)
-			get_tree().create_timer(2.0).timeout.connect(func():
-				if enemy_id < enemy_manager.alive_flags.size():
-					enemy_manager.despawn_enemy(enemy_id)
-			)
-	)
+	# After telegraph, execute charge - use bind to avoid lambda capture
+	var timer = get_tree().create_timer(telegraph_time)
+	timer.timeout.connect(_execute_charge.bind(enemy_id, pos, player_pos, charge_speed))
 	
 	print("🐎 Enemy %d charging!" % enemy_id)
+
+func _execute_charge(enemy_id: int, pos: Vector2, player_pos: Vector2, charge_speed: float):
+	if enemy_id < enemy_manager.alive_flags.size() and enemy_manager.alive_flags[enemy_id] == 1:
+		# Set velocity toward target
+		var direction = (player_pos - pos).normalized()
+		enemy_manager.velocities[enemy_id] = direction * charge_speed
+		enemy_manager.move_speeds[enemy_id] = charge_speed
+		
+		# Charge for a short duration then despawn
+		var timer = get_tree().create_timer(2.0)
+		timer.timeout.connect(_despawn_enemy.bind(enemy_id))
+
+func _despawn_enemy(enemy_id: int):
+	if enemy_id < enemy_manager.alive_flags.size():
+		enemy_manager.despawn_enemy(enemy_id)
 
 func _create_bomb_telegraph(pos: Vector2, duration: float):
 	# Create a warning visual at the bomb position
@@ -484,11 +490,9 @@ func _create_bomb_telegraph(pos: Vector2, duration: float):
 	tween.tween_property(warning, "modulate:a", 0.2, 0.2)
 	tween.tween_property(warning, "modulate:a", 0.8, 0.2)
 	
-	# Remove after duration
-	get_tree().create_timer(duration).timeout.connect(func():
-		if is_instance_valid(warning):
-			warning.queue_free()
-	)
+	# Remove after duration - use bind to avoid lambda capture
+	var timer = get_tree().create_timer(duration)
+	timer.timeout.connect(_cleanup_node.bind(warning))
 
 func _create_charge_telegraph(start_pos: Vector2, end_pos: Vector2, duration: float):
 	# Create a line showing the charge path
@@ -499,11 +503,13 @@ func _create_charge_telegraph(start_pos: Vector2, end_pos: Vector2, duration: fl
 	line.default_color = Color(1, 1, 0, 0.7)
 	GameController.instance.add_child(line)
 	
-	# Remove after duration
-	get_tree().create_timer(duration).timeout.connect(func():
-		if is_instance_valid(line):
-			line.queue_free()
-	)
+	# Remove after duration - use bind to avoid lambda capture
+	var timer = get_tree().create_timer(duration)
+	timer.timeout.connect(_cleanup_node.bind(line))
+
+func _cleanup_node(node: Node):
+	if is_instance_valid(node):
+		node.queue_free()
 
 func _create_enemy_light(enemy_id: int, pos: Vector2, enemy_type_str: String):
 	# Create light for bosses and special enemies

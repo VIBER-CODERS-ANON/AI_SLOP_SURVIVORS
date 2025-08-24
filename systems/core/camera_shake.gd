@@ -110,19 +110,29 @@ func _apply_shake_to_camera(camera: Camera2D, intensity: float, duration: float)
 		"timer": null
 	}
 	
+	# Add to active shakes first
+	active_shakes.append(shake_data)
+	
 	# Create timer for this shake
 	var timer = Timer.new()
 	timer.wait_time = 0.016  # ~60 FPS
 	timer.one_shot = false
 	shake_data.timer = timer
 	
-	# Connect timer to shake update
-	timer.timeout.connect(func(): _update_shake(shake_data))
+	# Connect timer with itself as parameter to avoid lambda capture
+	timer.timeout.connect(_on_shake_timer_timeout.bind(timer))
 	
-	# Add to active shakes and start
-	active_shakes.append(shake_data)
+	# Add timer and start
 	add_child(timer)
 	timer.start()
+
+## Timer callback that finds shake data by timer reference
+func _on_shake_timer_timeout(timer: Timer):
+	# Find the shake data that owns this timer
+	for shake_data in active_shakes:
+		if shake_data.timer == timer:
+			_update_shake(shake_data)
+			return
 
 ## Update shake effect each frame
 func _update_shake(shake_data: Dictionary):

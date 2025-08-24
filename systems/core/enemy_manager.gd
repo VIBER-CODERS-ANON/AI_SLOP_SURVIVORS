@@ -673,7 +673,7 @@ func clear_all_enemies():
 	print("[EnemyManager] Cleared all enemies")
 
 # Set AI enabled state (for debug pause)
-func set_ai_enabled(enabled: bool):
+func set_ai_enabled(_enabled: bool):
 	# Store in a flag that _physics_process checks
 	# TODO: Implement AI pause flag
 	pass

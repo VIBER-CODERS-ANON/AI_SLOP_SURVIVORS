@@ -224,10 +224,10 @@ func spawn_from_resource(resource: EnemyResource, position: Vector2, username: S
 	# Try to use existing config if available
 	var boss_type = boss_type_map.get(resource.enemy_id, resource.enemy_id)
 	if BOSS_CONFIGS.has(boss_type):
-		var boss = spawn_boss(boss_type, position)
-		if boss and username != "":
-			boss.set_meta("owner_username", username)
-		return boss
+		var spawned_boss = spawn_boss(boss_type, position)
+		if spawned_boss and username != "":
+			spawned_boss.set_meta("owner_username", username)
+		return spawned_boss
 	
 	# Create boss from resource data
 	var boss = _create_boss_from_resource(resource, position)
