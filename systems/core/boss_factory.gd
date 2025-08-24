@@ -214,9 +214,17 @@ func spawn_from_resource(resource: EnemyResource, position: Vector2, username: S
 		print("⚠️ BossFactory: Resource is not a boss type")
 		return null
 	
+	# Map resource IDs to boss types
+	var boss_type_map = {
+		"thor": "thor",
+		"mika": "mika", 
+		"forsen": "forsen"
+	}
+	
 	# Try to use existing config if available
-	if BOSS_CONFIGS.has(resource.enemy_id):
-		var boss = spawn_boss(resource.enemy_id, position)
+	var boss_type = boss_type_map.get(resource.enemy_id, resource.enemy_id)
+	if BOSS_CONFIGS.has(boss_type):
+		var boss = spawn_boss(boss_type, position)
 		if boss and username != "":
 			boss.set_meta("owner_username", username)
 		return boss

@@ -102,14 +102,28 @@ func _show_debug_ui():
 		var debug_ui_scene = load("res://systems/debug/debug_ui.tscn")
 		if debug_ui_scene:
 			debug_ui = debug_ui_scene.instantiate()
-			# Add to UI layer instead of root
-			var ui_layer = get_tree().get_first_node_in_group("ui_layer")
-			if ui_layer:
+			# Find the UILayer canvas layer
+			var ui_layer = get_tree().root.get_node_or_null("Game/UILayer")
+			if not ui_layer:
+				# Try alternate path
+				ui_layer = get_tree().get_first_node_in_group("UILayer")
+			if not ui_layer:
+				# Try to find any CanvasLayer
+				for child in get_tree().root.get_children():
+					if child is CanvasLayer:
+						ui_layer = child
+						break
+			
+			if ui_layer and ui_layer is CanvasLayer:
 				ui_layer.add_child(debug_ui)
 			else:
-				# Fallback: add to root but ensure it's on top
-				get_tree().root.add_child(debug_ui)
-				debug_ui.z_index = 100  # Ensure it's on top
+				# Create our own CanvasLayer
+				var canvas_layer = CanvasLayer.new()
+				canvas_layer.name = "DebugUILayer"
+				canvas_layer.layer = 10  # High layer to be on top
+				get_tree().root.add_child(canvas_layer)
+				canvas_layer.add_child(debug_ui)
+			
 			debug_ui.connect("spawn_requested", _on_spawn_requested)
 			debug_ui.connect("entity_action", _on_entity_action)
 			debug_ui.connect("system_control_changed", _on_system_control_changed)
