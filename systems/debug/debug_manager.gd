@@ -1,311 +1,298 @@
 extends Node
 class_name DebugManager
 
+## COMPREHENSIVE DEBUG SYSTEM
+## Provides complete visibility and control over game state
+## Integrates enemy spawning, inspection, and player status monitoring
+
 static var instance: DebugManager
 
 signal debug_mode_toggled(enabled: bool)
-signal entity_selected(entity_data: Dictionary)
-signal entity_inspected(entity_data: Dictionary)
-
-var debug_enabled: bool = false
-var selected_entity_data: Dictionary = {}
-var debug_ui: Control
-var entity_selector: EntitySelector
-var ability_trigger: DebugAbilityTrigger
 
 # Debug state
-var ai_paused: bool = false
-var show_collision_shapes: bool = false
-var show_pathfinding_grid: bool = false
-var show_performance_stats: bool = false
+var is_debug_mode: bool = false
+var debug_ui: Control
+var debug_container: VBoxContainer
+
+# Debug panels
+var enemy_debug_panel: EnemyDebugPanel
+var player_status_panel: PlayerStatusDebugPanel
+
+# Selection state
+var selected_entity_id: int = -1
+var is_selection_enabled: bool = false
 
 func _ready():
 	instance = self
-	
-	# Create debug subsystems
-	entity_selector = EntitySelector.new()
-	entity_selector.name = "EntitySelector"
-	add_child(entity_selector)
-	
-	ability_trigger = DebugAbilityTrigger.new()
-	ability_trigger.name = "DebugAbilityTrigger"
-	add_child(ability_trigger)
-	
-	# Connect to input for F12 toggle
-	set_process_input(true)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	_create_debug_ui()
+	set_process_unhandled_input(true)
 
-func _input(event):
-	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_F12:
-			toggle_debug_mode()
-			get_viewport().set_input_as_handled()
+func _unhandled_input(event: InputEvent):
+	# F12 toggles debug mode
+	if event.is_action_pressed("ui_debug_toggle") or (event is InputEventKey and event.keycode == KEY_F12 and event.pressed):
+		toggle_debug_mode()
+		get_viewport().set_input_as_handled()
+	
+	# Click selection in debug mode
+	if is_debug_mode and is_selection_enabled and event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			_handle_entity_click(event.position)
 
 func toggle_debug_mode():
-	debug_enabled = !debug_enabled
-	emit_signal("debug_mode_toggled", debug_enabled)
+	is_debug_mode = !is_debug_mode
 	
-	if debug_enabled:
+	if is_debug_mode:
 		_enter_debug_mode()
 	else:
 		_exit_debug_mode()
+	
+	debug_mode_toggled.emit(is_debug_mode)
 
 func _enter_debug_mode():
-	print("[DebugManager] Entering debug mode")
-	
-	# Disable Twitch spawning
-	if DebugSettings.instance:
-		DebugSettings.instance.spawning_enabled = false
-	
-	# Clear all enemies
-	if EnemyManager.instance:
-		EnemyManager.instance.clear_all_enemies()
-	if BossFactory.instance:
-		BossFactory.instance.clear_all_bosses()
-	
-	# Reset player state for testing
-	if GameController.instance and GameController.instance.player:
-		GameController.instance.player.current_health = GameController.instance.player.max_health
+	# Pause normal spawning
+	if TicketSpawnManager.instance:
+		TicketSpawnManager.instance.set_process(false)
 	
 	# Show debug UI
-	_show_debug_ui()
+	debug_ui.visible = true
 	
-	# Notify user
-	if GameController.instance:
-		GameController.instance.display_notification("Debug Mode Enabled", Color.CYAN)
+	# Enable entity selection
+	is_selection_enabled = true
+	
+	# Update displays
+	_update_all_panels()
+	
+	print("🔧 Debug Mode ENABLED - Press F12 to exit")
 
 func _exit_debug_mode():
-	print("[DebugManager] Exiting debug mode")
-	
-	# Re-enable normal systems
-	if DebugSettings.instance:
-		DebugSettings.instance.spawning_enabled = true
-	
-	# Reset debug states
-	ai_paused = false
-	show_collision_shapes = false
-	show_pathfinding_grid = false
-	show_performance_stats = false
+	# Resume normal spawning
+	if TicketSpawnManager.instance:
+		TicketSpawnManager.instance.set_process(true)
 	
 	# Hide debug UI
-	_hide_debug_ui()
+	debug_ui.visible = false
 	
-	# Clear selection
-	selected_entity_data = {}
+	# Disable entity selection
+	is_selection_enabled = false
+	selected_entity_id = -1
 	
-	# Notify user
-	if GameController.instance:
-		GameController.instance.display_notification("Debug Mode Disabled", Color.GRAY)
+	print("🔧 Debug Mode DISABLED")
 
-func _show_debug_ui():
-	if not debug_ui:
-		# Load debug UI scene
-		var debug_ui_scene = load("res://systems/debug/debug_ui.tscn")
-		if debug_ui_scene:
-			debug_ui = debug_ui_scene.instantiate()
-			# Find the UILayer canvas layer
-			var ui_layer = get_tree().root.get_node_or_null("Game/UILayer")
-			if not ui_layer:
-				# Try alternate path
-				ui_layer = get_tree().get_first_node_in_group("UILayer")
-			if not ui_layer:
-				# Try to find any CanvasLayer
-				for child in get_tree().root.get_children():
-					if child is CanvasLayer:
-						ui_layer = child
-						break
-			
-			if ui_layer and ui_layer is CanvasLayer:
-				ui_layer.add_child(debug_ui)
-			else:
-				# Create our own CanvasLayer
-				var canvas_layer = CanvasLayer.new()
-				canvas_layer.name = "DebugUILayer"
-				canvas_layer.layer = 10  # High layer to be on top
-				get_tree().root.add_child(canvas_layer)
-				canvas_layer.add_child(debug_ui)
-			
-			debug_ui.connect("spawn_requested", _on_spawn_requested)
-			debug_ui.connect("entity_action", _on_entity_action)
-			debug_ui.connect("system_control_changed", _on_system_control_changed)
+func _create_debug_ui():
+	# Create a CanvasLayer to ensure UI renders on screen, not in world
+	var canvas_layer = CanvasLayer.new()
+	canvas_layer.name = "DebugCanvasLayer"
+	add_child(canvas_layer)
 	
-	if debug_ui:
-		debug_ui.visible = true
+	# Main debug container
+	debug_ui = Control.new()
+	debug_ui.name = "DebugUI"
+	debug_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
+	debug_ui.mouse_filter = Control.MOUSE_FILTER_PASS  # Changed from IGNORE to PASS
+	debug_ui.visible = false
+	canvas_layer.add_child(debug_ui)
+	
+	# Main panel background
+	var panel_bg = Panel.new()
+	panel_bg.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	panel_bg.position = Vector2(10, 10)
+	panel_bg.size = Vector2(500, 800)
+	panel_bg.modulate.a = 0.95
+	panel_bg.mouse_filter = Control.MOUSE_FILTER_PASS  # Ensure panel accepts mouse input
+	debug_ui.add_child(panel_bg)
+	
+	# Scrollable container
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.set_offsets_preset(Control.PRESET_FULL_RECT)
+	panel_bg.add_child(scroll)
+	
+	# Main vertical container
+	debug_container = VBoxContainer.new()
+	debug_container.add_theme_constant_override("separation", 10)
+	scroll.add_child(debug_container)
+	
+	# Title
+	var title = Label.new()
+	title.text = "Debug Mode (F12)"
+	title.add_theme_font_size_override("font_size", 20)
+	# Labels don't have style overrides, only certain controls do
+	debug_container.add_child(title)
+	
+	# Create panels
+	_create_enemy_debug_panel()
+	_create_player_status_panel()
+	_create_system_controls()
 
-func _hide_debug_ui():
-	if debug_ui:
-		debug_ui.visible = false
+func _create_enemy_debug_panel():
+	# Enemy section header
+	var enemy_header = _create_section_header("Enemy Controls")
+	debug_container.add_child(enemy_header)
+	
+	# Enemy debug panel
+	enemy_debug_panel = EnemyDebugPanel.new()
+	enemy_debug_panel.entity_selected.connect(_on_entity_selected)
+	debug_container.add_child(enemy_debug_panel)
 
-# Debug UI callbacks
-func _on_spawn_requested(enemy_id: String, position: Vector2, count: int, owner_name: String):
-	if not SpawnManager.instance:
+func _create_player_status_panel():
+	# Player section header
+	var player_header = _create_collapsible_section("Player Status")
+	debug_container.add_child(player_header)
+	
+	# Player status panel
+	player_status_panel = PlayerStatusDebugPanel.new()
+	player_header.add_child(player_status_panel)
+
+func _create_system_controls():
+	var system_section = _create_section_header("System")
+	debug_container.add_child(system_section)
+	
+	var system_container = VBoxContainer.new()
+	debug_container.add_child(system_container)
+	
+	# Checkboxes
+	var disable_spawning = CheckBox.new()
+	disable_spawning.text = "Disable Twitch Spawning"
+	disable_spawning.toggled.connect(_on_spawning_toggled)
+	system_container.add_child(disable_spawning)
+	
+	var show_collisions = CheckBox.new()
+	show_collisions.text = "Show Collision Shapes"
+	show_collisions.toggled.connect(_on_collisions_toggled)
+	system_container.add_child(show_collisions)
+	
+	var show_flow_field = CheckBox.new()
+	show_flow_field.text = "Show Flow Field"
+	show_flow_field.toggled.connect(_on_flow_field_toggled)
+	system_container.add_child(show_flow_field)
+	
+	var show_stats = CheckBox.new()
+	show_stats.text = "Show Performance Stats"
+	show_stats.toggled.connect(_on_stats_toggled)
+	system_container.add_child(show_stats)
+	
+	# Buttons
+	var button_container = HBoxContainer.new()
+	system_container.add_child(button_container)
+	
+	var clear_all_btn = Button.new()
+	clear_all_btn.text = "Clear All Enemies"
+	clear_all_btn.pressed.connect(_clear_all_enemies)
+	button_container.add_child(clear_all_btn)
+	
+	var reload_resources_btn = Button.new()
+	reload_resources_btn.text = "Reload Resources"
+	reload_resources_btn.pressed.connect(_reload_resources)
+	button_container.add_child(reload_resources_btn)
+
+func _create_section_header(text: String) -> Label:
+	var header = Label.new()
+	header.text = text
+	header.add_theme_font_size_override("font_size", 16)
+	header.modulate = Color(1.2, 1.2, 1.2)
+	return header
+
+func _create_collapsible_section(text: String) -> VBoxContainer:
+	var section = VBoxContainer.new()
+	
+	var header_btn = Button.new()
+	header_btn.text = "▼ " + text
+	header_btn.flat = true
+	header_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	header_btn.add_theme_font_size_override("font_size", 16)
+	section.add_child(header_btn)
+	
+	var content = VBoxContainer.new()
+	section.add_child(content)
+	
+	header_btn.pressed.connect(func():
+		content.visible = !content.visible
+		header_btn.text = ("▼ " if content.visible else "▶ ") + text
+	)
+	
+	return section
+
+func _update_all_panels():
+	if enemy_debug_panel:
+		enemy_debug_panel.update_display()
+	if player_status_panel:
+		player_status_panel.update_display()
+
+func _handle_entity_click(screen_pos: Vector2):
+	# Convert screen position to world position
+	var camera = get_viewport().get_camera_2d()
+	if not camera:
 		return
 	
-	for i in count:
-		var spawn_pos = position + Vector2(randf() * 50 - 25, randf() * 50 - 25)
-		SpawnManager.instance.spawn_entity_by_id(enemy_id, spawn_pos, owner_name)
+	var world_pos = camera.get_global_mouse_position()
+	
+	# Check enemies at position
+	var clicked_enemy = _get_enemy_at_position(world_pos)
+	if clicked_enemy >= 0:
+		_on_entity_selected(clicked_enemy)
 
-func _on_entity_action(action: String, params: Dictionary):
-	match action:
-		"select":
-			select_entity_at_position(params.get("position", Vector2.ZERO))
-		"kill":
-			kill_selected_entity()
-		"heal":
-			heal_selected_entity(params.get("amount", 999999))
-		"damage":
-			damage_selected_entity(params.get("amount", 10))
-		"trigger_ability":
-			trigger_entity_ability(params.get("ability_name", ""))
+func _get_enemy_at_position(world_pos: Vector2) -> int:
+	if not EnemyManager.instance:
+		return -1
+	
+	var closest_id = -1
+	var closest_dist = 50.0  # Click radius
+	
+	for i in range(EnemyManager.instance.positions.size()):
+		if EnemyManager.instance.alive_flags[i] == 0:
+			continue
+		
+		var dist = EnemyManager.instance.positions[i].distance_to(world_pos)
+		if dist < closest_dist:
+			closest_dist = dist
+			closest_id = i
+	
+	return closest_id
 
-func _on_system_control_changed(control: String, value: bool):
-	match control:
-		"ai_paused":
-			set_ai_paused(value)
-		"show_collision":
-			set_show_collision_shapes(value)
-		"show_pathfinding":
-			set_show_pathfinding_grid(value)
-		"show_performance":
-			set_show_performance_stats(value)
+func _on_entity_selected(entity_id: int):
+	selected_entity_id = entity_id
+	if enemy_debug_panel:
+		enemy_debug_panel.set_selected_entity(entity_id)
 
-# Entity selection and inspection
-func select_entity_at_position(world_pos: Vector2):
-	selected_entity_data = entity_selector.get_entity_at_position(world_pos)
-	if not selected_entity_data.is_empty():
-		emit_signal("entity_selected", selected_entity_data)
-		_update_entity_inspector()
+# System control callbacks
+func _on_spawning_toggled(enabled: bool):
+	if TicketSpawnManager.instance:
+		TicketSpawnManager.instance.set_process(!enabled)
 
-func _update_entity_inspector():
-	if selected_entity_data.is_empty():
+func _on_collisions_toggled(enabled: bool):
+	get_tree().debug_collisions_hint = enabled
+
+func _on_flow_field_toggled(enabled: bool):
+	# Would need custom visualization implementation
+	pass
+
+func _on_stats_toggled(enabled: bool):
+	# Would need performance monitor implementation
+	pass
+
+func _clear_all_enemies():
+	if not EnemyManager.instance:
 		return
 	
-	var inspection_data = _get_entity_inspection_data()
-	emit_signal("entity_inspected", inspection_data)
+	for i in range(EnemyManager.instance.alive_flags.size()):
+		if EnemyManager.instance.alive_flags[i] > 0:
+			EnemyManager.instance.despawn_enemy(i)
 	
-	if debug_ui and debug_ui.has_method("update_entity_inspector"):
-		debug_ui.update_entity_inspector(inspection_data)
+	print("🗑️ Cleared all enemies")
 
-func _get_entity_inspection_data() -> Dictionary:
-	var data = {}
-	
-	if selected_entity_data.type == "minion":
-		# Get minion data from EnemyManager
-		var enemy_data = EnemyManager.instance.get_enemy_data(selected_entity_data.id)
-		if enemy_data:
-			data = {
-				"name": enemy_data.get("enemy_type", "Unknown"),
-				"id": selected_entity_data.id,
-				"owner": enemy_data.get("owner_username", ""),
-				"health": enemy_data.get("health", 0),
-				"max_health": enemy_data.get("max_health", 0),
-				"speed": enemy_data.get("speed", 0),
-				"damage": enemy_data.get("damage", 0),
-				"state": enemy_data.get("state", ""),
-				"position": enemy_data.get("position", Vector2.ZERO),
-				"abilities": enemy_data.get("abilities", [])
-			}
-	elif selected_entity_data.type == "boss":
-		# Get boss data from node
-		var boss_node = selected_entity_data.node
-		if boss_node and boss_node.has_method("get_debug_data"):
-			data = boss_node.get_debug_data()
-		else:
-			data = {
-				"name": boss_node.name if boss_node else "Unknown",
-				"health": boss_node.current_health if boss_node and "current_health" in boss_node else 0,
-				"max_health": boss_node.max_health if boss_node and "max_health" in boss_node else 0
-			}
-	
-	return data
+func _reload_resources():
+	if SpawnManager.instance:
+		SpawnManager.instance._load_all_enemy_resources()
+		print("🔄 Reloaded enemy resources")
 
-# Entity actions
-func kill_selected_entity():
-	if selected_entity_data.is_empty():
-		return
-	
-	if selected_entity_data.type == "minion":
-		EnemyManager.instance.kill_enemy(selected_entity_data.id)
-	elif selected_entity_data.type == "boss" and selected_entity_data.node:
-		selected_entity_data.node.queue_free()
-	
-	selected_entity_data = {}
+# Public API
+func spawn_enemy_at_cursor(enemy_id: String):
+	var mouse_pos = get_viewport().get_camera_2d().get_global_mouse_position()
+	spawn_enemy_at_position(enemy_id, mouse_pos)
 
-func heal_selected_entity(amount: float):
-	if selected_entity_data.is_empty():
-		return
-	
-	if selected_entity_data.type == "minion":
-		EnemyManager.instance.heal_enemy(selected_entity_data.id, amount)
-	elif selected_entity_data.type == "boss" and selected_entity_data.node:
-		if selected_entity_data.node.has_method("heal"):
-			selected_entity_data.node.heal(amount)
-		elif "current_health" in selected_entity_data.node and "max_health" in selected_entity_data.node:
-			selected_entity_data.node.current_health = min(selected_entity_data.node.current_health + amount, selected_entity_data.node.max_health)
-	
-	_update_entity_inspector()
-
-func damage_selected_entity(amount: float):
-	if selected_entity_data.is_empty():
-		return
-	
-	if selected_entity_data.type == "minion":
-		EnemyManager.instance.damage_enemy(selected_entity_data.id, amount, "debug")
-	elif selected_entity_data.type == "boss" and selected_entity_data.node:
-		if selected_entity_data.node.has_method("take_damage"):
-			selected_entity_data.node.take_damage(amount)
-		elif "current_health" in selected_entity_data.node:
-			selected_entity_data.node.current_health -= amount
-	
-	_update_entity_inspector()
-
-func trigger_entity_ability(ability_name: String):
-	if selected_entity_data.is_empty() or ability_name.is_empty():
-		return
-	
-	ability_trigger.trigger_ability(selected_entity_data, ability_name)
-
-# System controls
-func set_ai_paused(paused: bool):
-	ai_paused = paused
-	if EnemyManager.instance and EnemyManager.instance.has_method("set_ai_enabled"):
-		EnemyManager.instance.set_ai_enabled(!paused)
-	# TODO: Also pause boss AI when implemented
-
-func set_show_collision_shapes(show: bool):
-	show_collision_shapes = show
-	get_tree().debug_collisions_hint = show
-
-func set_show_pathfinding_grid(show: bool):
-	show_pathfinding_grid = show
-	# TODO: Implement pathfinding grid visualization
-
-func set_show_performance_stats(show: bool):
-	show_performance_stats = show
-	# TODO: Implement performance stats overlay
-
-# Utility functions
-func clear_all_enemies():
-	if EnemyManager.instance:
-		EnemyManager.instance.clear_all_enemies()
-	if BossFactory.instance:
-		BossFactory.instance.clear_all_bosses()
-
-func reset_session():
-	clear_all_enemies()
-	
-	# Reset player
-	if GameController.instance and GameController.instance.player:
-		var player = GameController.instance.player
-		player.current_health = player.max_health
-		player.experience = 0
-		player.level = 1
-		# TODO: Reset abilities and items
-	
-	# Clear selection
-	selected_entity_data = {}
-	
-	print("[DebugManager] Session reset")
-
-# Check if debug mode is active
-func is_debug_mode() -> bool:
-	return debug_enabled
+func spawn_enemy_at_position(enemy_id: String, position: Vector2):
+	if SpawnManager.instance:
+		var result = SpawnManager.instance.spawn_entity_by_id(enemy_id, position, "debug")
+		if result.success:
+			print("🐛 Spawned %s at %s" % [enemy_id, position])
