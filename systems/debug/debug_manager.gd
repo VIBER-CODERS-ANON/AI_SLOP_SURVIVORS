@@ -29,8 +29,8 @@ func _ready():
 	set_process_unhandled_input(true)
 
 func _unhandled_input(event: InputEvent):
-	# F12 toggles debug mode
-	if event.is_action_pressed("ui_debug_toggle") or (event is InputEventKey and event.keycode == KEY_F12 and event.pressed):
+	# F12 toggles debug mode (check key directly, no InputMap dependency)
+	if event is InputEventKey and event.keycode == KEY_F12 and event.pressed:
 		toggle_debug_mode()
 		get_viewport().set_input_as_handled()
 	
