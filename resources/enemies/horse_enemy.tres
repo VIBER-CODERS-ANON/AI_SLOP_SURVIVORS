@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_resource.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/abilities/telegraph_charge.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "horse_enemy"
+display_name = "Charging Horse"
+enemy_category = "minion"
+base_health = 100.0
+base_speed = 200.0
+base_damage = 50.0
+base_scale = 1.0
+xp_value = 3
+mxp_value = 2
+sprite_texture = null
+sprite_frames = null
+multimesh_scene = null
+node_scene = null
+ai_type = "basic_chase"
+attack_range = 1000.0
+attack_cooldown = 1.0
+abilities = Array[Resource]([ExtResource("2")])
+passive_abilities = []
+can_evolve = false
+evolution_targets = []
+spawn_weight = 50
+boss_tier = 1
+boss_music = null
+death_dialogue = []

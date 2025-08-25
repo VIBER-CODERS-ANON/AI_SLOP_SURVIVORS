@@ -207,8 +207,12 @@ func execute_ability_by_id(entity_id: int, ability_id: String, target_data: Dict
 	ability_failed.emit(entity_id, ability_id, "Ability not found")
 	return false
 
-func _execute_instant(entity_id: int, ability: AbilityResource, pos: Vector2, _target_data: Dictionary) -> bool:
-	# Spawn effect if configured
+func _execute_instant(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> bool:
+	# Check for custom script first (most modular approach)
+	if ability.custom_script:
+		return _execute_custom_script(entity_id, ability, pos, target_data)
+	
+	# Fallback to generic effect spawning
 	if ability.effect_scene:
 		var effect = ability.effect_scene.instantiate()
 		effect.global_position = pos
@@ -240,16 +244,68 @@ func _execute_instant(entity_id: int, ability: AbilityResource, pos: Vector2, _t
 	return true
 
 func _execute_projectile(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> bool:
-	# Special handling for heart_projectile ability
-	if ability.ability_id == "heart_projectile":
-		return _execute_heart_projectile(entity_id, ability, pos, target_data)
+	# Get target position for validation
+	if ability.custom_script:
+		return _execute_custom_script(entity_id, ability, pos, target_data)
+	var target_pos = target_data.get("target_position", Vector2.ZERO)
+	if target_pos == Vector2.ZERO and game_controller and game_controller.player:
+		target_pos = game_controller.player.global_position
 	
-	# Generic projectile handling
-	if not ability.effect_scene:
+	# Check range
+	var distance = pos.distance_to(target_pos)
+	if distance > ability.ability_range:
 		return false
 	
-	var projectile = ability.effect_scene.instantiate()
-	projectile.global_position = pos
+	# Handle windup if configured
+	if ability.windup_duration > 0:
+		# Mark entity as casting
+		if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
+			enemy_manager.ability_casting_flags[entity_id] = 1
+			
+			# Create windup timer
+			var timer = Timer.new()
+			timer.wait_time = ability.windup_duration
+			timer.one_shot = true
+			timer.timeout.connect(_fire_projectile_after_windup.bind(entity_id, ability, pos, target_pos))
+			add_child(timer)
+			timer.start()
+		
+		return true
+	else:
+		# Fire immediately
+		return _fire_projectile(entity_id, ability, pos, target_pos)
+
+func _fire_projectile_after_windup(entity_id: int, ability: AbilityResource, pos: Vector2, target_pos: Vector2):
+	# Clear casting flag
+	if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
+		enemy_manager.ability_casting_flags[entity_id] = 0
+	
+	# Fire projectile
+	_fire_projectile(entity_id, ability, pos, target_pos)
+
+func _fire_projectile(entity_id: int, ability: AbilityResource, pos: Vector2, target_pos: Vector2) -> bool:
+	# Play sound when projectile fires
+	if ability.sound_effect:
+		_play_sound_at(ability.sound_effect, pos)
+	
+	var projectile = null
+	
+	# Create projectile based on available configuration
+	if ability.projectile_texture:
+		# Use generic sprite projectile
+		projectile = GenericProjectile.new()
+		projectile.global_position = pos
+		
+	elif ability.effect_scene:
+		# Use custom scene projectile
+		projectile = ability.effect_scene.instantiate()
+		projectile.global_position = pos
+	else:
+		return false  # No projectile configuration
+	
+	# Set projectile lifetime from duration
+	if "lifetime" in projectile and ability.duration > 0:
+		projectile.lifetime = ability.duration
 	
 	# Set projectile properties
 	if "damage" in projectile:
@@ -259,33 +315,46 @@ func _execute_projectile(entity_id: int, ability: AbilityResource, pos: Vector2,
 	if "speed" in projectile:
 		projectile.speed = ability.projectile_speed
 	
-	# Set direction toward target
-	var target_pos = target_data.get("target_position", Vector2.ZERO)
-	if target_pos == Vector2.ZERO and game_controller and game_controller.player:
-		target_pos = game_controller.player.global_position
+	# Setup projectile with direction and attribution
+	var direction = (target_pos - pos).normalized()
 	
-	if projectile.has_method("set_direction"):
-		var direction = (target_pos - pos).normalized()
+	if projectile.has_method("setup"):
+		var damage_mult = _get_entity_damage_mult(entity_id)
+		var final_damage = ability.damage * damage_mult
+		
+		# Create proxy entity for attribution
+		var proxy = Node2D.new()
+		proxy.global_position = pos
+		proxy.set_meta("entity_id", entity_id)
+		
+		projectile.setup(direction, ability.projectile_speed, final_damage, proxy)
+		proxy.queue_free()
+	elif projectile.has_method("set_direction"):
 		projectile.set_direction(direction)
 	
-	# Set source
+	# Set source for attribution
 	var username = _get_entity_username(entity_id)
 	if username != "" and "source_name" in projectile:
 		projectile.source_name = username
 	
+	# Add to scene
 	if game_controller:
 		game_controller.add_child(projectile)
 	else:
 		get_tree().current_scene.add_child(projectile)
 	
+	# Configure visual for generic projectiles after adding to scene
+	if ability.projectile_texture and projectile.has_method("configure_visual"):
+		projectile.configure_visual(ability.projectile_texture, ability.projectile_collision_radius, ability.projectile_scale)
+	
 	return true
 
 func _execute_channeled(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> bool:
-	# Special handling for suction ability
-	if ability.ability_id == "suction":
-		return _execute_suction(entity_id, ability, pos, target_data)
+	# Check for custom script first (self-contained abilities)
+	if ability.custom_script:
+		return _execute_custom_script(entity_id, ability, pos, target_data)
 	
-	# Generic channeled handling
+	# Generic channeled handling for effect_scene based abilities
 	# Mark entity as casting (stops movement)
 	if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
 		enemy_manager.ability_casting_flags[entity_id] = 1
@@ -329,8 +398,10 @@ func _execute_channeled(entity_id: int, ability: AbilityResource, pos: Vector2, 
 	
 	return true
 
-func _execute_area(entity_id: int, ability: AbilityResource, pos: Vector2, _target_data: Dictionary) -> bool:
+func _execute_area(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> bool:
 	# Create area effect
+	if ability.custom_script:
+		return _execute_custom_script(entity_id, ability, pos, target_data)
 	if ability.effect_scene:
 		var area = ability.effect_scene.instantiate()
 		area.global_position = pos
@@ -382,6 +453,10 @@ func _set_cooldown(entity_id: int, ability_id: String, cooldown: float):
 
 # Helper functions
 func _get_entity_position(entity_id: int) -> Vector2:
+	# Check for player entity (negative ID -1)
+	if entity_id == -1 and game_controller and game_controller.player:
+		return game_controller.player.global_position
+	
 	# Check if it's a multimesh enemy
 	if enemy_manager and entity_id >= 0 and entity_id < enemy_manager.positions.size():
 		if enemy_manager.alive_flags[entity_id] > 0:
@@ -419,19 +494,8 @@ func _get_entity_damage_mult(entity_id: int) -> float:
 	return 1.0
 
 func _play_sound_at(sound: AudioStream, position: Vector2):
-	if AudioManager.instance and AudioManager.instance.has_method("play_sound_at"):
-		AudioManager.instance.play_sound_at(sound, position)
-	else:
-		# Fallback: create a simple audio player
-		var player = AudioStreamPlayer2D.new()
-		player.stream = sound
-		player.global_position = position
-		player.autoplay = true
-		player.finished.connect(player.queue_free)
-		if game_controller:
-			game_controller.add_child(player)
-		else:
-			get_tree().current_scene.add_child(player)
+	if AudioManager.instance:
+		AudioManager.instance.play_sfx_at_position(sound, position)
 
 # Cleanup when entity is removed
 func cleanup_entity(entity_id: int):
@@ -440,459 +504,25 @@ func cleanup_entity(entity_id: int):
 	if entity_cooldowns.has(entity_id):
 		entity_cooldowns.erase(entity_id)
 
-# Specific ability implementations for succubus
-func _execute_heart_projectile(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> bool:
-	# Get target
-	var target_pos = target_data.get("target_position", Vector2.ZERO)
-	if target_pos == Vector2.ZERO and game_controller and game_controller.player:
-		target_pos = game_controller.player.global_position
-	
-	# Check range
-	var distance = pos.distance_to(target_pos)
-	if distance > ability.ability_range:
-		return false  # Out of range
-	
-	# Mark entity as casting for windup
-	if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
-		enemy_manager.ability_casting_flags[entity_id] = 1
-		
-		# Create windup timer
-		var windup_duration = ability.additional_parameters.get("windup_duration", 1.0)
-		var timer = Timer.new()
-		timer.wait_time = windup_duration
-		timer.one_shot = true
-		timer.timeout.connect(_fire_heart_projectile.bind(entity_id, ability, pos, target_pos))
-		add_child(timer)
-		timer.start()
-	
-	# Play kiss sound if configured
-	var kiss_sound_path = ability.additional_parameters.get("kiss_sound_path", "")
-	if kiss_sound_path != "":
-		var kiss_sound = load(kiss_sound_path)
-		if kiss_sound:
-			_play_sound_at(kiss_sound, pos)
-	
-	return true
-
-func _fire_heart_projectile(entity_id: int, ability: AbilityResource, pos: Vector2, target_pos: Vector2):
-	# Clear casting flag
-	if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
-		enemy_manager.ability_casting_flags[entity_id] = 0
-	
-	# Play shoot sound
-	if ability.sound_effect:
-		_play_sound_at(ability.sound_effect, pos)
-	
-	# Create projectile
-	var projectile_path = ability.additional_parameters.get("projectile_scene_path", "")
-	if projectile_path != "":
-		var projectile_scene = load(projectile_path)
-		if projectile_scene:
-			var projectile = projectile_scene.instantiate()
-			projectile.global_position = pos
-			
-			# Set projectile properties
-			var direction = (target_pos - pos).normalized()
-			if projectile.has_method("setup"):
-				var damage_mult = _get_entity_damage_mult(entity_id)
-				var final_damage = ability.damage * damage_mult
-				
-				# Create proxy entity for attribution
-				var proxy = Node2D.new()
-				proxy.global_position = pos
-				proxy.set_meta("entity_id", entity_id)
-				
-				projectile.setup(direction, ability.projectile_speed, final_damage, proxy)
-				proxy.queue_free()
-			
-			# Set lifetime
-			var lifetime = ability.additional_parameters.get("projectile_lifetime", 3.0)
-			if "lifetime" in projectile:
-				projectile.lifetime = lifetime
-			
-			if game_controller:
-				game_controller.add_child(projectile)
-			else:
-				get_tree().current_scene.add_child(projectile)
-
-func _execute_suction(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> bool:
-	# Validate preconditions
-	if not _can_start_suction(entity_id, ability, pos, target_data):
+# Custom script execution
+func _execute_custom_script(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> bool:
+	"""Execute ability using custom script behavior"""
+	if not ability.custom_script:
+		print("❌ No custom script provided for ability: %s" % ability.ability_id)
 		return false
 	
-	# IMMEDIATELY mark entity as casting to prevent re-entry
-	if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
-		enemy_manager.ability_casting_flags[entity_id] = 1
-	
-	# Create channel instance
-	var channel = _create_suction_channel(entity_id, ability, pos, target_data)
-	if not channel:
-		# Failed to create channel, clear casting flag
-		if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
-			enemy_manager.ability_casting_flags[entity_id] = 0
+	# Instantiate the custom behavior script
+	var behavior: BaseAbilityBehavior = ability.custom_script.new()
+	if not behavior:
+		print("❌ Failed to instantiate behavior script for ability: %s" % ability.ability_id)
 		return false
 	
-	# Register channel
-	_register_active_channel(entity_id, channel)
+	# Execute the custom behavior
+	var success = behavior.execute(entity_id, ability, pos, target_data)
 	
-	print("🎯 Suction started by entity %d" % entity_id)
-	return true
-
-func _can_start_suction(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> bool:
-	# Check if already channeling
-	if _is_entity_channeling(entity_id):
-		return false
-	
-	# Check if already casting (via casting flag)
-	if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
-		if enemy_manager.ability_casting_flags[entity_id] != 0:
-			return false  # Already casting something
-	
-	# Validate target
-	var target = target_data.get("target_enemy")
-	if not target or not is_instance_valid(target):
-		return false
-	
-	# Check range
-	var distance = pos.distance_to(target.global_position)
-	if distance > ability.ability_range:
-		return false
-	
-	# Check entity can cast
-	if not enemy_manager or entity_id >= enemy_manager.ability_casting_flags.size():
-		return false
-	
-	return true
-
-func _is_entity_channeling(entity_id: int) -> bool:
-	if not has_meta("active_channels"):
-		return false
-	var channels = get_meta("active_channels")
-	return channels.has(entity_id)
-
-func _create_suction_channel(entity_id: int, ability: AbilityResource, pos: Vector2, target_data: Dictionary) -> Dictionary:
-	var target = target_data.get("target_enemy")
-	if not target:
-		return {}
-	
-	# Extract parameters from ability resource
-	var params = _extract_suction_parameters(ability)
-	
-	# Create visual component FIRST
-	var beam = _create_suction_beam(pos, target.global_position, params)
-	if not beam or not is_instance_valid(beam):
-		print("❌ Failed to create suction beam for entity %d" % entity_id)
-		return {}  # No beam = no channel
-	
-	# Create update timer
-	var timer = _create_channel_timer()
-	
-	# Build channel data structure (NO AUDIO YET)
-	var channel = {
-		"entity_id": entity_id,
-		"ability": ability,
-		"target": target,
-		"beam": beam,
-		"audio": null,  # Will be created on first successful update
-		"audio_stream": ability.sound_effect,  # Store for later
-		"timer": timer,
-		"duration_remaining": params.duration,
-		"damage_delay_remaining": params.damage_delay,
-		"damage_started": false,
-		"damage_accumulator": 0.0,
-		"damage_per_second": params.damage_total / params.duration,
-		"break_distance": ability.ability_range * params.break_multiplier,
-		"params": params
-	}
-	
-	# Connect timer to update method
-	timer.timeout.connect(_update_suction_channel.bind(channel))
-	timer.start()
-	
-	return channel
-
-func _extract_suction_parameters(ability: AbilityResource) -> Dictionary:
-	var params = ability.additional_parameters
-	return {
-		"duration": params.get("channel_duration", 3.0),
-		"damage_delay": params.get("damage_delay", 0.8),
-		"damage_total": params.get("damage_total", 18.75),
-		"beam_color": params.get("beam_color", Color(1.0, 0.2, 0.5, 0.7)),
-		"beam_width": params.get("beam_width", 20.0),
-		"break_multiplier": params.get("break_distance_multiplier", 1.2)
-	}
-
-func _create_suction_beam(start_pos: Vector2, end_pos: Vector2, params: Dictionary) -> Line2D:
-	var beam = Line2D.new()
-	beam.width = params.beam_width * 0.7
-	beam.default_color = Color(1.0, 0.4, 0.7, 0.5)
-	beam.add_point(start_pos)
-	beam.add_point(end_pos)
-	beam.z_index = -1
-	
-	# Create gradient effect
-	var gradient = Gradient.new()
-	gradient.add_point(0.0, Color(1.0, 0.4, 0.7, 0.2))
-	gradient.add_point(0.7, Color(1.0, 0.5, 0.7, 0.4))
-	gradient.add_point(1.0, Color(1.0, 0.3, 0.6, 0.6))
-	beam.gradient = gradient
-	
-	# Add to scene
-	if game_controller:
-		game_controller.add_child(beam)
+	if success:
+		print("✅ Custom script executed successfully for ability: %s" % ability.ability_id)
 	else:
-		get_tree().current_scene.add_child(beam)
+		print("❌ Custom script execution failed for ability: %s" % ability.ability_id)
 	
-	return beam
-
-
-func _create_channel_timer() -> Timer:
-	var timer = Timer.new()
-	timer.wait_time = 0.05  # 20 updates per second
-	timer.one_shot = false
-	add_child(timer)
-	return timer
-
-func _register_active_channel(entity_id: int, channel: Dictionary):
-	if not has_meta("active_channels"):
-		set_meta("active_channels", {})
-	var channels = get_meta("active_channels")
-	channels[entity_id] = channel
-
-func _update_suction_channel(channel_data: Dictionary):
-	# Validate channel can continue
-	if not _validate_channel_continuation(channel_data):
-		_end_suction_channel(channel_data)
-		return
-	
-	# Update visual components
-	_update_channel_visuals(channel_data)
-	
-	# Update timing
-	_update_channel_timing(channel_data)
-	
-	# Process damage
-	_process_channel_damage(channel_data)
-	
-	# Check completion
-	if _is_channel_complete(channel_data):
-		_end_suction_channel(channel_data)
-
-func _validate_channel_continuation(channel_data: Dictionary) -> bool:
-	# Check entity alive
-	if not _is_entity_alive(channel_data.entity_id):
-		return false
-	
-	# Check target valid - MUST check this before accessing target properties
-	var target = channel_data.get("target")
-	if not _is_target_valid(target):
-		return false
-	
-	# Check position valid
-	var entity_pos = _get_entity_position(channel_data.entity_id)
-	if entity_pos == Vector2.INF:
-		return false
-	
-	# Now safe to access target.global_position since we validated it
-	if not _is_within_break_distance(entity_pos, target.global_position, channel_data.break_distance):
-		return false
-	
-	return true
-
-func _is_entity_alive(entity_id: int) -> bool:
-	if not enemy_manager or entity_id >= enemy_manager.alive_flags.size():
-		return false
-	return enemy_manager.alive_flags[entity_id] != 0
-
-func _is_target_valid(target) -> bool:
-	# First check if target exists
-	if not target:
-		return false
-	
-	# Check if it's a valid instance (not freed)
-	if not is_instance_valid(target):
-		return false
-	
-	# Additional check for Node types
-	if target is Node:
-		# Check if it's still in the tree (not queued for deletion)
-		if not target.is_inside_tree():
-			return false
-		
-		# Check if it's being deleted
-		if target.is_queued_for_deletion():
-			return false
-	
-	return true
-
-func _is_within_break_distance(from: Vector2, to: Vector2, max_distance: float) -> bool:
-	return from.distance_to(to) <= max_distance
-
-func _update_channel_visuals(channel_data: Dictionary):
-	var beam = channel_data.get("beam")
-	if not beam or not is_instance_valid(beam):
-		return
-	
-	var target = channel_data.get("target")
-	if not _is_target_valid(target):
-		return
-	
-	var entity_pos = _get_entity_position(channel_data.entity_id)
-	var target_pos = target.global_position
-	
-	# Update beam points
-	beam.points[0] = entity_pos
-	beam.points[1] = target_pos
-	
-	# Handle audio - create it ONLY if beam exists and we don't have audio yet
-	_ensure_channel_audio(channel_data, entity_pos)
-
-func _ensure_channel_audio(channel_data: Dictionary, entity_pos: Vector2):
-	# Only create audio if:
-	# 1. We have a valid beam
-	# 2. We don't have audio yet
-	# 3. We have an audio stream to play
-	
-	var beam = channel_data.get("beam")
-	if not beam or not is_instance_valid(beam):
-		return  # No beam = no audio
-	
-	var audio = channel_data.get("audio")
-	if audio and is_instance_valid(audio):
-		# Audio exists, just update position
-		audio.global_position = entity_pos
-		return
-	
-	# Create audio for the first time
-	var audio_stream = channel_data.get("audio_stream")
-	if audio_stream:
-		var new_audio = _create_channel_audio(entity_pos, audio_stream)
-		if new_audio:
-			channel_data["audio"] = new_audio
-			print("🔊 Suction audio started for entity %d" % channel_data.entity_id)
-
-func _create_channel_audio(pos: Vector2, sound: AudioStream) -> AudioStreamPlayer2D:
-	if not sound:
-		return null
-	
-	var audio = AudioStreamPlayer2D.new()
-	audio.stream = sound
-	audio.global_position = pos
-	audio.bus = "SFX"
-	audio.volume_db = -5.0
-	audio.max_distance = 2000.0
-	
-	# Add to scene tree FIRST
-	if game_controller:
-		game_controller.add_child(audio)
-	else:
-		get_tree().current_scene.add_child(audio)
-	
-	# Play AFTER it's in the tree
-	audio.play()
-	
-	return audio
-
-func _update_channel_timing(channel_data: Dictionary):
-	var delta = 0.05  # Timer tick rate
-	channel_data.duration_remaining -= delta
-	
-	# Handle damage delay phase
-	if not channel_data.damage_started and channel_data.damage_delay_remaining > 0:
-		channel_data.damage_delay_remaining -= delta
-		if channel_data.damage_delay_remaining <= 0:
-			_activate_damage_phase(channel_data)
-
-func _activate_damage_phase(channel_data: Dictionary):
-	channel_data.damage_started = true
-	
-	# Intensify beam visual
-	var beam = channel_data.beam
-	if beam and is_instance_valid(beam):
-		var base_width = channel_data.params.get("beam_width", 20.0)
-		beam.width = base_width * 1.5
-		beam.default_color = Color(1.0, 0.1, 0.4, 0.9)
-
-func _process_channel_damage(channel_data: Dictionary):
-	if not channel_data.damage_started:
-		return
-	
-	# Calculate damage per tick
-	var delta = 0.05
-	var damage_per_tick = channel_data.damage_per_second * delta
-	channel_data.damage_accumulator += damage_per_tick
-	
-	# Apply accumulated damage
-	if channel_data.damage_accumulator >= 1.0:
-		_apply_accumulated_damage(channel_data)
-
-func _apply_accumulated_damage(channel_data: Dictionary):
-	var damage_to_apply = int(channel_data.damage_accumulator)
-	channel_data.damage_accumulator -= damage_to_apply
-	
-	var target = channel_data.get("target")
-	if not _is_target_valid(target):
-		return
-	
-	if target.has_method("take_damage"):
-		# Create damage source proxy for attribution
-		var proxy = _create_damage_proxy(channel_data.entity_id)
-		target.take_damage(damage_to_apply, proxy)
-		proxy.queue_free()
-
-func _create_damage_proxy(entity_id: int) -> Node2D:
-	var proxy = Node2D.new()
-	proxy.set_meta("entity_id", entity_id)
-	proxy.global_position = _get_entity_position(entity_id)
-	return proxy
-
-func _is_channel_complete(channel_data: Dictionary) -> bool:
-	return channel_data.duration_remaining <= 0
-
-func _end_suction_channel(channel_data: Dictionary):
-	var entity_id = channel_data.entity_id
-	
-	# Clear entity state
-	_clear_entity_casting_state(entity_id)
-	
-	# Cleanup visual components
-	_cleanup_channel_visuals(channel_data)
-	
-	# Cleanup audio components
-	_cleanup_channel_audio(channel_data)
-	
-	# Cleanup timer
-	_cleanup_channel_timer(channel_data)
-	
-	# Unregister channel
-	_unregister_channel(entity_id)
-	
-	print("🛑 Suction ended for entity %d" % entity_id)
-
-func _clear_entity_casting_state(entity_id: int):
-	if enemy_manager and entity_id < enemy_manager.ability_casting_flags.size():
-		enemy_manager.ability_casting_flags[entity_id] = 0
-
-func _cleanup_channel_visuals(channel_data: Dictionary):
-	var beam = channel_data.get("beam")
-	if beam and is_instance_valid(beam):
-		beam.queue_free()
-
-func _cleanup_channel_audio(channel_data: Dictionary):
-	var audio = channel_data.get("audio")
-	if audio and is_instance_valid(audio):
-		audio.stop()
-		audio.queue_free()
-		print("🔇 Suction audio stopped for entity %d" % channel_data.entity_id)
-
-func _cleanup_channel_timer(channel_data: Dictionary):
-	var timer = channel_data.get("timer")
-	if timer and is_instance_valid(timer):
-		timer.stop()
-		timer.queue_free()
-
-func _unregister_channel(entity_id: int):
-	if not has_meta("active_channels"):
-		return
-	var channels = get_meta("active_channels")
-	channels.erase(entity_id)
+	return success

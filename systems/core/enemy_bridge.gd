@@ -7,14 +7,11 @@ class_name EnemyBridge
 
 static var instance: EnemyBridge
 
-# Preload classes for complex ability execution
-const V2AbilityProxyClass = preload("res://systems/core/v2_ability_proxy.gd")
-# Removed - suction now handled by AbilityExecutor
+# Ability execution now handled by AbilityExecutor system
 
 # System references
 var enemy_manager: EnemyManager
 var config_manager: EnemyConfigManager
-var ability_manager: AbilityManager
 var lighting_manager: LightingManager
 var ability_executor: AbilityExecutor  # New reference to AbilityExecutor
 
@@ -43,7 +40,6 @@ func _connect_to_systems():
 	ability_executor = AbilityExecutor.instance
 	
 	# Find other systems
-	ability_manager = get_node("../AbilityManager") if get_node_or_null("../AbilityManager") else null
 	lighting_manager = get_node("../LightingManager") if get_node_or_null("../LightingManager") else null
 	
 	if enemy_manager:
@@ -207,21 +203,12 @@ func _should_use_ability(enemy_id: int, ability: Dictionary) -> bool:
 	var distance = enemy_pos.distance_to(player_pos)
 	
 	match ability.id:
-		"explosion":
-			# Explosions should only happen via !explode command, not automatically
-			return false
-		"fart":
-			# Farts should only happen via !fart command, not automatically
-			return false
 		"boost":
 			# Boosts should only happen via !boost command, not automatically
 			return false
 		"suicide_bomb":
 			# Proximity trigger for ugandan warriors
 			return distance < 120.0 and randf() < 0.15
-		"telegraph_charge":
-			# Charge when in range
-			return distance < 1000.0
 	
 	return false
 
@@ -233,10 +220,6 @@ func _execute_ability(enemy_id: int, ability: Dictionary):
 	var _enemy_type_id = enemy_manager.entity_types[enemy_id]
 	
 	match ability.id:
-		"explosion":
-			_trigger_explosion(enemy_id, enemy_pos, ability.config)
-		"fart":
-			_trigger_fart_cloud(enemy_id, enemy_pos, ability.config)
 		"boost":
 			# Boost is now handled via execute_command_for_enemy
 			execute_command_for_enemy(enemy_id, "boost")
@@ -248,273 +231,20 @@ func _execute_ability(enemy_id: int, ability: Dictionary):
 			# Now handled by AbilityExecutor - should not reach here
 			print("⚠️ Old suction code reached - this shouldn't happen!")
 			pass
-		"suicide_bomb":
-			_trigger_suicide_bomb(enemy_id, enemy_pos, ability.config)
-		"telegraph_charge":
-			_trigger_telegraph_charge(enemy_id, enemy_pos, ability.config)
 
-func _trigger_explosion(enemy_id: int, pos: Vector2, config: Dictionary):
-	# Get base values
-	var _damage = config.get("damage", 20.0)
-	var _radius = config.get("radius", 80.0)
-	var aoe_scale = 1.0
-	var username = ""
-	
-	# Apply chatter's AOE bonus if available
-	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
-		username = enemy_manager.chatter_usernames[enemy_id]
-		if username != "" and ChatterEntityManager.instance:
-			var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
-			if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
-				var bonus_aoe = chatter_data.upgrades.bonus_aoe
-				var rarity_mult = chatter_data.upgrades.get("rarity_multiplier", 1.0)
-				aoe_scale = (1.0 + bonus_aoe) * rarity_mult
-	
-	# Create explosion effect
-	var explosion_scene_path = config.get("visuals", {}).get("effect_scene", "res://entities/effects/explosion_effect.tscn")
-	if ResourceLoader.exists(explosion_scene_path):
-		var explosion = load(explosion_scene_path).instantiate()
-		explosion.global_position = pos
-		explosion.applied_aoe_scale = aoe_scale
-		
-		# Set source name for proper death attribution
-		if username != "":
-			explosion.source_name = username
-			explosion.set_meta("source_name", username)
-		
-		GameController.instance.add_child(explosion)
-	
-	print("💥 Enemy %d exploded at %s" % [enemy_id, pos])
 
-func _trigger_fart_cloud(enemy_id: int, pos: Vector2, config: Dictionary):
-	var username = ""
-	var aoe_scale = 1.0
-	
-	# Get username and AOE scale
-	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
-		username = enemy_manager.chatter_usernames[enemy_id]
-		if username != "" and ChatterEntityManager.instance:
-			var chatter_data = ChatterEntityManager.instance.get_chatter_data(username)
-			if chatter_data and chatter_data.upgrades.has("bonus_aoe"):
-				var bonus_aoe = chatter_data.upgrades.bonus_aoe
-				var rarity_mult = chatter_data.upgrades.get("rarity_multiplier", 1.0)
-				aoe_scale = (1.0 + bonus_aoe) * rarity_mult
-	
-	# Create poison cloud effect
-	var cloud_scene_path = config.get("visuals", {}).get("effect_scene", "res://entities/effects/poison_cloud.tscn")
-	if ResourceLoader.exists(cloud_scene_path):
-		var cloud = load(cloud_scene_path).instantiate()
-		cloud.global_position = pos
-		cloud.applied_aoe_scale = aoe_scale
-		
-		# Set source name for proper death attribution
-		if username != "":
-			cloud.source_name = username
-			cloud.set_meta("source_name", username)
-		
-		GameController.instance.add_child(cloud)
-	
-	print("💨 Enemy %d created fart cloud at %s" % [enemy_id, pos])
 
 # Boost is now handled directly in execute_command_for_enemy with flat speed bonus
 # Old multiplier-based boost functions removed
 
-func _fire_heart_projectile(enemy_id: int, pos: Vector2, _config: Dictionary):
-	# OLD CODE - DISABLED - Heart projectile now handled by AbilityExecutor
-	return
-	
-	if not GameController.instance or not GameController.instance.player:
-		return
-	
-	# Check if enemy is already casting (should already be checked but safety)
-	if enemy_manager.ability_casting_flags[enemy_id] > 0:
-		return  # Already casting something
-	
-	# DOUBLE CHECK RANGE before creating proxy
-	var player_pos = GameController.instance.player.global_position
-	var distance = pos.distance_to(player_pos)
-	if distance > 400.0:
-		# Not in range for heart projectile
-		return
-	
-	# Use V2AbilityProxy for proper ability handling with windup
-	var proxy = V2AbilityProxy.new()
-	var username = ""
-	if enemy_id < enemy_manager.chatter_usernames.size():
-		username = enemy_manager.chatter_usernames[enemy_id]
-	proxy.setup(enemy_id, enemy_manager, username)
-	get_tree().current_scene.add_child(proxy)
-	proxy.global_position = pos
-	
-	# Create target data for ability
-	var target_data = {
-		"target_enemy": GameController.instance.player,
-		"target_position": GameController.instance.player.global_position
-	}
-	
-	# Mark enemy as casting
-	enemy_manager.ability_casting_flags[enemy_id] = 1
-	
-	# Attach heart projectile ability - this will handle windup, animation, etc
-	if false:  # DISABLED - HeartProjectileAbility class no longer exists
-		print("💖 Enemy %d starting heart projectile cast" % enemy_id)
-		# Set cooldown for succubus (entity_type 1)
-		if enemy_manager.entity_types[enemy_id] == 1:
-			enemy_manager.ability_cooldowns[enemy_id] = 2.0  # 2 second cooldown after heart projectile
-	else:
-		# Failed to attach ability, clear casting flag
-		enemy_manager.ability_casting_flags[enemy_id] = 0
-		proxy.queue_free()
 
-func _start_suction_ability(enemy_id: int, pos: Vector2, _config: Dictionary):
-	# OLD CODE - DISABLED - Suction now handled by AbilityExecutor
-	return
-	
-	if not GameController.instance or not GameController.instance.player:
-		return
-	
-	# Check if already casting (should already be checked but safety)
-	if enemy_manager.ability_casting_flags[enemy_id] > 0:
-		return
-	
-	# DOUBLE CHECK RANGE before creating proxy
-	var player_pos = GameController.instance.player.global_position
-	var distance = pos.distance_to(player_pos)
-	if distance > 200.0:
-		# Not in range, don't create proxy
-		return
-	
-	# Mark as casting
-	enemy_manager.ability_casting_flags[enemy_id] = 1
-	
-	# Get username for attribution
-	var username = ""
-	if enemy_manager and enemy_id >= 0 and enemy_id < enemy_manager.chatter_usernames.size():
-		username = enemy_manager.chatter_usernames[enemy_id]
-	
-	# Use the reusable proxy system
-	var proxy = V2AbilityProxyClass.new()
-	proxy.name = "SuccubusProxy_%d" % enemy_id
-	
-	# Setup proxy BEFORE adding to tree (timer will autostart when added)
-	proxy.setup(enemy_id, enemy_manager, username)
-	
-	# Now add to tree and set position
-	GameController.instance.add_child(proxy)
-	proxy.global_position = pos
-	
-	# Create target data
-	var target_data = {
-		"target_enemy": GameController.instance.player,
-		"target_position": GameController.instance.player.global_position
-	}
-	
-	# Attach and execute ability
-	if false:  # DISABLED - SuctionAbilityClass no longer exists
-		print("💜 Suction ability started for enemy %d at distance %.1f" % [enemy_id, pos.distance_to(GameController.instance.player.global_position)])
-		
-		# Set cooldown for succubus (entity_type 1) 
-		if enemy_manager.entity_types[enemy_id] == 1:
-			enemy_manager.ability_cooldowns[enemy_id] = 30.0  # 30 second cooldown for suction
-		
-		# Clean up when ability ends
-		if proxy.tracked_ability and proxy.tracked_ability.has_signal("channel_ended"):
-			proxy.tracked_ability.channel_ended.connect(func():
-				# Clear casting flag when suction ends
-				if enemy_id < enemy_manager.ability_casting_flags.size():
-					enemy_manager.ability_casting_flags[enemy_id] = 0
-				proxy.queue_free()
-			)
-	else:
-		print("❌ Failed to start suction ability")
-		# Clear casting flag if ability failed to start
-		if enemy_id < enemy_manager.ability_casting_flags.size():
-			enemy_manager.ability_casting_flags[enemy_id] = 0
-		proxy.queue_free()
 
-func _trigger_suicide_bomb(enemy_id: int, pos: Vector2, config: Dictionary):
-	var telegraph_time = config.get("telegraph_time", 0.4)
-	var damage = config.get("damage", 100.0)
-	var radius = config.get("radius", 120.0)
-	
-	# Telegraph effect
-	_create_bomb_telegraph(pos, telegraph_time)
-	
-	# Delay the actual explosion - use bind to avoid lambda capture
-	var timer = get_tree().create_timer(telegraph_time)
-	timer.timeout.connect(_delayed_explosion.bind(enemy_id, pos, damage, radius))
-	
-	print("💣 Enemy %d priming suicide bomb" % enemy_id)
 
-func _delayed_explosion(enemy_id: int, pos: Vector2, damage: float, radius: float):
-	# Check if enemy is still alive
-	if enemy_id < enemy_manager.alive_flags.size() and enemy_manager.alive_flags[enemy_id] == 1:
-		_trigger_explosion(enemy_id, pos, {"damage": damage, "radius": radius})
-		# Kill the enemy
-		enemy_manager.despawn_enemy(enemy_id)
 
-func _trigger_telegraph_charge(enemy_id: int, pos: Vector2, config: Dictionary):
-	if not GameController.instance or not GameController.instance.player:
-		return
-	
-	var telegraph_time = config.get("telegraph_time", 1.0)
-	var charge_speed = config.get("charge_speed", 400.0)
-	var player_pos = GameController.instance.player.global_position
-	
-	# Show telegraph line
-	_create_charge_telegraph(pos, player_pos, telegraph_time)
-	
-	# After telegraph, execute charge - use bind to avoid lambda capture
-	var timer = get_tree().create_timer(telegraph_time)
-	timer.timeout.connect(_execute_charge.bind(enemy_id, pos, player_pos, charge_speed))
-	
-	print("🐎 Enemy %d charging!" % enemy_id)
 
-func _execute_charge(enemy_id: int, pos: Vector2, player_pos: Vector2, charge_speed: float):
-	if enemy_id < enemy_manager.alive_flags.size() and enemy_manager.alive_flags[enemy_id] == 1:
-		# Set velocity toward target
-		var direction = (player_pos - pos).normalized()
-		enemy_manager.velocities[enemy_id] = direction * charge_speed
-		enemy_manager.move_speeds[enemy_id] = charge_speed
-		
-		# Charge for a short duration then despawn
-		var timer = get_tree().create_timer(2.0)
-		timer.timeout.connect(_despawn_enemy.bind(enemy_id))
 
-func _despawn_enemy(enemy_id: int):
-	if enemy_id < enemy_manager.alive_flags.size():
-		enemy_manager.despawn_enemy(enemy_id)
 
-func _create_bomb_telegraph(pos: Vector2, duration: float):
-	# Create a warning visual at the bomb position
-	var warning = ColorRect.new()
-	warning.color = Color(1, 0, 0, 0.5)
-	warning.size = Vector2(40, 40)
-	warning.position = pos - Vector2(20, 20)
-	GameController.instance.add_child(warning)
-	
-	# Pulsing animation
-	var tween = warning.create_tween()
-	tween.set_loops(-1)
-	tween.tween_property(warning, "modulate:a", 0.2, 0.2)
-	tween.tween_property(warning, "modulate:a", 0.8, 0.2)
-	
-	# Remove after duration - use bind to avoid lambda capture
-	var timer = get_tree().create_timer(duration)
-	timer.timeout.connect(_cleanup_node.bind(warning))
 
-func _create_charge_telegraph(start_pos: Vector2, end_pos: Vector2, duration: float):
-	# Create a line showing the charge path
-	var line = Line2D.new()
-	line.add_point(start_pos)
-	line.add_point(end_pos)
-	line.width = 5.0
-	line.default_color = Color(1, 1, 0, 0.7)
-	GameController.instance.add_child(line)
-	
-	# Remove after duration - use bind to avoid lambda capture
-	var timer = get_tree().create_timer(duration)
-	timer.timeout.connect(_cleanup_node.bind(line))
 
 func _cleanup_node(node: Node):
 	if is_instance_valid(node):
@@ -569,25 +299,10 @@ func _add_effect(enemy_id: int, effect_id: String, duration: float):
 	}
 	active_effects[enemy_id].append(effect)
 
-func _add_boost_visual_effect(enemy_id: int):
-	if not enemy_manager or enemy_id >= enemy_manager.alive_flags.size():
-		return
-	
-	# Store original color to restore later (not currently used but kept for future enhancements)
-	var _original_color = enemy_manager.chatter_colors[enemy_id]
-	
-	# Create yellow boost effect - modulate the enemy's color
-	# We'll use the flash timer system that already exists
-	enemy_manager.flash_timers[enemy_id] = enemy_manager.BOOST_DURATION
-	
-	# Add the effect tracking
-	_add_effect(enemy_id, "boost_visual", enemy_manager.BOOST_DURATION)
 
 func _end_effect(_enemy_id: int, effect: Dictionary):
-	match effect.id:
-		"boost_visual":
-			# Remove visual boost effect
-			pass
+	# Effect cleanup logic can be added here if needed
+	pass
 
 func _cleanup_enemy_data(enemy_id: int):
 	enemy_abilities.erase(enemy_id)
@@ -616,86 +331,45 @@ func _get_type_string(type_id: int) -> String:
 		8: return "forsen_boss"
 		_: return "unknown"
 
-# Helper function to create temporary ability resources for commands
-func _create_command_ability_resource(command: String) -> AbilityResource:
-	var ability = AbilityResource.new()
-	
-	match command:
-		"explode":
-			ability.ability_id = "command_explode"
-			ability.display_name = "Explode"
-			ability.trigger_type = "instant"
-			ability.damage = 20.0
-			ability.range = 80.0
-			ability.cooldown = 0.0
-			ability.effect_scene = load("res://entities/effects/explosion_effect.tscn")
-			
-		"fart":
-			ability.ability_id = "command_fart"
-			ability.display_name = "Fart"
-			ability.trigger_type = "area"
-			ability.damage = 5.0
-			ability.range = 100.0
-			ability.duration = 3.0
-			ability.cooldown = 0.0
-			ability.effect_scene = load("res://entities/effects/poison_cloud.tscn")
-			
-		_:
-			return null
-	
-	return ability
 
 # Public API for V2 enemy commands
 func execute_command_for_enemy(enemy_id: int, command: String):
 	if not enemy_manager or enemy_id >= enemy_manager.alive_flags.size() or enemy_manager.alive_flags[enemy_id] == 0:
 		return
 	
-	# Try to use AbilityExecutor if available for resource-based abilities
-	if ability_executor and command in ["explode", "fart"]:
-		# Create temporary ability resource for the command
-		var temp_ability = _create_command_ability_resource(command)
-		if temp_ability:
-			ability_executor.execute_ability(enemy_id, temp_ability)
-			return
+	if not ability_executor:
+		print("⚠️ AbilityExecutor not available for command: %s" % command)
+		return
 	
-	# Fall back to legacy execution
+	# Use AbilityExecutor with existing .tres resources for all commands
 	match command:
 		"explode":
-			var config = {"damage": 20.0, "radius": 80.0, "visuals": {"effect_scene": "res://entities/effects/explosion_effect.tscn"}}
-			_trigger_explosion(enemy_id, enemy_manager.positions[enemy_id], config)
+			var explosion_resource = load("res://resources/abilities/explosion.tres")
+			if explosion_resource:
+				ability_executor.execute_ability(enemy_id, explosion_resource)
+			else:
+				print("❌ Could not load explosion.tres resource")
+		
 		"fart":
-			var config = {"visuals": {"effect_scene": "res://entities/effects/poison_cloud.tscn"}}
-			_trigger_fart_cloud(enemy_id, enemy_manager.positions[enemy_id], config)
+			var fart_resource = load("res://resources/abilities/fart.tres")  
+			if fart_resource:
+				ability_executor.execute_ability(enemy_id, fart_resource)
+			else:
+				print("❌ Could not load fart.tres resource")
+		
 		"boost":
-			# Check cooldown
-			var current_time = Time.get_ticks_msec() / 1000.0
-			if current_time - enemy_manager.last_boost_times[enemy_id] < enemy_manager.BOOST_COOLDOWN:
-				return  # Still on cooldown
-			
-			# Apply flat boost
-			enemy_manager.temporary_speed_boosts[enemy_id] = enemy_manager.BOOST_FLAT_BONUS
-			enemy_manager.boost_end_times[enemy_id] = current_time + enemy_manager.BOOST_DURATION
-			enemy_manager.last_boost_times[enemy_id] = current_time
-			
-			# Visual effect - make enemy flash yellow
-			_add_boost_visual_effect(enemy_id)
-			
-			# Activity feed message
-			if GameController.instance:
-				var feed = GameController.instance.get_action_feed()
-				if feed:
-					var username = enemy_manager.chatter_usernames[enemy_id]
-					if username != "":
-						feed.add_message("⚡ %s used BOOST! (+500 speed)" % username, Color(1.0, 1.0, 0.3))
-			
-			print("⚡ Enemy %d boosted (+%.0f speed for %.1fs)" % [enemy_id, enemy_manager.BOOST_FLAT_BONUS, enemy_manager.BOOST_DURATION])
+			var boost_resource = load("res://resources/abilities/boost.tres")
+			if boost_resource:
+				ability_executor.execute_ability(enemy_id, boost_resource)
+			else:
+				print("❌ Could not load boost.tres resource")
+		
 		"grow":
-			# Increase visual scale and collision weight slightly
-			enemy_manager.scales[enemy_id] = enemy_manager.scales[enemy_id] * 1.25
-			# Optional: buff health a bit when growing
+			# Simple visual/stat modification (not an ability effect)
+			enemy_manager.scales[enemy_id] *= 1.25
 			enemy_manager.max_healths[enemy_id] *= 1.1
 			enemy_manager.healths[enemy_id] = min(enemy_manager.healths[enemy_id], enemy_manager.max_healths[enemy_id])
-		"bomb":
-			# Arm a suicide bomb similar to ugandan warrior
-			var config = {"telegraph_time": 0.4, "damage": 100.0, "radius": 120.0}
-			_trigger_suicide_bomb(enemy_id, enemy_manager.positions[enemy_id], config)
+			print("📈 Enemy %d grew larger!" % enemy_id)
+		
+		_:
+			print("⚠️ Unknown command: %s" % command)

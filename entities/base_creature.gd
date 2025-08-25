@@ -145,12 +145,6 @@ func set_aoe_multiplier(multiplier: float):
 func get_aoe_multiplier() -> float:
 	return aoe_multiplier
 
-## Execute ability via the shared AbilityManager by default
-## Creatures can still override this to map legacy names → new IDs
-func execute_ability(_ability_name: String, _target_data = null) -> bool:
-	if ability_manager:
-		return ability_manager.execute_ability_by_id(_ability_name, _target_data)
-	return false
 
 ## Static factory method to create a chatter entity with proper initialization
 static func create_chatter_entity(scene_path: String, username: String, color: Color) -> BaseCreature:

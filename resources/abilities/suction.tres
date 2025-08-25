@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="AbilityResource" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="AbilityResource" load_steps=4 format=3 uid="uid://jtc3kd77qjxu"]
 
-[ext_resource type="Script" path="res://resources/ability_resource.gd" id="1"]
-[ext_resource type="AudioStream" path="res://BespokeAssetSources/Succubus/succAudioLoop.mp3" id="2"]
+[ext_resource type="Script" uid="uid://lpc15rladmo8" path="res://resources/ability_resource.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://bsjnbkogtaws4" path="res://BespokeAssetSources/Succubus/succAudioLoop.mp3" id="2"]
+[ext_resource type="Script" uid="uid://c10ayuwspsvxu" path="res://systems/ability_behaviors/suction_behavior.gd" id="3"]
 
 [resource]
 script = ExtResource("1")
@@ -14,17 +15,18 @@ ability_range = 200.0
 duration = 3.0
 trigger_type = "channeled"
 cast_time = 0.8
+windup_duration = 0.0
 projectile_speed = 0.0
-effect_scene = null
-impact_scene = null
+projectile_collision_radius = 5.0
+projectile_scale = Vector2(1, 1)
 cast_animation = ""
 sound_effect = ExtResource("2")
-custom_script = null
+custom_script = ExtResource("3")
 additional_parameters = {
-    "damage_delay": 0.8,
-    "break_distance_multiplier": 1.2,
-    "beam_color": Color(1.0, 0.2, 0.5, 0.7),
-    "beam_width": 20.0,
-    "channel_duration": 3.0,
-    "damage_total": 18.75
+"beam_color": Color(1, 0.2, 0.5, 0.7),
+"beam_width": 20.0,
+"break_distance_multiplier": 1.2,
+"channel_duration": 3.0,
+"damage_delay": 0.8,
+"damage_total": 18.75
 }

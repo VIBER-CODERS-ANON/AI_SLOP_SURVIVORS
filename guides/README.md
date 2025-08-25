@@ -356,7 +356,7 @@ Here are some abilities already implemented using this system:
 
 - **Fart** (`fart_ability.gd`) - Environmental AoE with DoT
 - **Explosion** (`explosion_ability.gd`) - Self-damage AoE
-- **Dash** (`dash_ability.gd`) - Movement ability
+- **Dash** (`dash_behavior.gd`) - Movement ability using new resource system
 - **Heart Projectile** (`heart_projectile_ability.gd`) - Healing projectile
 - **Suicide Bomb** (`suicide_bomb_ability.gd`) - Proximity-activated self-destruct with AI auto-activation
 

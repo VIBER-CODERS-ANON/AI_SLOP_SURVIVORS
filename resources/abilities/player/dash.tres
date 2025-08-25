@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="AbilityResource" load_steps=3 format=3 uid="uid://cemos1g2egykq"]
+
+[ext_resource type="Script" uid="uid://lpc15rladmo8" path="res://resources/ability_resource.gd" id="1"]
+[ext_resource type="Script" uid="uid://bf1kjohm7hdyo" path="res://systems/ability_behaviors/dash_behavior.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "dash"
+display_name = "Dash"
+description = "Quickly dash in a direction, becoming briefly invulnerable"
+cooldown = 3.0
+damage = 0.0
+ability_range = 200.0
+duration = 0.15
+trigger_type = "instant"
+cast_time = 0.0
+projectile_speed = 0.0
+cast_animation = ""
+custom_script = ExtResource("2")
+additional_parameters = {
+"create_ghost_trail": true,
+"create_speed_lines": true,
+"ghost_count": 5,
+"invulnerability_duration": 0.2,
+"movement_type": "physics",
+"shrink_collision_during_dash": true,
+"speed_line_count": 8,
+"stop_on_wall_collision": true,
+"visual_flash_color": Color(0.5, 0.5, 1, 0.7)
+}

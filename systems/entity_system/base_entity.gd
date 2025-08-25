@@ -31,8 +31,6 @@ var status_effects: Dictionary = {}  # effect_name: timer
 # Components
 var taggable: Taggable
 var sprite: Node2D  # Can be Sprite2D or AnimatedSprite2D
-var ability_holder = null  # AbilityHolderComponent
-var ability_manager = null  # AbilityManager
 
 # Movement state
 var movement_velocity: Vector2 = Vector2.ZERO
@@ -51,19 +49,7 @@ func _ready():
 	taggable.name = "Taggable"
 	add_child(taggable)
 	
-	# Set up ability system components
-	ability_holder = AbilityHolderComponent.new()
-	ability_holder.name = "AbilityHolder"
-	add_child(ability_holder)
-	
-	ability_manager = AbilityManager.new()
-	ability_manager.name = "AbilityManager"
-	add_child(ability_manager)
-	
-	# Ensure ability manager has reference to ability holder
-	await get_tree().process_frame  # Wait for children to be ready
-	if ability_manager and ability_holder:
-		ability_manager.ability_holder = ability_holder
+	# Ability system now handled by AbilityExecutor for resource-based abilities
 	
 	# Add to entities group
 	add_to_group("entities")
@@ -90,10 +76,8 @@ func _register_with_flocking():
 	if is_in_group("ai_controlled") and FlockingSystem.instance:
 		FlockingSystem.instance.register_entity(self)
 
-## Get the IAbilityHolder interface for this entity
+## Legacy method - ability system now uses AbilityExecutor
 func get_ability_holder():
-	if ability_holder:
-		return ability_holder.create_ability_holder()
 	return null
 
 ## Ergonomic adapter for getting neighbors (OOP without perf loss)
@@ -444,36 +428,8 @@ func _spawn_damage_number(damage: float, is_crit: bool = false):
 		get_parent().add_child(damage_num)
 		damage_num.global_position = global_position + Vector2(0, -20)
 
-## Ability system integration methods
-func add_ability(ability, slot: int = -1) -> bool:
-	if ability_manager:
-		return ability_manager.add_ability(ability, slot)
-	return false
 
-func remove_ability(ability_id: String) -> bool:
-	if ability_manager:
-		return ability_manager.remove_ability_by_id(ability_id)
-	return false
 
-func execute_ability(ability_id: String, target_data = null) -> bool:
-	# Check if abilities are disabled
-	if DebugSettings.instance and not DebugSettings.instance.ability_system_enabled:
-		return false
-	
-	if ability_manager:
-		var result = ability_manager.execute_ability_by_id(ability_id, target_data)
-		return result
-	return false
-
-func has_ability(ability_id: String) -> bool:
-	if ability_manager:
-		return ability_manager.has_ability(ability_id)
-	return false
-
-func get_ability(ability_id: String):
-	if ability_manager:
-		return ability_manager.get_ability_by_id(ability_id)
-	return null
 
 ## Status checks for ability system
 func is_stunned() -> bool:
