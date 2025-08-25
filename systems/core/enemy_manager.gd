@@ -724,13 +724,14 @@ func despawn_enemy(id: int):
 	var live_index = live_enemy_ids.find(id)
 	if live_index >= 0 and live_index < live_enemy_bodies.size():
 		var body = live_enemy_bodies[live_index]
-		live_enemy_ids.remove_at(live_index)
+		# Mark the slot as invalid instead of removing to preserve array alignment
+		live_enemy_ids[live_index] = -1  # Invalid ID marker
 		body.set_physics_process(false)
 		body.visible = false
 		# Fully disable collisions when released
 		body.collision_layer = 0
 		body.collision_mask = 0
-		body.set_meta("enemy_id", null)
+		body.set_meta("enemy_id", -1)  # Mark as invalid instead of null
 
 func damage_enemy(id: int, damage: float, killer_name: String = "debug", death_cause: String = "debug_damage"):
 	if id < 0 or id >= alive_flags.size() or alive_flags[id] == 0:
@@ -1065,6 +1066,10 @@ func _update_live_bodies_positions_only():
 			# Hide invalid entries quickly; full rebuild will happen on next interval
 			live_enemy_bodies[i].set_physics_process(false)
 			live_enemy_bodies[i].visible = false
+			# Fully disable collisions for invalid entries
+			live_enemy_bodies[i].collision_layer = 0
+			live_enemy_bodies[i].collision_mask = 0
+			live_enemy_bodies[i].set_meta("enemy_id", -1)
 
 func _update_multimesh_transforms():
 	if multi_mesh_instance == null:
