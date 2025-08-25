@@ -171,19 +171,22 @@ func _summon_forsen_buff_warrior(summoner_name: String):
 	
 	var random_chatter = chatters[randi() % chatters.size()]
 	
-	# Spawn ugandan warrior
-	var warrior_scene = preload("res://entities/enemies/special/ugandan_warrior/ugandan_warrior.tscn")
-	if warrior_scene:
-		var warrior = warrior_scene.instantiate()
-		warrior.chatter_username = summoner_name + "'s Buff Warrior"
-		
+	# Spawn ugandan warrior using resource system
+	var warrior_resource = load("res://resources/enemies/ugandan_warrior.tres")
+	if warrior_resource:
 		# Position near the random chatter
 		var angle = randf() * TAU
 		var distance = randf_range(50, 100)
 		var offset = Vector2(cos(angle), sin(angle)) * distance
+		var spawn_position = random_chatter.global_position + offset
 		
-		warrior.global_position = random_chatter.global_position + offset
-		get_tree().current_scene.add_child(warrior)
+		# Spawn via EnemyManager
+		if EnemyManager.instance:
+			var warrior_id = EnemyManager.instance.spawn_from_resource(warrior_resource, spawn_position, summoner_name + "'s Buff Warrior")
+			if warrior_id >= 0:
+				print("✅ Boss buff spawned Ugandan Warrior for %s" % summoner_name)
+			else:
+				print("❌ Failed to spawn boss buff Ugandan Warrior for %s" % summoner_name)
 		
 		# Announce in action feed
 		var action_feed = _get_action_feed()

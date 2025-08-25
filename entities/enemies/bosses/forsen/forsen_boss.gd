@@ -26,7 +26,7 @@ var is_channeling_swarm: bool = false
 var swarm_channel_time: float = 0.0
 var has_transformed: bool = false
 var horse_charge_timer: float = 0.0  # Timer for periodic horse charges
-var ugandan_warrior_scene: PackedScene
+# var ugandan_warrior_scene: PackedScene # DEPRECATED - now uses resource system
 var horse_scene: PackedScene
 
 # Chat interaction tracking
@@ -86,7 +86,8 @@ func _load_forsen_resources():
 	sprite_texture = preload("res://BespokeAssetSources/forsen/forsen.png")
 	original_sprite_texture = sprite_texture
 	horsen_sprite_texture = preload("res://BespokeAssetSources/forsen/horsen.png")
-	ugandan_warrior_scene = preload("res://entities/enemies/special/ugandan_warrior/ugandan_warrior.tscn")
+	# Load Ugandan Warrior resource instead of scene
+	# ugandan_warrior_scene = preload("res://entities/enemies/special/ugandan_warrior/ugandan_warrior.tscn") # DEPRECATED - now uses resource system
 	horse_scene = preload("res://entities/enemies/special/horse_enemy/horse_enemy.tscn")
 
 func _announce_spawn():
@@ -424,22 +425,28 @@ func _on_chat_message(username: String, message: String, _user_color: Color):
 			chat_users_summoned[username] = true
 
 func _summon_ugandan_warrior(summoner_name: String):
-	if not ugandan_warrior_scene:
+	# Use new resource system instead of node-based spawning
+	var warrior_resource = load("res://resources/enemies/ugandan_warrior.tres")
+	if not warrior_resource:
+		print("❌ Could not load ugandan_warrior.tres resource")
 		return
-	
-	var warrior = ugandan_warrior_scene.instantiate()
-	warrior.chatter_username = summoner_name + "'s Warrior"
 	
 	# Position around Forsen
 	var angle = randf() * TAU
 	var distance = randf_range(100, 200)
 	var offset = Vector2(cos(angle), sin(angle)) * distance
+	var spawn_position = global_position + offset
 	
-	warrior.global_position = global_position + offset
-	get_parent().add_child(warrior)
+	# Spawn via EnemyManager using resource system
+	if EnemyManager.instance:
+		var warrior_id = EnemyManager.instance.spawn_from_resource(warrior_resource, spawn_position, summoner_name + "'s Warrior")
+		if warrior_id >= 0:
+			print("✅ Forsen summoned Ugandan Warrior for %s at %s" % [summoner_name, spawn_position])
+		else:
+			print("❌ Failed to spawn Ugandan Warrior for %s" % summoner_name)
 	
 	# Visual spawn effect
-	_create_summon_effect(warrior.global_position)
+	_create_summon_effect(spawn_position)
 
 func _create_summon_effect(pos: Vector2):
 	# Purple summoning effect for uganda warriors

@@ -1,6 +1,10 @@
 extends Node
 class_name DebugAbilityTrigger
 
+## Debug system for manually triggering entity abilities during development
+## Modernized to use the new resource-based ability system via AbilityExecutor
+## Automatically discovers abilities from AbilityResource files instead of hardcoded lists
+
 signal ability_triggered(entity_data: Dictionary, ability_name: String)
 signal ability_trigger_failed(reason: String)
 
@@ -32,12 +36,13 @@ func trigger_ability(entity_data: Dictionary, ability_name: String):
 		emit_signal("ability_trigger_failed", "Failed to trigger ability")
 
 func _trigger_minion_ability(enemy_id: int, ability_name: String) -> bool:
-	# Try to trigger through EnemyManager first
-	if EnemyManager.instance and EnemyManager.instance.has_method("trigger_enemy_ability"):
-		return EnemyManager.instance.trigger_enemy_ability(enemy_id, ability_name)
+	# Use the new resource-based ability system via AbilityExecutor
+	if AbilityExecutor.instance:
+		# Try to execute ability by ID
+		return AbilityExecutor.instance.execute_ability_by_id(enemy_id, ability_name)
 	
-	# Fallback: Try through EnemyBridge
-	if EnemyBridge.instance:
+	# Legacy fallback: Try through EnemyBridge
+	if EnemyBridge.instance and EnemyBridge.instance.has_method("execute_ability"):
 		EnemyBridge.instance.execute_ability(enemy_id, ability_name)
 		return true
 	
@@ -85,14 +90,20 @@ func get_entity_abilities(entity_data: Dictionary) -> Array:
 func _get_minion_abilities(enemy_id: int) -> Array:
 	var abilities = []
 	
-	# Get from enemy data
-	if EnemyManager.instance:
-		var enemy_data = EnemyManager.instance.get_enemy_data(enemy_id)
-		if enemy_data and enemy_data.has("abilities"):
-			abilities = enemy_data.abilities
-		elif enemy_data and enemy_data.has("enemy_type"):
-			# Get default abilities for enemy type
-			abilities = _get_default_abilities_for_type(enemy_data.enemy_type)
+	# Get abilities from the new resource system via AbilityExecutor
+	if AbilityExecutor.instance and AbilityExecutor.instance.active_abilities.has(enemy_id):
+		var ability_resources = AbilityExecutor.instance.active_abilities[enemy_id]
+		for ability_res in ability_resources:
+			if ability_res is AbilityResource:
+				abilities.append(ability_res.ability_id)
+	
+	# Fallback: Try to get from enemy config via ResourceManager
+	if abilities.is_empty() and ResourceManager.instance:
+		var enemy_config = ResourceManager.instance.get_enemy_config_by_id(enemy_id)
+		if enemy_config and enemy_config.has("abilities"):
+			for ability_res in enemy_config.abilities:
+				if ability_res is AbilityResource:
+					abilities.append(ability_res.ability_id)
 	
 	return abilities
 
@@ -102,53 +113,83 @@ func _get_boss_abilities(boss_node: Node) -> Array:
 	if not is_instance_valid(boss_node):
 		return abilities
 	
-	# Try to get abilities from boss
+	# First priority: Get from resource system if boss has an entity_id or similar
+	if boss_node.has_method("get_entity_id"):
+		var entity_id = boss_node.get_entity_id()
+		if AbilityExecutor.instance and AbilityExecutor.instance.active_abilities.has(entity_id):
+			var ability_resources = AbilityExecutor.instance.active_abilities[entity_id]
+			for ability_res in ability_resources:
+				if ability_res is AbilityResource:
+					abilities.append(ability_res.ability_id)
+			if not abilities.is_empty():
+				return abilities
+	
+	# Second priority: Try to get abilities from boss methods
 	if boss_node.has_method("get_abilities"):
 		abilities = boss_node.get_abilities()
 	elif boss_node.has_method("get_debug_abilities"):
 		abilities = boss_node.get_debug_abilities()
 	elif "abilities" in boss_node:
 		abilities = boss_node.abilities
-	else:
-		# Try to infer from boss type
-		abilities = _get_default_boss_abilities(boss_node.name)
+	
+	# Third priority: Try to get from boss resource file
+	if abilities.is_empty():
+		var boss_name = boss_node.name.to_lower()
+		abilities = _get_abilities_from_boss_resource(boss_name)
 	
 	return abilities
 
-func _get_default_abilities_for_type(enemy_type: String) -> Array:
-	# Default abilities based on enemy type
-	match enemy_type.to_lower():
-		"succubus":
-			return ["explode", "suction", "speed_boost"]
-		"woodland_joe":
-			return ["shoot", "rapid_fire"]
-		"rat":
-			return ["bite"]
-		"skeleton":
-			return ["bone_throw"]
-		_:
-			return []
-
-func _get_default_boss_abilities(boss_name: String) -> Array:
-	# Default abilities based on boss name
-	var name_lower = boss_name.to_lower()
+func _get_abilities_from_enemy_resource(enemy_type: String) -> Array:
+	# Get abilities from enemy resource files
+	var abilities = []
 	
-	if "thor" in name_lower:
-		return ["hammer_throw", "lightning_strike", "thunder_clap"]
-	elif "mika" in name_lower:
-		return ["charge", "slam", "roar"]
-	elif "forsen" in name_lower:
-		return ["spawn_minions", "rage", "teleport"]
-	else:
-		return ["attack"]
+	if ResourceManager.instance:
+		# Try to find enemy resource by type/ID
+		var enemy_resource = ResourceManager.instance.get_enemy_resource(enemy_type)
+		if enemy_resource and enemy_resource.has("abilities"):
+			for ability_res in enemy_resource.abilities:
+				if ability_res is AbilityResource:
+					abilities.append(ability_res.ability_id)
+	
+	return abilities
+
+func _get_abilities_from_boss_resource(boss_name: String) -> Array:
+	# Get abilities from boss resource files
+	var abilities = []
+	
+	if ResourceManager.instance:
+		# Try to find boss resource by name/ID
+		var boss_resource = null
+		
+		# Check common boss resource paths
+		var boss_paths = [
+			"res://resources/enemies/bosses/%s.tres" % boss_name,
+			"res://resources/enemies/bosses/%s_boss.tres" % boss_name
+		]
+		
+		for path in boss_paths:
+			if ResourceLoader.exists(path):
+				boss_resource = load(path)
+				break
+		
+		if boss_resource and boss_resource.has("abilities"):
+			for ability_res in boss_resource.abilities:
+				if ability_res is AbilityResource:
+					abilities.append(ability_res.ability_id)
+	
+	return abilities
 
 # Force reset all cooldowns for an entity
 func reset_all_cooldowns(entity_data: Dictionary):
 	match entity_data.type:
 		"minion":
-			# Reset cooldowns through EnemyManager directly
-			if EnemyManager.instance and entity_data.id < EnemyManager.instance.ability_cooldowns.size():
-				EnemyManager.instance.ability_cooldowns[entity_data.id] = 0.0
+			# Reset cooldowns through AbilityExecutor (new system)
+			if AbilityExecutor.instance and AbilityExecutor.instance.entity_cooldowns.has(entity_data.id):
+				var cooldowns = AbilityExecutor.instance.entity_cooldowns[entity_data.id]
+				for ability_id in cooldowns:
+					cooldowns[ability_id] = 0.0
+				print("[DebugAbilityTrigger] Reset all cooldowns for minion %d" % entity_data.id)
 		"boss":
 			if is_instance_valid(entity_data.node) and entity_data.node.has_method("reset_all_cooldowns"):
 				entity_data.node.reset_all_cooldowns()
+				print("[DebugAbilityTrigger] Reset all cooldowns for boss %s" % entity_data.node.name)

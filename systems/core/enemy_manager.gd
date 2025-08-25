@@ -607,6 +607,8 @@ func _get_type_from_resource_id(resource_id: String) -> int:
 		"rat": return 0
 		"succubus": return 1
 		"woodland_joe": return 2
+		"ugandan_warrior": return 3
+		"horse_enemy": return 4
 		_: return -1
 
 # Helper method for getting enemy at position (for debug selection)
@@ -654,7 +656,7 @@ func get_enemy_data(id: int) -> Dictionary:
 func _get_enemy_abilities(enemy_type: int) -> Array:
 	match enemy_type:
 		1: # Succubus
-			return ["explode", "suction", "speed_boost"]
+			return ["explode", "speed_boost"]
 		2: # Woodland Joe
 			return ["shoot", "rapid_fire"]
 		_:

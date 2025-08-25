@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/enemy_resource.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "ugandan_warrior"
+display_name = "Ugandan Warrior"
+enemy_category = "minion"
+base_health = 1.0
+base_speed = 350.0
+base_damage = 1.0
+base_scale = 0.7
+xp_value = 1
+mxp_value = 1
+sprite_texture = null
+sprite_frames = null
+multimesh_scene = null
+node_scene = null
+ai_type = "basic_chase"
+attack_range = 120.0
+attack_cooldown = 0.1
+abilities = Array[Resource]([])
+passive_abilities = []
+can_evolve = false
+evolution_targets = []
+spawn_weight = 100
+boss_tier = 1
+boss_music = null
+death_dialogue = []

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="AbilityResource" load_steps=3 format=3 uid="uid://vc535lbwmw2t"]
+
+[ext_resource type="Script" uid="uid://lpc15rladmo8" path="res://resources/ability_resource.gd" id="1"]
+[ext_resource type="Script" uid="uid://bqwrxpf1vjt16" path="res://systems/ability_behaviors/telegraph_charge_behavior.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "telegraph_charge"
+display_name = "Telegraph Charge"
+description = "Telegraph then charge at target, despawning after impact"
+cooldown = 0.0
+damage = 0.0
+ability_range = 100.0
+duration = 2.0
+trigger_type = "instant"
+cast_time = 1.0
+projectile_speed = 400.0
+cast_animation = ""
+custom_script = ExtResource("2")
+additional_parameters = {
+"charge_speed": 400.0,
+"despawn_after_charge": true,
+"telegraph_time": 1.0,
+"telegraph_visual": true
+}

@@ -46,8 +46,6 @@ const DOT_HIT_SOUND_COOLDOWN: float = 2.0  # 2 seconds between DoT hit sounds
 # Active abilities (to be implemented)
 var abilities: Array = []
 
-# Dash ability
-# var dash_ability: Node  # Removed - using new ability system
 
 # Combat state tracking
 var in_combat: bool = false
@@ -83,18 +81,13 @@ func _entity_ready():
 	movement_controller.name = "PlayerMovementController"  # Match the name expected by abilities
 	add_child(movement_controller)
 	
-	# Set up abilities using the new ability system
-	var new_dash_ability = DashAbility.new()
-	add_ability(new_dash_ability)
+	# Set up player ability manager for dash and other abilities
+	var ability_manager = PlayerAbilityManager.new()
+	ability_manager.name = "PlayerAbilityManager"
+	add_child(ability_manager)
 	
-	# Set keybind for dash
-	if ability_manager:
-		ability_manager.set_ability_keybind(0, "dash")  # Slot 0 = dash action
-		# Connect to ability events for UI
-		var dash_ability_ref = ability_manager.get_ability_by_id("dash")
-		if dash_ability_ref:
-			dash_ability_ref.cooldown_started.connect(_on_dash_cooldown_started)
-			dash_ability_ref.cooldown_ended.connect(_on_dash_cooldown_ended)
+	# Setup ability manager with player reference
+	call_deferred("_setup_ability_manager", ability_manager)
 	
 	# Player stats are set in _update_derived_stats()
 	
@@ -224,6 +217,17 @@ func _update_derived_stats():
 	
 	# Update displays
 	_update_health_bar_display()
+
+func _setup_ability_manager(ability_manager: PlayerAbilityManager):
+	"""Setup the player ability manager after all systems are ready"""
+	if ability_manager and ability_manager.has_method("setup_player"):
+		ability_manager.setup_player(self)
+		
+		# Connect signals for UI updates
+		ability_manager.ability_triggered.connect(_on_ability_triggered)
+		ability_manager.ability_failed.connect(_on_ability_failed)
+		
+		print("🎮 Player ability manager setup complete")
 
 func _entity_physics_process(_delta):
 	# Face the mouse cursor
@@ -515,12 +519,9 @@ func take_damage(amount: float, source: Node = null, damage_tags: Array = []):
 	# Update health bar display
 	_update_health_bar_display()
 
-func heal(amount: float):
-	# Call parent heal
-	super.heal(amount)
-	
-	# Update health bar display
-	_update_health_bar_display()
+func heal_override(amount: float):
+	# Call the base heal method
+	heal(amount)
 
 ## DEV TOOL - Audio tester reference (can be removed)
 var audio_tester: AudioSFXTester = null
@@ -869,9 +870,6 @@ func get_area_of_effect() -> float:
 	return area_of_effect
 
 func _unhandled_input(_event: InputEvent):
-	# Dash is now handled by AbilityManager keybinds
-	# Legacy dash code removed - ability system handles input
-	
 	# DEPRECATED SOUND TEST - Only use if modular tester isn't active
 	if not audio_tester and hit_sound_test_mode and _event is InputEventKey and _event.pressed:
 		if _event.keycode == KEY_F12:
@@ -880,25 +878,68 @@ func _unhandled_input(_event: InputEvent):
 			# Play the new sound immediately
 			__play_hit_sfx()
 
-func _on_dash_cooldown_started(duration: float):
-	# Update UI when dash goes on cooldown
+# Ability system signal handlers
+func _on_ability_triggered(ability_id: String):
+	"""Handle when an ability is successfully triggered"""
+	if ability_id == "dash":
+		_start_dash_cooldown_ui()
+
+func _on_ability_failed(ability_id: String, reason: String):
+	"""Handle when an ability fails to execute"""
+	# Could show failure feedback here if needed
+	pass
+
+func _start_dash_cooldown_ui():
+	"""Start showing and updating the dash cooldown UI"""
 	var dash_ui = get_meta("dash_ui", null)
 	var cooldown_bar = get_meta("dash_cooldown_bar", null)
-	if dash_ui and cooldown_bar:
-		dash_ui.visible = true
-		# Create tween to animate cooldown
-		var tween = create_tween()
-		tween.tween_property(cooldown_bar, "value", 1.0, duration).from(0.0)
+	
+	if not dash_ui or not cooldown_bar:
+		return
+	
+	# Show the UI
+	dash_ui.visible = true
+	
+	# Get the ability manager to track cooldown
+	var ability_manager = $PlayerAbilityManager
+	if not ability_manager:
+		return
+	
+	# Start a timer to update the cooldown progress
+	var update_timer = Timer.new()
+	update_timer.wait_time = 0.1  # Update 10 times per second
+	update_timer.timeout.connect(_update_dash_cooldown_progress.bind(ability_manager, cooldown_bar, dash_ui, update_timer))
+	add_child(update_timer)
+	update_timer.start()
 
-func _on_dash_cooldown_ended():
-	# Hide UI when dash is ready
-	var dash_ui = get_meta("dash_ui", null)
-	if dash_ui:
+func _update_dash_cooldown_progress(ability_manager: PlayerAbilityManager, cooldown_bar: ProgressBar, dash_ui: Control, update_timer: Timer):
+	"""Update the dash cooldown progress bar"""
+	if not is_instance_valid(ability_manager) or not is_instance_valid(cooldown_bar) or not is_instance_valid(dash_ui):
+		update_timer.queue_free()
+		return
+	
+	var remaining_cooldown = ability_manager.get_ability_cooldown("dash")
+	
+	if remaining_cooldown <= 0:
+		# Cooldown finished - hide UI and cleanup
 		dash_ui.visible = false
+		update_timer.queue_free()
+		return
+	
+	# Get the max cooldown from the ability resource
+	var dash_ability = _get_dash_ability_resource(ability_manager)
+	if dash_ability:
+		var max_cooldown = dash_ability.cooldown
+		var progress = 1.0 - (remaining_cooldown / max_cooldown)  # Progress from 0 to 1
+		cooldown_bar.value = progress
 
-# Legacy dash callbacks - replaced by ability system
-# func _on_dash_started():
-# func _on_dash_ended():
+func _get_dash_ability_resource(ability_manager: PlayerAbilityManager) -> AbilityResource:
+	"""Get the dash ability resource for cooldown info"""
+	if ability_manager and ability_manager.player_abilities:
+		for ability in ability_manager.player_abilities:
+			if ability.ability_id == "dash":
+				return ability
+	return null
 
 func set_invulnerable(value: bool):
 	invulnerable = value

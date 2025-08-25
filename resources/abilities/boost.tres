@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="AbilityResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="AbilityResource" load_steps=2 format=3 uid="uid://d1pw4qanor6l5"]
 
-[ext_resource type="Script" path="res://resources/ability_resource.gd" id="1"]
+[ext_resource type="Script" uid="uid://lpc15rladmo8" path="res://resources/ability_resource.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -9,18 +9,17 @@ display_name = "Speed Boost"
 description = "Temporary speed increase"
 cooldown = 0.0
 damage = 0.0
-range = 0.0
+ability_range = 0.0
 duration = 3.0
 trigger_type = "instant"
 cast_time = 0.0
+windup_duration = 0.0
 projectile_speed = 0.0
-effect_scene = null
-impact_scene = null
+projectile_collision_radius = 5.0
+projectile_scale = Vector2(1, 1)
 cast_animation = ""
-sound_effect = null
-custom_script = null
 additional_parameters = {
-    "command_only": true,
-    "speed_multiplier": 2.0,
-    "boost_duration": 3.0
+"boost_duration": 3.0,
+"command_only": true,
+"flat_speed_bonus": 500.0
 }

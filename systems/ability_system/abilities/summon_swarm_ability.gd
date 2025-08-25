@@ -7,7 +7,7 @@ extends BaseAbility
 # Ability properties
 @export var channel_duration: float = 10.0
 @export var summon_chance: float = 0.3  # 30% chance per emote
-@export var warrior_scene_path: String = "res://entities/enemies/special/ugandan_warrior/ugandan_warrior.tscn"
+@export var warrior_resource_path: String = "res://resources/enemies/ugandan_warrior.tres"
 @export var max_warriors_per_user: int = 1
 
 # Visual/Audio
@@ -18,7 +18,7 @@ extends BaseAbility
 var is_channeling: bool = false
 var channel_time: float = 0.0
 var users_summoned: Dictionary = {}  # Track which users have summoned this channel
-var warrior_scene: PackedScene
+var warrior_resource: EnemyResource
 var channel_tween: Tween
 
 # Forsen emotes to detect
@@ -45,9 +45,9 @@ func _init() -> void:
 func on_added(holder) -> void:
 	super.on_added(holder)
 	
-	# Preload warrior scene
-	if warrior_scene_path != "":
-		warrior_scene = load(warrior_scene_path)
+	# Preload warrior resource
+	if warrior_resource_path != "":
+		warrior_resource = load(warrior_resource_path)
 	
 	# Summon Swarm ability added
 
@@ -220,25 +220,25 @@ func _on_chat_message(username: String, message: String, _user_color: Color, ent
 		users_summoned[username] += 1
 
 func _summon_warrior(entity: Node, summoner_name: String) -> void:
-	if not warrior_scene or not entity:
+	if not warrior_resource or not entity:
 		return
-	
-	var warrior = warrior_scene.instantiate()
-	
-	# Set warrior properties
-	if warrior.has_property("chatter_username"):
-		warrior.chatter_username = summoner_name + "'s Warrior"
 	
 	# Position around entity
 	var angle = randf() * TAU
 	var distance = randf_range(100, 200)
 	var offset = Vector2(cos(angle), sin(angle)) * distance
+	var spawn_position = entity.global_position + offset
 	
-	warrior.global_position = entity.global_position + offset
-	entity.get_parent().add_child(warrior)
+	# Spawn via EnemyManager using resource system
+	if EnemyManager.instance:
+		var warrior_id = EnemyManager.instance.spawn_from_resource(warrior_resource, spawn_position, summoner_name + "'s Warrior")
+		if warrior_id >= 0:
+			print("✅ Summon Swarm spawned Ugandan Warrior for %s at %s" % [summoner_name, spawn_position])
+		else:
+			print("❌ Failed to spawn Ugandan Warrior for %s" % summoner_name)
 	
 	# Create spawn effect
-	_create_summon_effect(warrior.global_position, entity)
+	_create_summon_effect(spawn_position, entity)
 
 func _create_summon_effect(pos: Vector2, entity: Node) -> void:
 	var particles = CPUParticles2D.new()

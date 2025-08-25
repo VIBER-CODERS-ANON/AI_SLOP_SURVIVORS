@@ -23,11 +23,6 @@ func _get_movement_input() -> Vector2:
 	
 	return input_vector
 
-## Override to handle input actions
-func _unhandled_input(_event):
-	# Can add special movement abilities here
-	# For example: dash on spacebar
-	pass
 
 
 
